@@ -129,6 +129,7 @@ jobs:
             const visibleMarkerCount = await page.locator('.stream-map-country-marker:visible').count()
             const countryEmptyCount = await page.locator('#stream-map-country-list .stream-map-empty').count()
             const streamEmptyCount = await page.locator('#stream-map-stream-list .stream-map-empty').count()
+            const countryRowCount = await page.locator('#stream-map-country-list .stream-map-country-row').count()
 
             assert.equal(state, 'basemap-ready')
             assert.equal(canvasCount, 1)
@@ -136,9 +137,26 @@ jobs:
             assert.ok(Number.isFinite(mappedStreams) && mappedStreams >= 0, `${label}: expected a non-negative mapped stream count, got ${mappedText}`)
 
             if (label === 'country') {
+              await page.locator('.stream-map-region-controls__status').filter({ hasText: 'Country regions ready' }).waitFor({ timeout: 15000 })
+              const regionState = await page.evaluate(() => {
+                const map = window.__viewloomCountryRegionMap
+                return {
+                  active: document.documentElement.classList.contains('stream-map-country-regions-active'),
+                  sourceAvailable: Boolean(map?.getSource?.('viewloom-country-regions')),
+                  fillLayerAvailable: Boolean(map?.getLayer?.('viewloom-country-regions-fill')),
+                  outlineLayerAvailable: Boolean(map?.getLayer?.('viewloom-country-regions-outline')),
+                  viewSwitchCount: document.querySelectorAll('[data-map-view]').length,
+                  visibleFallbackMarkers: document.querySelectorAll('.stream-map-country-marker--region-fallback').length,
+                }
+              })
+              assert.equal(regionState.active, true, 'country: finalized choropleth mode must be active')
+              assert.equal(regionState.sourceAvailable, true, 'country: region GeoJSON source must be installed')
+              assert.equal(regionState.fillLayerAvailable, true, 'country: region fill layer must be installed')
+              assert.equal(regionState.outlineLayerAvailable, true, 'country: region outline layer must be installed')
+              assert.equal(regionState.viewSwitchCount, 0, 'country: retired Markers/Regions A/B switch must stay absent')
+
               if (mappedStreams > 0) {
-                await page.locator('.stream-map-country-marker:visible').first().waitFor({ timeout: 15000 })
-                assert.ok(await page.locator('.stream-map-country-marker:visible').count() > 0, `${label}: ${mappedStreams} mapped streams require at least one visible country marker`)
+                assert.ok(countryRowCount > 0, `${label}: ${mappedStreams} mapped streams require at least one country aggregate row`)
               } else {
                 assert.equal(markerCount, 0, `${label}: zero mapped streams must not leave stale country markers`)
                 assert.ok(countryEmptyCount > 0, `${label}: zero mapped streams require an explicit country empty state`)
@@ -152,7 +170,7 @@ jobs:
             }
 
             await page.screenshot({ path: `${process.env.GITHUB_WORKSPACE}/${process.env.ARTIFACT_DIR}/${label}.png`, fullPage: true })
-            return { state, canvasCount, controls, markerCount, visibleMarkerCount, mappedStreams, countryEmptyCount, streamEmptyCount }
+            return { state, canvasCount, controls, markerCount, visibleMarkerCount, mappedStreams, countryRowCount, countryEmptyCount, streamEmptyCount }
           }
 
           try {
