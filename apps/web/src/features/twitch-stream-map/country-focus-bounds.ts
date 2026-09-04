@@ -26,6 +26,8 @@ type FocusMap = {
     zoom: number
     duration?: number
   }): void
+  setMinZoom(zoom: number): void
+  setMaxZoom(zoom: number): void
 }
 
 type FocusWindow = Window & {
@@ -40,7 +42,9 @@ const COUNTRY_GEOMETRY_URLS = [
 ] as const
 
 const WORLD_CENTER: [number, number] = [10, 18]
-const WORLD_ZOOM = 1.15
+const DESKTOP_WORLD_ZOOM = 1.15
+const MOBILE_WORLD_ZOOM = 0
+const COUNTRY_MIN_ZOOM = 0
 const COUNTRY_MAX_ZOOM = 4.2
 const SMALL_COUNTRY_FALLBACKS: Record<string, { center: [number, number]; zoom: number }> = {
   HK: { center: [114.2, 22.3], zoom: 4.0 },
@@ -52,6 +56,8 @@ let geometryPromise: Promise<GeoJsonFeatureCollection> | null = null
 let observer: MutationObserver | null = null
 let focusedCountryCode: string | null = null
 let syncTimer = 0
+let cameraLimitsConfigured = false
+let worldCameraInitialized = false
 
 if (!requestedCity) bootCountryFocus()
 
@@ -68,7 +74,7 @@ function bootCountryFocus(): void {
     })
     document.querySelector<HTMLButtonElement>('[data-clear-selected-country]')?.addEventListener('click', () => {
       focusedCountryCode = null
-      window.setTimeout(resetWorldCamera, 0)
+      window.setTimeout(() => resetWorldCamera(450), 0)
     })
     scheduleFocusSync()
   }
@@ -83,25 +89,28 @@ function scheduleFocusSync(): void {
 }
 
 async function syncFocusCamera(): Promise<void> {
+  const map = (window as FocusWindow).__viewloomCountryRegionMap
+  if (!map) {
+    window.setTimeout(scheduleFocusSync, 50)
+    return
+  }
+  configureCountryCameraLimits(map)
+
   const selected = document.querySelector<HTMLButtonElement>('.stream-map-country-row[data-country-code][aria-pressed="true"]')
   const countryCode = validCountryCode(selected?.dataset.countryCode)
 
   if (!countryCode) {
-    if (focusedCountryCode) {
+    if (!worldCameraInitialized || focusedCountryCode) {
       focusedCountryCode = null
-      resetWorldCamera()
+      resetWorldCamera(worldCameraInitialized ? 450 : 0)
+      worldCameraInitialized = true
     }
     return
   }
   if (countryCode === focusedCountryCode) return
 
   focusedCountryCode = countryCode
-  const map = (window as FocusWindow).__viewloomCountryRegionMap
-  if (!map) {
-    window.setTimeout(scheduleFocusSync, 50)
-    return
-  }
-
+  worldCameraInitialized = true
   const geometry = await loadCountryGeometry()
   if (focusedCountryCode !== countryCode) return
   const feature = geometry.features.find((candidate) => validCountryCode(candidate.properties?.viewloomCountryCode) === countryCode)
@@ -129,16 +138,34 @@ async function syncFocusCamera(): Promise<void> {
   }
 }
 
-function resetWorldCamera(): void {
+function configureCountryCameraLimits(map: FocusMap): void {
+  if (cameraLimitsConfigured) return
+  map.setMinZoom(COUNTRY_MIN_ZOOM)
+  map.setMaxZoom(COUNTRY_MAX_ZOOM)
+  cameraLimitsConfigured = true
+}
+
+function resetWorldCamera(duration = 450): void {
   const map = (window as FocusWindow).__viewloomCountryRegionMap
   if (!map) return
-  map.easeTo({ center: WORLD_CENTER, zoom: WORLD_ZOOM, duration: 450 })
+  configureCountryCameraLimits(map)
+  map.easeTo({ center: WORLD_CENTER, zoom: worldOverviewZoom(), duration })
+  worldCameraInitialized = true
   const root = document.querySelector<HTMLElement>('#stream-map-root')
   if (root) {
     root.dataset.countryCamera = 'world'
     delete root.dataset.countryCameraCode
     root.dataset.countryCameraMode = 'world'
+    root.dataset.countryCameraViewport = isMobileCountryViewport() ? 'mobile' : 'desktop'
   }
+}
+
+function worldOverviewZoom(): number {
+  return isMobileCountryViewport() ? MOBILE_WORLD_ZOOM : DESKTOP_WORLD_ZOOM
+}
+
+function isMobileCountryViewport(): boolean {
+  return window.innerWidth <= 720
 }
 
 async function loadCountryGeometry(): Promise<GeoJsonFeatureCollection> {
