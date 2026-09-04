@@ -11,6 +11,7 @@ const bootstrap = read('apps/web/src/features/twitch-stream-map/maplibre-bootstr
 const bootstrapCss = read('apps/web/src/features/twitch-stream-map/maplibre-bootstrap.css')
 const entry = read('apps/web/src/features/twitch-stream-map/stream-map-entry.ts')
 const regions = read('apps/web/src/features/twitch-stream-map/country-regions.ts')
+const countryUi = read('apps/web/src/features/twitch-stream-map/country-ui-density.ts')
 
 if (packageJson.dependencies?.['maplibre-gl'] !== '6.4.1') {
   fail('maplibre-gl must be pinned to 6.4.1 in web runtime dependencies')
@@ -47,8 +48,12 @@ if (!bootstrap.includes('class ViewLoomStreamMap extends maplibregl.Map')) {
 const assignIndex = bootstrap.indexOf('Object.assign(window, { maplibregl: bundledMaplibregl })')
 const regionIndex = bootstrap.indexOf("await import('./country-regions')")
 const entryIndex = bootstrap.indexOf("await import('./stream-map-entry')")
-if (assignIndex < 0 || regionIndex < 0 || entryIndex < 0 || assignIndex > regionIndex || regionIndex > entryIndex) {
-  fail('bootstrap must install the finalized Country region renderer before importing the Stream Map entry')
+const countryUiIndex = bootstrap.indexOf("await import('./country-ui-density')")
+if (assignIndex < 0 || regionIndex < 0 || entryIndex < 0 || countryUiIndex < 0 || assignIndex > regionIndex || regionIndex > entryIndex || entryIndex > countryUiIndex) {
+  fail('bootstrap must install Country regions, the data renderer, then the compact Country interaction layer in order')
+}
+if (bootstrap.includes("country-focus-bounds")) {
+  fail('Country selection must not be wired to automatic fitBounds camera movement')
 }
 if (bootstrap.includes("country-region-ab")) {
   fail('the obsolete Country A/B renderer must not remain wired into the public bootstrap')
@@ -64,6 +69,12 @@ if (regions.includes("data.mapView") || regions.includes("CountryMapMode") || re
 }
 if (!regions.includes('stream-map-country-marker--region-fallback')) {
   fail('small-country aggregate marker fallback must remain available')
+}
+if (!countryUi.includes("world.textContent = 'World view'") || !countryUi.includes('resetWorldCamera')) {
+  fail('Country UI must expose an explicit World view camera reset')
+}
+if (!countryUi.includes("document.documentElement.classList.add('stream-map-country-ui-v2')")) {
+  fail('Country density layout activation is missing')
 }
 if (!entry.includes("style: 'https://tiles.openfreemap.org/styles/dark'")) {
   fail('the accepted OpenFreeMap basemap style contract changed unexpectedly')
