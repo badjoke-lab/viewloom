@@ -5,7 +5,7 @@ type CountryUiMap = {
   getLayer(id: string): unknown
   setFilter(layerId: string, filter: unknown[]): void
   on(event: 'mousemove' | 'mouseleave', layerId: string, handler: (event: { features?: Array<{ properties?: Record<string, unknown> | null }> }) => void): void
-  easeTo(options: { center: [number, number]; zoom: number; duration?: number }): void
+  jumpTo(options: { center: [number, number]; zoom: number }): void
   setMinZoom(zoom: number): void
   setMaxZoom(zoom: number): void
 }
@@ -151,7 +151,7 @@ function installRegionToolbar(): void {
     world.className = 'stream-map-world-view'
     world.dataset.countryWorldView = ''
     world.textContent = 'World view'
-    world.addEventListener('click', () => resetWorldCamera(350))
+    world.addEventListener('click', resetWorldCamera)
 
     controls.append(legend, world)
 
@@ -180,20 +180,19 @@ function configureCountryCamera(): void {
     const root = document.getElementById('stream-map-root')
     if (root?.dataset.countryUiCameraInitialized === 'true') return
     if (root) root.dataset.countryUiCameraInitialized = 'true'
-    if (window.innerWidth <= 720) resetWorldCamera(0)
+    if (window.innerWidth <= 720) resetWorldCamera()
   }
   attempt()
 }
 
-function resetWorldCamera(duration = 350): void {
+function resetWorldCamera(): void {
   const map = (window as CountryUiWindow).__viewloomCountryRegionMap
   if (!map) return
   map.setMinZoom(0)
   map.setMaxZoom(COUNTRY_MAX_ZOOM)
-  map.easeTo({
+  map.jumpTo({
     center: WORLD_CENTER,
     zoom: window.innerWidth <= 720 ? MOBILE_WORLD_ZOOM : DESKTOP_WORLD_ZOOM,
-    duration,
   })
   const root = document.getElementById('stream-map-root')
   if (root) {
