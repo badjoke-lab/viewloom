@@ -207,7 +207,7 @@ async function openCandidate(navigate = true) {
   await page.locator('#stream-map-root[data-map-state="basemap-ready"]').waitFor({ timeout: 15000 })
   await page.locator('.stream-map-country-row[data-country-code="DE"]').waitFor({ timeout: 10000 })
   await page.locator('[data-country-world-view]').waitFor({ timeout: 10000 })
-  await page.locator('.stream-map-region-controls__status').filter({ hasText: 'Country regions ready' }).waitFor({ timeout: 10000 })
+  await page.waitForFunction(() => document.querySelector('.stream-map-region-controls__status')?.textContent?.includes('Country regions ready'))
   await page.waitForFunction(() => Boolean(window.__viewloomCountryRegionMap?.getLayer?.('viewloom-country-regions-fill')))
 }
 
