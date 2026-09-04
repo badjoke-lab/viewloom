@@ -16,6 +16,7 @@ on:
       - 'apps/web/scripts/twitch-stream-map-country-regions-default-browser.mjs'
       - 'apps/web/scripts/twitch-stream-map-country-minimal-basemap-browser.mjs'
       - 'apps/web/scripts/twitch-stream-map-country-focus-browser.mjs'
+      - 'apps/web/scripts/twitch-stream-map-country-comparison-captures.mjs'
       - 'scripts/verify-twitch-stream-map-renderer-bundle.mjs'
       - '.github/workflows/twitch-stream-map-renderer-bundle.yml'
 
@@ -85,3 +86,14 @@ jobs:
         env:
           STREAM_MAP_BASE_URL: http://127.0.0.1:4173
         run: node scripts/twitch-stream-map-country-minimal-basemap-browser.mjs
+      - name: Capture PC and mobile Country map comparisons
+        working-directory: apps/web
+        env:
+          STREAM_MAP_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/twitch-stream-map-country-comparison-captures.mjs
+      - name: Upload Country map comparison captures
+        uses: actions/upload-artifact@v4
+        with:
+          name: twitch-country-map-comparison
+          path: apps/web/artifacts/twitch-country-map-comparison/*.png
+          if-no-files-found: error
