@@ -5,10 +5,18 @@ on:
     paths:
       - 'apps/web/package.json'
       - 'apps/web/twitch/map/index.html'
+      - 'apps/web/public/data/geo/**'
       - 'apps/web/src/features/twitch-stream-map/maplibre-bootstrap.ts'
       - 'apps/web/src/features/twitch-stream-map/stream-map-entry.ts'
+      - 'apps/web/src/features/twitch-stream-map/country-regions.ts'
+      - 'apps/web/src/features/twitch-stream-map/country-minimal-basemap.ts'
+      - 'apps/web/src/features/twitch-stream-map/country-focus-bounds.ts'
       - 'apps/web/scripts/install-ci-playwright.mjs'
       - 'apps/web/scripts/twitch-stream-map-renderer-browser.mjs'
+      - 'apps/web/scripts/twitch-stream-map-country-regions-default-browser.mjs'
+      - 'apps/web/scripts/twitch-stream-map-country-minimal-basemap-browser.mjs'
+      - 'apps/web/scripts/twitch-stream-map-country-focus-browser.mjs'
+      - 'apps/web/scripts/twitch-stream-map-country-mobile-world-browser.mjs'
       - 'scripts/verify-twitch-stream-map-renderer-bundle.mjs'
       - '.github/workflows/twitch-stream-map-renderer-bundle.yml'
 
@@ -52,14 +60,34 @@ jobs:
         run: node scripts/install-ci-playwright.mjs
       - name: Install Chromium
         run: /tmp/viewloom-playwright/node_modules/.bin/playwright install --with-deps chromium
-      - name: Verify bundled renderer worker in browser
+      - name: Verify finalized Country regions and small-country fallback
+        working-directory: apps/web
+        env:
+          STREAM_MAP_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/twitch-stream-map-country-regions-default-browser.mjs
+      - name: Verify bounded Country focus and world reset
+        working-directory: apps/web
+        env:
+          STREAM_MAP_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/twitch-stream-map-country-focus-browser.mjs
+      - name: Verify mobile Country world overview
+        working-directory: apps/web
+        env:
+          STREAM_MAP_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/twitch-stream-map-country-mobile-world-browser.mjs
+      - name: Verify bundled renderer worker and finalized Country regions
         working-directory: apps/web
         env:
           STREAM_MAP_BASE_URL: http://127.0.0.1:4173
         run: node scripts/twitch-stream-map-renderer-browser.mjs
-      - name: Verify real OpenFreeMap basemap in browser
+      - name: Verify real OpenFreeMap basemap and finalized Country regions
         working-directory: apps/web
         env:
           STREAM_MAP_BASE_URL: http://127.0.0.1:4173
           STREAM_MAP_REAL_BASEMAP: '1'
         run: node scripts/twitch-stream-map-renderer-browser.mjs
+      - name: Verify minimal Country basemap with real provider style
+        working-directory: apps/web
+        env:
+          STREAM_MAP_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/twitch-stream-map-country-minimal-basemap-browser.mjs

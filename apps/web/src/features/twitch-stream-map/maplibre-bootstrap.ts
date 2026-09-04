@@ -34,4 +34,15 @@ Object.assign(window, { maplibregl: bundledMaplibregl })
 // the public contract intentionally does not publish creator coordinates.
 await import('./geography-ui-bootstrap')
 await import('./city-render-guard')
+// Country is a geographic chart rather than a street-navigation map. Prune the
+// provider style to background/water/admin context before the region layer is
+// installed; City mode intentionally keeps the normal basemap.
+await import('./country-minimal-basemap')
+// Country uses polygon fills as the primary visualization. Aggregate markers are
+// retained only as a fail-safe and for tiny places without a usable 110m polygon.
+await import('./country-regions')
+// Country selection changes camera scale only: polygon-backed countries fit to
+// their whole bounds, tiny fallback countries use a bounded aggregate center,
+// and clearing the selection returns to the world overview.
+await import('./country-focus-bounds')
 await import('./stream-map-entry')
