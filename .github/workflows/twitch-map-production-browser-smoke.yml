@@ -125,29 +125,34 @@ jobs:
             const controls = await page.locator('#stream-map-root .maplibregl-ctrl-zoom-in').count()
             const mappedText = (await page.locator('#stream-map-mapped').textContent() || '').trim()
             const mappedStreams = Number(mappedText.replaceAll(',', ''))
+            const markerCount = await page.locator('.stream-map-country-marker').count()
+            const visibleMarkerCount = await page.locator('.stream-map-country-marker:visible').count()
+            const countryEmptyCount = await page.locator('#stream-map-country-list .stream-map-empty').count()
+            const streamEmptyCount = await page.locator('#stream-map-stream-list .stream-map-empty').count()
 
             assert.equal(state, 'basemap-ready')
             assert.equal(canvasCount, 1)
             assert.equal(controls, 1)
             assert.ok(Number.isFinite(mappedStreams) && mappedStreams >= 0, `${label}: expected a non-negative mapped stream count, got ${mappedText}`)
 
-            if (mappedStreams > 0) {
-              await page.locator('.stream-map-country-marker').first().waitFor({ timeout: 15000 })
-            }
-            const markerCount = await page.locator('.stream-map-country-marker').count()
-            const countryEmptyCount = await page.locator('#stream-map-country-list .stream-map-empty').count()
-            const streamEmptyCount = await page.locator('#stream-map-stream-list .stream-map-empty').count()
-
-            if (mappedStreams > 0) {
-              assert.ok(markerCount > 0, `${label}: ${mappedStreams} mapped streams require at least one visible country marker`)
+            if (label === 'country') {
+              if (mappedStreams > 0) {
+                await page.locator('.stream-map-country-marker:visible').first().waitFor({ timeout: 15000 })
+                assert.ok(await page.locator('.stream-map-country-marker:visible').count() > 0, `${label}: ${mappedStreams} mapped streams require at least one visible country marker`)
+              } else {
+                assert.equal(markerCount, 0, `${label}: zero mapped streams must not leave stale country markers`)
+                assert.ok(countryEmptyCount > 0, `${label}: zero mapped streams require an explicit country empty state`)
+                assert.ok(streamEmptyCount > 0, `${label}: zero mapped streams require an explicit stream-list empty state`)
+              }
             } else {
-              assert.equal(markerCount, 0, `${label}: zero mapped streams must not leave stale country markers`)
-              assert.ok(countryEmptyCount > 0, `${label}: zero mapped streams require an explicit country empty state`)
-              assert.ok(streamEmptyCount > 0, `${label}: zero mapped streams require an explicit stream-list empty state`)
+              assert.equal(await page.locator('html.stream-map-city-mode').count(), 1, 'city: City mode class must be active')
+              assert.equal(visibleMarkerCount, 0, 'city: Country-centroid markers must stay hidden; City coordinates are not inferred')
+              await page.getByRole('heading', { name: 'City view', exact: true }).waitFor({ timeout: 15000 })
+              await page.getByText('Country-only evidence remains accounting only and is not promoted to City placement.', { exact: true }).waitFor({ timeout: 15000 })
             }
 
             await page.screenshot({ path: `${process.env.GITHUB_WORKSPACE}/${process.env.ARTIFACT_DIR}/${label}.png`, fullPage: true })
-            return { state, canvasCount, controls, markerCount, mappedStreams, countryEmptyCount, streamEmptyCount }
+            return { state, canvasCount, controls, markerCount, visibleMarkerCount, mappedStreams, countryEmptyCount, streamEmptyCount }
           }
 
           try {
