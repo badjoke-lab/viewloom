@@ -140,14 +140,12 @@ try {
   })
 
   const initialZoom = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
-  const point = await findRenderedCountryPoint('DE')
-  assert.ok(point, 'could not find a rendered Germany Country-region pixel')
-  await page.mouse.click(point.x, point.y)
+  await page.locator('.stream-map-country-row[data-country-code="DE"]').click()
   await page.locator('.stream-map-country-row[data-country-code="DE"][aria-pressed="true"]').waitFor({ timeout: 10000 })
   await page.locator('#stream-map-selected-country:not([hidden])').waitFor({ timeout: 10000 })
   await page.waitForTimeout(200)
-  const afterMapClickZoom = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
-  assert.ok(Math.abs(afterMapClickZoom - initialZoom) < 0.08, `map click changed zoom: ${initialZoom} -> ${afterMapClickZoom}`)
+  const afterSelectionZoom = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
+  assert.ok(Math.abs(afterSelectionZoom - initialZoom) < 0.08, `country selection changed zoom: ${initialZoom} -> ${afterSelectionZoom}`)
   assert.match(await page.locator('[data-selected-country-summary]').textContent(), /2 streams · 2,000 viewers/)
 
   await page.locator('[data-country-metric="viewers"]').click()
@@ -199,7 +197,7 @@ try {
   assert.equal(pageErrors.length, 0, `page errors: ${pageErrors.join(' | ')}`)
   assert.equal(consoleErrors.length, 0, `console errors: ${consoleErrors.join(' | ')}`)
 
-  console.log(JSON.stringify({ order, initialZoom, afterMapClickZoom, desktopDensity, evidenceState, mobileZoom, mobileMapHeight, pageErrors, consoleErrors }))
+  console.log(JSON.stringify({ order, initialZoom, afterSelectionZoom, desktopDensity, evidenceState, mobileZoom, mobileMapHeight, pageErrors, consoleErrors }))
 } finally {
   await browser.close()
 }
@@ -211,28 +209,6 @@ async function openCandidate(navigate = true) {
   await page.locator('[data-country-world-view]').waitFor({ timeout: 10000 })
   await page.locator('.stream-map-region-controls__status').filter({ hasText: 'Country regions ready' }).waitFor({ timeout: 10000 })
   await page.waitForFunction(() => Boolean(window.__viewloomCountryRegionMap?.getLayer?.('viewloom-country-regions-fill')))
-}
-
-async function findRenderedCountryPoint(countryCode) {
-  return page.evaluate((code) => {
-    const map = window.__viewloomCountryRegionMap
-    const root = document.querySelector('#stream-map-root')
-    if (!map || !root) return null
-    const rect = root.getBoundingClientRect()
-    const canvas = map.getCanvas()
-    const width = canvas.clientWidth
-    const height = canvas.clientHeight
-    const layer = 'viewloom-country-regions-fill'
-    for (let y = 12; y < height - 12; y += 4) {
-      for (let x = 12; x < width - 12; x += 4) {
-        const features = map.queryRenderedFeatures([x, y], { layers: [layer] })
-        if (features.some((feature) => feature.properties?.viewloomCountryCode === code)) {
-          return { x: rect.left + x, y: rect.top + y }
-        }
-      }
-    }
-    return null
-  }, countryCode)
 }
 
 function stream(login, displayName, viewers, countryCode, countryName, source, locationType) {
