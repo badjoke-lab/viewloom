@@ -137,16 +137,25 @@ jobs:
             assert.ok(Number.isFinite(mappedStreams) && mappedStreams >= 0, `${label}: expected a non-negative mapped stream count, got ${mappedText}`)
 
             if (label === 'country') {
-              await page.locator('.stream-map-region-controls__status').filter({ hasText: 'Country regions ready' }).waitFor({ timeout: 15000 })
+              await page.waitForFunction(() => {
+                const map = window.__viewloomCountryRegionMap
+                return document.documentElement.classList.contains('stream-map-country-regions-active')
+                  && Boolean(map?.getSource?.('viewloom-country-regions'))
+                  && Boolean(map?.getLayer?.('viewloom-country-regions-fill'))
+                  && Boolean(map?.getLayer?.('viewloom-country-regions-outline'))
+              }, null, { timeout: 15000 })
+
               const regionState = await page.evaluate(() => {
                 const map = window.__viewloomCountryRegionMap
+                const statusText = (document.querySelector('.stream-map-region-controls__status')?.textContent || '').trim()
                 return {
                   active: document.documentElement.classList.contains('stream-map-country-regions-active'),
                   sourceAvailable: Boolean(map?.getSource?.('viewloom-country-regions')),
                   fillLayerAvailable: Boolean(map?.getLayer?.('viewloom-country-regions-fill')),
                   outlineLayerAvailable: Boolean(map?.getLayer?.('viewloom-country-regions-outline')),
                   viewSwitchCount: document.querySelectorAll('[data-map-view]').length,
-                  visibleFallbackMarkers: document.querySelectorAll('.stream-map-country-marker--region-fallback').length,
+                  fallbackMarkerCount: document.querySelectorAll('.stream-map-country-marker--region-fallback').length,
+                  statusText,
                 }
               })
               assert.equal(regionState.active, true, 'country: finalized choropleth mode must be active')
@@ -154,6 +163,8 @@ jobs:
               assert.equal(regionState.fillLayerAvailable, true, 'country: region fill layer must be installed')
               assert.equal(regionState.outlineLayerAvailable, true, 'country: region outline layer must be installed')
               assert.equal(regionState.viewSwitchCount, 0, 'country: retired Markers/Regions A/B switch must stay absent')
+              assert.ok(regionState.statusText.length > 0, 'country: region status text must be present')
+              assert.equal(regionState.statusText.toLowerCase().includes('unavailable'), false, `country: region renderer reported unavailable: ${regionState.statusText}`)
 
               if (mappedStreams > 0) {
                 assert.ok(countryRowCount > 0, `${label}: ${mappedStreams} mapped streams require at least one country aggregate row`)
@@ -192,6 +203,22 @@ jobs:
               `${process.env.GITHUB_WORKSPACE}/${process.env.ARTIFACT_DIR}/result.json`,
               `${JSON.stringify(result, null, 2)}\n`,
             ))
+          } catch (error) {
+            await page.screenshot({ path: `${process.env.GITHUB_WORKSPACE}/${process.env.ARTIFACT_DIR}/failure.png`, fullPage: true }).catch(() => {})
+            const diagnostics = await page.evaluate(() => {
+              const map = window.__viewloomCountryRegionMap
+              return {
+                href: location.href,
+                regionStatus: (document.querySelector('.stream-map-region-controls__status')?.textContent || '').trim(),
+                regionsActive: document.documentElement.classList.contains('stream-map-country-regions-active'),
+                sourceAvailable: Boolean(map?.getSource?.('viewloom-country-regions')),
+                fillLayerAvailable: Boolean(map?.getLayer?.('viewloom-country-regions-fill')),
+                outlineLayerAvailable: Boolean(map?.getLayer?.('viewloom-country-regions-outline')),
+                countryRows: document.querySelectorAll('#stream-map-country-list .stream-map-country-row').length,
+              }
+            }).catch(() => ({}))
+            console.error(JSON.stringify({ diagnostics, pageErrors, consoleErrors }))
+            throw error
           } finally {
             await browser.close()
           }
