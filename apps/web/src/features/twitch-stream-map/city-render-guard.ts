@@ -13,10 +13,8 @@ type CityPayload = {
   mappedStreams?: CityRow[]
 }
 
-declare global {
-  interface Window {
-    __viewloomStreamMapCityPayload?: CityPayload | null
-  }
+type CityPayloadWindow = Window & {
+  __viewloomStreamMapCityPayload?: CityPayload | null
 }
 
 const requestedCity = new URL(window.location.href).searchParams.get('geography') === 'city'
@@ -55,7 +53,7 @@ function updateStaticCityCopy(): void {
     if (interaction) interaction.textContent = 'The basemap remains available for geographic context. City coordinates are not published or inferred, so City mode does not place approximate markers.'
 
     const countryList = document.getElementById('stream-map-country-list')
-    const countryCard = countryList?.closest<HTMLElement>('.stream-map-results-card')
+    const countryCard = countryList?.closest('.stream-map-results-card') as HTMLElement | null | undefined
     if (countryCard) countryCard.hidden = true
 
     const listTitle = document.getElementById('stream-map-stream-list-title')
@@ -71,7 +69,7 @@ function updateStaticCityCopy(): void {
 
 function renderWhenPayloadArrives(): void {
   const render = () => {
-    const payload = window.__viewloomStreamMapCityPayload
+    const payload = (window as CityPayloadWindow).__viewloomStreamMapCityPayload
     if (!payload) return false
     renderCityPlaces(Array.isArray(payload.mappedStreams) ? payload.mappedStreams : [])
     return true
