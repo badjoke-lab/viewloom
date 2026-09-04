@@ -34,4 +34,7 @@ Object.assign(window, { maplibregl: bundledMaplibregl })
 // the public contract intentionally does not publish creator coordinates.
 await import('./geography-ui-bootstrap')
 await import('./city-render-guard')
+// Country-only A/B experiment. It captures the already-created MapLibre path and
+// adds a region-fill renderer without changing the existing marker renderer.
+await import('./country-region-ab')
 await import('./stream-map-entry')
