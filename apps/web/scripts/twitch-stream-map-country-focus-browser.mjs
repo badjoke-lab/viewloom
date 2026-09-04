@@ -20,7 +20,7 @@ await page.route('**/styles/dark*', async (route) => {
     contentType: 'application/json',
     body: JSON.stringify({
       version: 8,
-      name: 'ViewLoom Country focus CI',
+      name: 'ViewLoom Country selection camera CI',
       sources: {},
       layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#111111' } }],
     }),
@@ -90,7 +90,7 @@ await page.route('**/api/twitch-stream-map**', async (route) => {
       version: 'viewloom-stream-map-live-v1',
       platform: 'twitch',
       source: 'real',
-      sourceMode: 'country-focus-browser-fixture',
+      sourceMode: 'country-selection-camera-browser-fixture',
       updatedAt: '2026-09-04T00:00:00.000Z',
       coverage: {
         topLimit: 300,
@@ -158,33 +158,44 @@ try {
   await page.goto(`${baseUrl}/twitch/map/`, { waitUntil: 'domcontentloaded' })
   await page.locator('#stream-map-root[data-map-state="basemap-ready"]').waitFor({ timeout: 15000 })
   await page.locator('.stream-map-country-row[data-country-code="US"]').waitFor({ timeout: 10000 })
-  await page.locator('.stream-map-region-controls__status').filter({ hasText: 'Country regions ready' }).waitFor({ timeout: 10000 })
+  await page.locator('[data-country-world-view]').waitFor({ timeout: 10000 })
 
   const initialZoom = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
   assert.ok(Math.abs(initialZoom - 1.15) < 0.2, `unexpected initial zoom: ${initialZoom}`)
 
   await page.locator('.stream-map-country-row[data-country-code="US"]').click()
-  await page.locator('#stream-map-root[data-country-camera="focused"][data-country-camera-code="US"][data-country-camera-mode="bounds"]').waitFor({ timeout: 10000 })
-  await page.waitForFunction(() => window.__viewloomCountryRegionMap.getZoom() > 1.3)
-  const usZoom = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
-  assert.ok(usZoom <= 4.25, `US focus exceeded Country max zoom: ${usZoom}`)
+  await page.locator('.stream-map-country-row[data-country-code="US"][aria-pressed="true"]').waitFor({ timeout: 10000 })
+  await page.locator('#stream-map-selected-country:not([hidden])').waitFor({ timeout: 10000 })
+  await page.waitForTimeout(650)
+  const zoomAfterSelection = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
+  assert.ok(Math.abs(zoomAfterSelection - initialZoom) < 0.08, `country selection moved camera: ${initialZoom} -> ${zoomAfterSelection}`)
 
-  await page.locator('[data-clear-selected-country]').click()
-  await page.locator('#stream-map-root[data-country-camera="world"]').waitFor({ timeout: 10000 })
+  await page.evaluate(() => window.__viewloomCountryRegionMap.easeTo({ center: [42, 22], zoom: 2.6, duration: 0 }))
+  await page.waitForFunction(() => window.__viewloomCountryRegionMap.getZoom() > 2.4)
+  await page.locator('[data-country-world-view]').click()
   await page.waitForFunction(() => Math.abs(window.__viewloomCountryRegionMap.getZoom() - 1.15) < 0.08)
-  const resetZoom = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
-  assert.ok(Math.abs(resetZoom - 1.15) < 0.08, `world reset zoom mismatch: ${resetZoom}`)
+  const worldZoom = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
+  assert.equal(await page.locator('.stream-map-country-row[data-country-code="US"]').getAttribute('aria-pressed'), 'true', 'World view cleared country selection')
+
+  await page.evaluate(() => window.__viewloomCountryRegionMap.easeTo({ center: [-30, 5], zoom: 2.2, duration: 0 }))
+  await page.waitForFunction(() => window.__viewloomCountryRegionMap.getZoom() > 2)
+  const zoomBeforeClear = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
+  await page.locator('[data-clear-selected-country]').click()
+  await page.waitForFunction(() => document.querySelector('#stream-map-selected-country')?.hidden === true)
+  await page.waitForTimeout(150)
+  const zoomAfterClear = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
+  assert.ok(Math.abs(zoomAfterClear - zoomBeforeClear) < 0.08, `Clear changed camera: ${zoomBeforeClear} -> ${zoomAfterClear}`)
 
   await page.locator('.stream-map-country-row[data-country-code="SG"]').click()
-  await page.locator('#stream-map-root[data-country-camera="focused"][data-country-camera-code="SG"][data-country-camera-mode="fallback"]').waitFor({ timeout: 10000 })
-  await page.waitForFunction(() => window.__viewloomCountryRegionMap.getZoom() > 3.5)
-  const sgZoom = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
-  assert.ok(sgZoom <= 4.05, `Singapore fallback zoom exceeded bound: ${sgZoom}`)
+  await page.locator('.stream-map-country-row[data-country-code="SG"][aria-pressed="true"]').waitFor({ timeout: 10000 })
+  await page.waitForTimeout(150)
+  const zoomAfterSingapore = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
+  assert.ok(Math.abs(zoomAfterSingapore - zoomAfterClear) < 0.08, `small-country selection moved camera: ${zoomAfterClear} -> ${zoomAfterSingapore}`)
 
   assert.equal(pageErrors.length, 0, `page errors: ${pageErrors.join(' | ')}`)
   assert.equal(consoleErrors.length, 0, `console errors: ${consoleErrors.join(' | ')}`)
 
-  console.log(JSON.stringify({ initialZoom, usZoom, resetZoom, sgZoom, pageErrors, consoleErrors }))
+  console.log(JSON.stringify({ initialZoom, zoomAfterSelection, worldZoom, zoomBeforeClear, zoomAfterClear, zoomAfterSingapore, pageErrors, consoleErrors }))
 } finally {
   await browser.close()
 }
