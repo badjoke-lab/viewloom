@@ -28,4 +28,10 @@ class ViewLoomStreamMap extends maplibregl.Map {
 
 const bundledMaplibregl = { ...maplibregl, Map: ViewLoomStreamMap }
 Object.assign(window, { maplibregl: bundledMaplibregl })
+
+// Geography mode must be installed before the main renderer performs its first
+// /api/twitch-stream-map request. The City guard keeps City mode truthful when
+// the public contract intentionally does not publish creator coordinates.
+await import('./geography-ui-bootstrap')
+await import('./city-render-guard')
 await import('./stream-map-entry')
