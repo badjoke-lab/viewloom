@@ -174,10 +174,27 @@ jobs:
                 assert.ok(streamEmptyCount > 0, `${label}: zero mapped streams require an explicit stream-list empty state`)
               }
             } else {
-              assert.equal(await page.locator('html.stream-map-city-mode').count(), 1, 'city: City mode class must be active')
-              assert.equal(visibleMarkerCount, 0, 'city: Country-centroid markers must stay hidden; City coordinates are not inferred')
               await page.getByRole('heading', { name: 'City view', exact: true }).waitFor({ timeout: 15000 })
-              await page.getByText('Country-only evidence stays in accounting and is not promoted.', { exact: true }).waitFor({ timeout: 15000 })
+              await page.locator('[data-city-places]').waitFor({ timeout: 15000 })
+              const cityState = await page.evaluate(() => {
+                const countryList = document.getElementById('stream-map-country-list')
+                const countryCard = countryList?.closest('.stream-map-results-card')
+                const cityPlaces = document.querySelector('[data-city-places]')
+                return {
+                  cityMode: document.documentElement.classList.contains('stream-map-city-mode'),
+                  countryCardHidden: Boolean(countryCard?.hidden),
+                  cityPlacesPresent: Boolean(cityPlaces),
+                  cityPlaceRows: cityPlaces?.querySelectorAll('.stream-map-city-place').length || 0,
+                  cityEmptyCount: cityPlaces?.querySelectorAll('.stream-map-empty').length || 0,
+                  currentLocationCount: (document.getElementById('stream-map-current-count')?.textContent || '').trim(),
+                }
+              })
+              assert.equal(cityState.cityMode, true, 'city: City mode class must be active')
+              assert.equal(cityState.countryCardHidden, true, 'city: Country aggregate card must be hidden')
+              assert.equal(cityState.cityPlacesPresent, true, 'city: accepted City locations panel must be rendered')
+              assert.ok(cityState.cityPlaceRows > 0 || cityState.cityEmptyCount > 0, 'city: accepted City locations panel must show rows or an explicit empty state')
+              assert.equal(cityState.currentLocationCount, '0', 'city: current-location placement must remain zero')
+              assert.equal(visibleMarkerCount, 0, 'city: Country-centroid markers must stay hidden; City coordinates are not inferred')
             }
 
             await page.screenshot({ path: `${process.env.GITHUB_WORKSPACE}/${process.env.ARTIFACT_DIR}/${label}.png`, fullPage: true })
@@ -207,6 +224,8 @@ jobs:
             await page.screenshot({ path: `${process.env.GITHUB_WORKSPACE}/${process.env.ARTIFACT_DIR}/failure.png`, fullPage: true }).catch(() => {})
             const diagnostics = await page.evaluate(() => {
               const map = window.__viewloomCountryRegionMap
+              const countryList = document.getElementById('stream-map-country-list')
+              const countryCard = countryList?.closest('.stream-map-results-card')
               return {
                 href: location.href,
                 regionStatus: (document.querySelector('.stream-map-region-controls__status')?.textContent || '').trim(),
@@ -215,6 +234,9 @@ jobs:
                 fillLayerAvailable: Boolean(map?.getLayer?.('viewloom-country-regions-fill')),
                 outlineLayerAvailable: Boolean(map?.getLayer?.('viewloom-country-regions-outline')),
                 countryRows: document.querySelectorAll('#stream-map-country-list .stream-map-country-row').length,
+                cityMode: document.documentElement.classList.contains('stream-map-city-mode'),
+                cityPlacesPresent: Boolean(document.querySelector('[data-city-places]')),
+                countryCardHidden: Boolean(countryCard?.hidden),
               }
             }).catch(() => ({}))
             console.error(JSON.stringify({ diagnostics, pageErrors, consoleErrors }))
