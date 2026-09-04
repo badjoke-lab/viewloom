@@ -56,11 +56,16 @@ type CountryRowMetric = {
 const REGION_SOURCE_ID = 'viewloom-country-regions-ab'
 const REGION_FILL_LAYER_ID = 'viewloom-country-regions-ab-fill'
 const REGION_OUTLINE_LAYER_ID = 'viewloom-country-regions-ab-outline'
-const NATURAL_EARTH_COUNTRIES_URL = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson'
+const COUNTRY_GEOMETRY_URLS = [
+  '/data/geo/countries-110m-1.geojson',
+  '/data/geo/countries-110m-2.geojson',
+  '/data/geo/countries-110m-3.geojson',
+  '/data/geo/countries-110m-4.geojson',
+] as const
 
 const requestedCity = new URL(window.location.href).searchParams.get('geography') === 'city'
 
-let mapMode: CountryMapMode = 'markers'
+let mapMode: CountryMapMode = 'regions'
 let metric: CountryMetric = 'streams'
 let mapReady = false
 let geometryState: 'idle' | 'loading' | 'ready' | 'error' = 'idle'
@@ -100,17 +105,19 @@ function bootControls(): void {
     injectControls()
     observeCountryRows()
     bindClearCountry()
+    setMapMode(mapMode)
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true })
   else run()
 }
 
 function injectStyles(): void {
-  if (document.getElementById('stream-map-region-ab-style')) return
+  if (document.getElementById('stream-map-region-style')) return
   const style = document.createElement('style')
-  style.id = 'stream-map-region-ab-style'
+  style.id = 'stream-map-region-style'
   style.textContent = `
-    .stream-map-region-mode .stream-map-country-marker{display:none!important}
+    .stream-map-region-mode .stream-map-country-marker:not(.stream-map-country-marker--region-fallback){display:none!important}
+    .stream-map-country-marker--region-fallback{box-shadow:0 0 0 1px rgba(255,255,255,.28),0 5px 18px rgba(0,0,0,.28)}
     .stream-map-view-switch{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;border:1px solid var(--line,#30363d);border-radius:10px;background:rgba(12,15,22,.72)}
     .stream-map-view-switch__group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
     .stream-map-view-switch__label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#9ca3af)}
@@ -137,20 +144,19 @@ function injectControls(): void {
   const controls = document.createElement('div')
   controls.className = 'stream-map-view-switch'
   controls.dataset.streamMapViewSwitch = ''
-  controls.setAttribute('aria-label', 'Country map comparison controls')
+  controls.setAttribute('aria-label', 'Country map view controls')
 
   const viewGroup = document.createElement('div')
   viewGroup.className = 'stream-map-view-switch__group'
   const viewLabel = document.createElement('span')
   viewLabel.className = 'stream-map-view-switch__label'
   viewLabel.textContent = 'Map view'
-  const markerButton = viewButton('Markers', 'markers')
   const regionButton = viewButton('Regions', 'regions')
-  viewGroup.append(viewLabel, markerButton, regionButton)
+  const markerButton = viewButton('Markers', 'markers')
+  viewGroup.append(viewLabel, regionButton, markerButton)
 
   const metricGroup = document.createElement('label')
   metricGroup.className = 'stream-map-view-switch__group stream-map-view-switch__metric'
-  metricGroup.hidden = true
   const metricLabel = document.createElement('span')
   metricLabel.className = 'stream-map-view-switch__label'
   metricLabel.textContent = 'Region intensity'
@@ -169,7 +175,7 @@ function injectControls(): void {
   statusNode.className = 'stream-map-view-switch__status'
   statusNode.setAttribute('role', 'status')
   statusNode.setAttribute('aria-live', 'polite')
-  statusNode.textContent = 'Current marker renderer'
+  statusNode.textContent = 'Country regions loading…'
 
   controls.append(viewGroup, metricGroup, statusNode)
   shell.insertBefore(controls, stage)
@@ -203,6 +209,7 @@ function setMapMode(next: CountryMapMode): void {
   setRegionLayersVisible(next === 'regions')
   if (next === 'regions') void ensureRegionLayer()
   else hideTooltip()
+  syncRegionFallbackMarkers()
   updateStaticCopy()
 }
 
@@ -220,14 +227,20 @@ async function ensureRegionLayer(): Promise<void> {
   if (geometryState === 'loading') return
 
   geometryState = 'loading'
-  setStatus('Loading Natural Earth country regions…')
+  setStatus('Loading local country regions…')
   try {
-    const response = await fetch(NATURAL_EARTH_COUNTRIES_URL, { cache: 'force-cache' })
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    const raw = await response.json() as GeoJsonFeatureCollection
-    baseGeometry = normalizeCountryGeometry(raw)
+    const collections = await Promise.all(COUNTRY_GEOMETRY_URLS.map(async (url) => {
+      const response = await fetch(url, { cache: 'force-cache' })
+      if (!response.ok) throw new Error(`${url} HTTP ${response.status}`)
+      return normalizeCountryGeometry(await response.json() as GeoJsonFeatureCollection)
+    }))
+    baseGeometry = {
+      type: 'FeatureCollection',
+      features: collections.flatMap((collection) => collection.features),
+    }
     geometryState = 'ready'
     installOrUpdateRegionLayers(map)
+    syncRegionFallbackMarkers()
     setStatus('Regions ready · same filtered Twitch data')
   } catch (error) {
     geometryState = 'error'
@@ -238,7 +251,7 @@ async function ensureRegionLayer(): Promise<void> {
 
 function normalizeCountryGeometry(raw: GeoJsonFeatureCollection): GeoJsonFeatureCollection {
   if (raw?.type !== 'FeatureCollection' || !Array.isArray(raw.features)) {
-    throw new Error('Invalid Natural Earth GeoJSON')
+    throw new Error('Invalid country GeoJSON')
   }
   const features = raw.features.flatMap((feature) => {
     const properties = feature?.properties ?? {}
@@ -305,6 +318,7 @@ function installOrUpdateRegionLayers(map: RegionMap): void {
   }
 
   setRegionLayersVisible(mapMode === 'regions')
+  syncRegionFallbackMarkers()
 }
 
 function buildRegionData(geometry: GeoJsonFeatureCollection): GeoJsonFeatureCollection {
@@ -374,6 +388,7 @@ function observeCountryRows(): void {
   if (!list || observer) return
   observer = new MutationObserver(() => {
     if (geometryState === 'ready') updateRegionData()
+    syncRegionFallbackMarkers()
   })
   observer.observe(list, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-pressed', 'class'] })
 }
@@ -389,7 +404,25 @@ function updateRegionData(): void {
   const map = (window as RegionWindow).__viewloomCountryRegionMap
   if (!map || !baseGeometry || geometryState !== 'ready') return
   installOrUpdateRegionLayers(map)
+  syncRegionFallbackMarkers()
   if (mapMode === 'regions') setStatus(`Regions · intensity by ${metric === 'viewers' ? 'viewers' : 'streams'}`)
+}
+
+function geometryCountryCodes(): Set<string> {
+  if (!baseGeometry) return new Set()
+  return new Set(baseGeometry.features.flatMap((feature) => {
+    const code = validCountryCode(feature.properties?.viewloomCountryCode)
+    return code ? [code] : []
+  }))
+}
+
+function syncRegionFallbackMarkers(): void {
+  const geometryCodes = geometryCountryCodes()
+  if (geometryState !== 'ready') return
+  for (const marker of document.querySelectorAll<HTMLElement>('.stream-map-country-marker[data-country-code]')) {
+    const code = validCountryCode(marker.dataset.countryCode)
+    marker.classList.toggle('stream-map-country-marker--region-fallback', Boolean(code && !geometryCodes.has(code)))
+  }
 }
 
 function setRegionLayersVisible(visible: boolean): void {
@@ -450,11 +483,11 @@ function updateStaticCopy(): void {
   const copy = shellHead?.querySelector<HTMLElement>('p')
   const interaction = document.querySelector<HTMLElement>('.stream-map-interaction-note')
   if (mapMode === 'regions') {
-    if (copy) copy.textContent = `Countries with accepted mapped evidence are filled by ${metric === 'viewers' ? 'viewer count' : 'stream count'}. Select a region to use the same country drilldown and filters as the marker view.`
-    if (interaction) interaction.textContent = 'Drag to move. Use the +/− controls to zoom. Region intensity is computed from the same filtered country totals; the country list remains the keyboard-accessible drilldown.'
+    if (copy) copy.textContent = `Countries with accepted mapped evidence are filled by ${metric === 'viewers' ? 'viewer count' : 'stream count'}. Select a region to open the same country drilldown and filters.`
+    if (interaction) interaction.textContent = 'Drag to move. Use the +/− controls to zoom. Region intensity uses the same filtered country totals. Small countries without a 110m polygon remain aggregate country markers.'
   } else {
-    if (copy) copy.textContent = 'Select a country marker to drill into its currently mapped streams. Country selection does not change population or evidence acceptance.'
-    if (interaction) interaction.textContent = 'Drag to move. Use the +/− controls to zoom. Country markers are buttons and can be selected by keyboard or tap. Wheel zoom is disabled so page scrolling remains available.'
+    if (copy) copy.textContent = 'Marker view is the alternate country aggregate view. Select a country marker to drill into its currently mapped streams.'
+    if (interaction) interaction.textContent = 'Drag to move. Use the +/− controls to zoom. Country markers are aggregate country buttons, not creator coordinates. Wheel zoom is disabled so page scrolling remains available.'
   }
 }
 
