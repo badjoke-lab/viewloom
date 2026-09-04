@@ -39,14 +39,9 @@ type RegionMap = {
   getCanvas(): HTMLCanvasElement
 }
 
-type MapConstructor = new (options: unknown) => RegionMap
-
-type MapLibreNamespace = {
-  Map?: MapConstructor
-}
+type AnyMapConstructor = new (...args: any[]) => any
 
 type RegionWindow = Window & {
-  maplibregl?: MapLibreNamespace
   __viewloomCountryRegionMap?: RegionMap
 }
 
@@ -82,23 +77,21 @@ if (!requestedCity) {
 }
 
 function captureMapInstance(): void {
-  const namespace = (window as RegionWindow).maplibregl
+  const namespace = (window as unknown as { maplibregl?: { Map?: AnyMapConstructor } }).maplibregl
   const ExistingMap = namespace?.Map
   if (!namespace || !ExistingMap) return
 
-  class CapturedCountryRegionMap extends ExistingMap {
-    constructor(options: unknown) {
-      super(options)
-      const captured = this as unknown as RegionMap
+  namespace.Map = new Proxy(ExistingMap, {
+    construct(target, args, newTarget) {
+      const captured = Reflect.construct(target, args, newTarget) as RegionMap
       ;(window as RegionWindow).__viewloomCountryRegionMap = captured
       captured.on('load', () => {
         mapReady = true
         if (mapMode === 'regions') void ensureRegionLayer()
       })
-    }
-  }
-
-  namespace.Map = CapturedCountryRegionMap as unknown as MapConstructor
+      return captured
+    },
+  })
 }
 
 function bootControls(): void {
