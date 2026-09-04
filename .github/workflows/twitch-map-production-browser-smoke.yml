@@ -148,7 +148,7 @@ jobs:
               assert.equal(await page.locator('html.stream-map-city-mode').count(), 1, 'city: City mode class must be active')
               assert.equal(visibleMarkerCount, 0, 'city: Country-centroid markers must stay hidden; City coordinates are not inferred')
               await page.getByRole('heading', { name: 'City view', exact: true }).waitFor({ timeout: 15000 })
-              await page.getByText('Country-only evidence remains accounting only and is not promoted to City placement.', { exact: true }).waitFor({ timeout: 15000 })
+              await page.getByText('Country-only evidence stays in accounting and is not promoted.', { exact: true }).waitFor({ timeout: 15000 })
             }
 
             await page.screenshot({ path: `${process.env.GITHUB_WORKSPACE}/${process.env.ARTIFACT_DIR}/${label}.png`, fullPage: true })
