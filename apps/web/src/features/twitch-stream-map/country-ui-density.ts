@@ -274,7 +274,8 @@ function installSelectedCountryStrip(): void {
     queued = false
     const streams = clean(document.getElementById('stream-map-selected-country-streams')?.textContent) || '0'
     const viewers = clean(document.getElementById('stream-map-selected-country-viewers')?.textContent) || '0'
-    summary.textContent = `${streams} stream${streams === '1' ? '' : 's'} · ${viewers} viewers`
+    const next = `${streams} stream${streams === '1' ? '' : 's'} · ${viewers} viewers`
+    if (summary.textContent !== next) summary.textContent = next
   }
   const schedule = () => {
     if (queued) return
@@ -352,7 +353,8 @@ function installUnmappedDisclosure(): void {
         return label && count ? `${label} ${count}` : ''
       })
       .filter(Boolean)
-    summary.textContent = [current ? `${current} unmapped` : '', ...reasons].filter(Boolean).join(' · ') || 'No unmapped streams in this view'
+    const next = [current ? `${current} unmapped` : '', ...reasons].filter(Boolean).join(' · ') || 'No unmapped streams in this view'
+    if (summary.textContent !== next) summary.textContent = next
   }
 
   let queued = false
