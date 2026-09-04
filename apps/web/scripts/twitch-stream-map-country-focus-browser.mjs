@@ -173,7 +173,8 @@ try {
   await page.evaluate(() => window.__viewloomCountryRegionMap.easeTo({ center: [42, 22], zoom: 2.6, duration: 0 }))
   await page.waitForFunction(() => window.__viewloomCountryRegionMap.getZoom() > 2.4)
   await page.locator('[data-country-world-view]').click()
-  await page.waitForFunction(() => Math.abs(window.__viewloomCountryRegionMap.getZoom() - 1.15) < 0.08)
+  await page.locator('#stream-map-root[data-country-camera-mode="explicit-world-view"]').waitFor({ timeout: 10000 })
+  await page.waitForFunction((expectedZoom) => Math.abs(window.__viewloomCountryRegionMap.getZoom() - expectedZoom) < 0.08, initialZoom)
   const worldZoom = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
   assert.equal(await page.locator('.stream-map-country-row[data-country-code="US"]').getAttribute('aria-pressed'), 'true', 'World view cleared country selection')
 
