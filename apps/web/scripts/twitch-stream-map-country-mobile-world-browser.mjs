@@ -126,14 +126,15 @@ await page.route('**/api/twitch-stream-map**', async (route) => {
 
 try {
   await page.goto(`${baseUrl}/twitch/map/`, { waitUntil: 'domcontentloaded' })
-  await page.locator('#stream-map-root[data-map-state="basemap-ready"][data-country-camera="world"][data-country-camera-viewport="mobile"]').waitFor({ timeout: 15000 })
-  await page.locator('.stream-map-region-controls__status').filter({ hasText: 'Country regions ready' }).waitFor({ timeout: 10000 })
+  await page.locator('#stream-map-root[data-map-state="basemap-ready"][data-country-camera="world"][data-country-camera-mode="explicit-world-view"]').waitFor({ timeout: 15000 })
+  await page.locator('[data-country-world-view]').waitFor({ timeout: 10000 })
 
   const result = await page.evaluate(() => ({
     zoom: window.__viewloomCountryRegionMap.getZoom(),
     minZoom: window.__viewloomCountryRegionMap.getMinZoom(),
     maxZoom: window.__viewloomCountryRegionMap.getMaxZoom(),
     regionsActive: document.documentElement.classList.contains('stream-map-country-regions-active'),
+    compactUi: document.documentElement.classList.contains('stream-map-country-ui-v2'),
     usMarkerDisplay: getComputedStyle(document.querySelector('.stream-map-country-marker[data-country-code="US"]')).display,
     mapViewButtons: document.querySelectorAll('[data-map-view]').length,
   }))
@@ -142,6 +143,7 @@ try {
   assert.equal(result.minZoom, 0)
   assert.ok(result.maxZoom <= 4.2)
   assert.equal(result.regionsActive, true)
+  assert.equal(result.compactUi, true)
   assert.equal(result.usMarkerDisplay, 'none')
   assert.equal(result.mapViewButtons, 0)
   assert.equal(pageErrors.length, 0, `page errors: ${pageErrors.join(' | ')}`)

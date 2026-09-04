@@ -41,8 +41,8 @@ await import('./country-minimal-basemap')
 // Country uses polygon fills as the primary visualization. Aggregate markers are
 // retained only as a fail-safe and for tiny places without a usable 110m polygon.
 await import('./country-regions')
-// Country selection changes camera scale only: polygon-backed countries fit to
-// their whole bounds, tiny fallback countries use a bounded aggregate center,
-// and clearing the selection returns to the world overview.
-await import('./country-focus-bounds')
 await import('./stream-map-entry')
+// Country selection is a data-selection action, not a camera action. The compact
+// UI layer owns explicit World view reset, density, drilldown placement and the
+// mobile filter presentation without changing the API or City contract.
+await import('./country-ui-density')
