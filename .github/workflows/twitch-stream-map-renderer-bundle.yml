@@ -5,11 +5,13 @@ on:
     paths:
       - 'apps/web/package.json'
       - 'apps/web/twitch/map/index.html'
+      - 'apps/web/public/data/geo/**'
       - 'apps/web/src/features/twitch-stream-map/maplibre-bootstrap.ts'
       - 'apps/web/src/features/twitch-stream-map/stream-map-entry.ts'
       - 'apps/web/src/features/twitch-stream-map/country-region-ab.ts'
       - 'apps/web/scripts/install-ci-playwright.mjs'
       - 'apps/web/scripts/twitch-stream-map-renderer-browser.mjs'
+      - 'apps/web/scripts/twitch-stream-map-country-regions-default-browser.mjs'
       - 'scripts/verify-twitch-stream-map-renderer-bundle.mjs'
       - '.github/workflows/twitch-stream-map-renderer-bundle.yml'
 
@@ -53,12 +55,17 @@ jobs:
         run: node scripts/install-ci-playwright.mjs
       - name: Install Chromium
         run: /tmp/viewloom-playwright/node_modules/.bin/playwright install --with-deps chromium
-      - name: Verify bundled renderer worker and Country A/B in browser
+      - name: Verify Country regions default and small-country fallback
+        working-directory: apps/web
+        env:
+          STREAM_MAP_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/twitch-stream-map-country-regions-default-browser.mjs
+      - name: Verify bundled renderer worker and Country view switching
         working-directory: apps/web
         env:
           STREAM_MAP_BASE_URL: http://127.0.0.1:4173
         run: node scripts/twitch-stream-map-renderer-browser.mjs
-      - name: Verify real OpenFreeMap basemap and Country A/B in browser
+      - name: Verify real OpenFreeMap basemap and Country view switching
         working-directory: apps/web
         env:
           STREAM_MAP_BASE_URL: http://127.0.0.1:4173
