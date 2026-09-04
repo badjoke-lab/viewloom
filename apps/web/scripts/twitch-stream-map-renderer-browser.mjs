@@ -54,34 +54,6 @@ if (!useRealBasemap) {
       }),
     })
   })
-
-  await page.route('**/ne_110m_admin_0_countries.geojson', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/geo+json',
-      body: JSON.stringify({
-        type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            properties: { ISO_A2: 'US', NAME_EN: 'United States' },
-            geometry: {
-              type: 'Polygon',
-              coordinates: [[[-125, 25], [-66, 25], [-66, 49], [-125, 49], [-125, 25]]],
-            },
-          },
-          {
-            type: 'Feature',
-            properties: { ISO_A2: 'JP', NAME_EN: 'Japan' },
-            geometry: {
-              type: 'Polygon',
-              coordinates: [[[129, 31], [146, 31], [146, 46], [129, 46], [129, 31]]],
-            },
-          },
-        ],
-      }),
-    })
-  })
 }
 
 await page.route('**/api/twitch-stream-map**', async (route) => {
@@ -239,33 +211,33 @@ try {
   }
 
   await page.locator('.stream-map-country-row').first().waitFor({ timeout: 10000 })
+  await page.locator('.stream-map-region-controls__status').filter({ hasText: 'Country regions ready' }).waitFor({ timeout: useRealBasemap ? 30000 : 10000 })
 
   const rendererState = await page.locator('#stream-map-root').getAttribute('data-map-state')
   const canvasCount = await page.locator('#stream-map-root canvas.maplibregl-canvas').count()
   const rendererAvailable = await page.evaluate(() => Boolean(window.maplibregl?.Map))
   const markerCount = await page.locator('.stream-map-country-marker').count()
-  const switchCount = await page.locator('[data-stream-map-view-switch]').count()
+  const regionControlCount = await page.locator('[data-stream-map-region-controls]').count()
+  const viewSwitchCount = await page.locator('[data-map-view]').count()
 
   assert.equal(rendererState, 'basemap-ready')
   assert.equal(canvasCount, 1)
   assert.equal(rendererAvailable, true)
   assert.equal(markerCount, 2)
-  assert.equal(switchCount, 1)
-
-  await page.locator('[data-map-view="regions"]').click()
-  await page.locator('[data-map-view="regions"][aria-pressed="true"]').waitFor({ timeout: 10000 })
-  await page.locator('.stream-map-view-switch__status').filter({ hasText: 'Regions ready' }).waitFor({ timeout: useRealBasemap ? 30000 : 10000 })
+  assert.equal(regionControlCount, 1)
+  assert.equal(viewSwitchCount, 0)
 
   const regionState = await page.evaluate(() => {
     const map = window.__viewloomCountryRegionMap
     return {
       mapCaptured: Boolean(map),
-      sourceAvailable: Boolean(map?.getSource?.('viewloom-country-regions-ab')),
-      fillLayerAvailable: Boolean(map?.getLayer?.('viewloom-country-regions-ab-fill')),
-      outlineLayerAvailable: Boolean(map?.getLayer?.('viewloom-country-regions-ab-outline')),
-      fillVisibility: map?.getLayoutProperty?.('viewloom-country-regions-ab-fill', 'visibility') || null,
+      sourceAvailable: Boolean(map?.getSource?.('viewloom-country-regions')),
+      fillLayerAvailable: Boolean(map?.getLayer?.('viewloom-country-regions-fill')),
+      outlineLayerAvailable: Boolean(map?.getLayer?.('viewloom-country-regions-outline')),
+      fillVisibility: map?.getLayoutProperty?.('viewloom-country-regions-fill', 'visibility') || null,
       markerDisplay: getComputedStyle(document.querySelector('.stream-map-country-marker')).display,
-      metricVisible: !document.querySelector('.stream-map-view-switch__metric')?.hidden,
+      metricVisible: Boolean(document.querySelector('.stream-map-region-controls__metric')),
+      regionsActive: document.documentElement.classList.contains('stream-map-country-regions-active'),
     }
   })
 
@@ -276,20 +248,10 @@ try {
   assert.equal(regionState.fillVisibility, 'visible')
   assert.equal(regionState.markerDisplay, 'none')
   assert.equal(regionState.metricVisible, true)
+  assert.equal(regionState.regionsActive, true)
 
-  await page.locator('.stream-map-view-switch__metric select').selectOption('viewers')
-  assert.equal(await page.locator('.stream-map-view-switch__metric select').inputValue(), 'viewers')
-
-  await page.locator('[data-map-view="markers"]').click()
-  const markerState = await page.evaluate(() => {
-    const map = window.__viewloomCountryRegionMap
-    return {
-      fillVisibility: map?.getLayoutProperty?.('viewloom-country-regions-ab-fill', 'visibility') || null,
-      markerDisplay: getComputedStyle(document.querySelector('.stream-map-country-marker')).display,
-    }
-  })
-  assert.equal(markerState.fillVisibility, 'none')
-  assert.notEqual(markerState.markerDisplay, 'none')
+  await page.locator('.stream-map-region-controls__metric select').selectOption('viewers')
+  assert.equal(await page.locator('.stream-map-region-controls__metric select').inputValue(), 'viewers')
 
   assert.equal(pageErrors.length, 0, `page errors: ${pageErrors.join(' | ')}`)
   assert.equal(consoleErrors.length, 0, `console errors: ${consoleErrors.join(' | ')}`)
@@ -299,9 +261,9 @@ try {
     canvasCount,
     rendererAvailable,
     markerCount,
-    switchCount,
+    regionControlCount,
+    viewSwitchCount,
     regionState,
-    markerState,
     useRealBasemap,
     pageErrors,
     consoleErrors,
