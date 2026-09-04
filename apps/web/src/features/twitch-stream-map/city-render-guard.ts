@@ -52,6 +52,17 @@ function updateStaticCityCopy(): void {
     const interaction = document.querySelector<HTMLElement>('.stream-map-interaction-note')
     if (interaction) interaction.textContent = 'The basemap remains available for geographic context. City coordinates are not published or inferred, so City mode does not place approximate markers.'
 
+    const resultsHead = document.querySelector<HTMLElement>('.stream-map-results__head')
+    const resultsHeading = resultsHead?.querySelector<HTMLElement>('h2')
+    const resultsCopy = resultsHead?.querySelector<HTMLElement>('p')
+    if (resultsHeading) resultsHeading.textContent = 'Mapped City streams'
+    if (resultsCopy) resultsCopy.textContent = 'Only streams with accepted City-level home/base or declared-location evidence are listed. Country-only evidence stays in accounting and is not promoted.'
+    const countryFactLabel = document.getElementById('stream-map-country-count')?.parentElement?.querySelector<HTMLElement>('small')
+    if (countryFactLabel) countryFactLabel.textContent = 'Countries with City evidence'
+    const currentFactLabel = document.getElementById('stream-map-current-count')?.parentElement?.querySelector<HTMLElement>('small')
+    if (currentFactLabel) currentFactLabel.textContent = 'Current-location placement'
+    textNode('stream-map-current-count', '0')
+
     const countryList = document.getElementById('stream-map-country-list')
     const countryCard = countryList?.closest('.stream-map-results-card') as HTMLElement | null | undefined
     if (countryCard) countryCard.hidden = true
@@ -72,6 +83,7 @@ function renderWhenPayloadArrives(): void {
     const payload = (window as CityPayloadWindow).__viewloomStreamMapCityPayload
     if (!payload) return false
     renderCityPlaces(Array.isArray(payload.mappedStreams) ? payload.mappedStreams : [])
+    window.setTimeout(updateStaticCityCopy, 0)
     return true
   }
 
@@ -133,6 +145,11 @@ function renderCityPlaces(rows: CityRow[]): void {
     row.append(name, detail)
     host.append(row)
   }
+}
+
+function textNode(id: string, value: string): void {
+  const node = document.getElementById(id)
+  if (node) node.textContent = value
 }
 
 function clean(value: unknown): string {
