@@ -20,7 +20,7 @@ await page.route('**/styles/dark*', async (route) => {
     contentType: 'application/json',
     body: JSON.stringify({
       version: 8,
-      name: 'ViewLoom Country regions default CI',
+      name: 'ViewLoom Country regions final CI',
       sources: {},
       layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#111111' } }],
     }),
@@ -90,7 +90,7 @@ await page.route('**/api/twitch-stream-map**', async (route) => {
       version: 'viewloom-stream-map-live-v1',
       platform: 'twitch',
       source: 'real',
-      sourceMode: 'country-regions-default-browser-fixture',
+      sourceMode: 'country-regions-final-browser-fixture',
       updatedAt: '2026-09-04T00:00:00.000Z',
       coverage: {
         topLimit: 300,
@@ -158,23 +158,24 @@ try {
   await page.goto(`${baseUrl}/twitch/map/`, { waitUntil: 'domcontentloaded' })
   await page.locator('#stream-map-root[data-map-state="basemap-ready"]').waitFor({ timeout: 15000 })
   await page.locator('.stream-map-country-row').first().waitFor({ timeout: 10000 })
-  await page.locator('.stream-map-view-switch__status').filter({ hasText: 'Regions ready' }).waitFor({ timeout: 10000 })
+  await page.locator('.stream-map-region-controls__status').filter({ hasText: 'Country regions ready' }).waitFor({ timeout: 10000 })
 
-  assert.equal(await page.locator('[data-map-view="regions"]').getAttribute('aria-pressed'), 'true')
-  assert.equal(await page.locator('[data-map-view="markers"]').getAttribute('aria-pressed'), 'false')
-  assert.equal(await page.locator('.stream-map-view-switch__metric').isVisible(), true)
+  assert.equal(await page.locator('[data-map-view]').count(), 0)
+  assert.equal(await page.locator('[data-stream-map-region-controls]').count(), 1)
+  assert.equal(await page.locator('.stream-map-region-controls__metric').isVisible(), true)
 
   const state = await page.evaluate(() => {
     const map = window.__viewloomCountryRegionMap
     const usMarker = document.querySelector('.stream-map-country-marker[data-country-code="US"]')
     const sgMarker = document.querySelector('.stream-map-country-marker[data-country-code="SG"]')
     return {
-      sourceAvailable: Boolean(map?.getSource?.('viewloom-country-regions-ab')),
-      fillLayerAvailable: Boolean(map?.getLayer?.('viewloom-country-regions-ab-fill')),
-      fillVisibility: map?.getLayoutProperty?.('viewloom-country-regions-ab-fill', 'visibility') || null,
+      sourceAvailable: Boolean(map?.getSource?.('viewloom-country-regions')),
+      fillLayerAvailable: Boolean(map?.getLayer?.('viewloom-country-regions-fill')),
+      fillVisibility: map?.getLayoutProperty?.('viewloom-country-regions-fill', 'visibility') || null,
       usMarkerDisplay: usMarker ? getComputedStyle(usMarker).display : null,
       sgMarkerDisplay: sgMarker ? getComputedStyle(sgMarker).display : null,
       sgFallback: Boolean(sgMarker?.classList.contains('stream-map-country-marker--region-fallback')),
+      regionsActive: document.documentElement.classList.contains('stream-map-country-regions-active'),
     }
   })
 
@@ -184,10 +185,15 @@ try {
   assert.equal(state.usMarkerDisplay, 'none')
   assert.notEqual(state.sgMarkerDisplay, 'none')
   assert.equal(state.sgFallback, true)
+  assert.equal(state.regionsActive, true)
+
+  await page.locator('.stream-map-region-controls__metric select').selectOption('viewers')
+  assert.equal(await page.locator('.stream-map-region-controls__metric select').inputValue(), 'viewers')
+
   assert.equal(pageErrors.length, 0, `page errors: ${pageErrors.join(' | ')}`)
   assert.equal(consoleErrors.length, 0, `console errors: ${consoleErrors.join(' | ')}`)
 
-  console.log(JSON.stringify({ defaultView: 'regions', state, pageErrors, consoleErrors }))
+  console.log(JSON.stringify({ defaultView: 'regions-only', state, pageErrors, consoleErrors }))
 } finally {
   await browser.close()
 }
