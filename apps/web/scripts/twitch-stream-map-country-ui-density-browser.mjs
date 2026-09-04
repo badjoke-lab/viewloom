@@ -140,11 +140,8 @@ try {
   })
 
   const initialZoom = await page.evaluate(() => window.__viewloomCountryRegionMap.getZoom())
-  const point = await page.evaluate(() => {
-    const p = window.__viewloomCountryRegionMap.project([-98.5, 39.5])
-    const rect = document.querySelector('#stream-map-root').getBoundingClientRect()
-    return { x: rect.left + p.x, y: rect.top + p.y }
-  })
+  const point = await findRenderedCountryPoint('US')
+  assert.ok(point, 'could not find a rendered US Country-region pixel')
   await page.mouse.click(point.x, point.y)
   await page.locator('.stream-map-country-row[data-country-code="US"][aria-pressed="true"]').waitFor({ timeout: 10000 })
   await page.locator('#stream-map-selected-country:not([hidden])').waitFor({ timeout: 10000 })
@@ -213,6 +210,28 @@ async function openCandidate(navigate = true) {
   await page.locator('.stream-map-country-row[data-country-code="US"]').waitFor({ timeout: 10000 })
   await page.locator('[data-country-world-view]').waitFor({ timeout: 10000 })
   await page.waitForFunction(() => Boolean(window.__viewloomCountryRegionMap?.getLayer?.('viewloom-country-regions-fill')))
+}
+
+async function findRenderedCountryPoint(countryCode) {
+  return page.evaluate((code) => {
+    const map = window.__viewloomCountryRegionMap
+    const root = document.querySelector('#stream-map-root')
+    if (!map || !root) return null
+    const rect = root.getBoundingClientRect()
+    const canvas = map.getCanvas()
+    const width = canvas.clientWidth
+    const height = canvas.clientHeight
+    const layer = 'viewloom-country-regions-fill'
+    for (let y = 12; y < height - 12; y += 6) {
+      for (let x = 12; x < width - 12; x += 6) {
+        const features = map.queryRenderedFeatures([x, y], { layers: [layer] })
+        if (features.some((feature) => feature.properties?.viewloomCountryCode === code)) {
+          return { x: rect.left + x, y: rect.top + y }
+        }
+      }
+    }
+    return null
+  }, countryCode)
 }
 
 function stream(login, displayName, viewers, countryCode, countryName, source, locationType) {
