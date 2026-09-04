@@ -38,10 +38,9 @@ await import('./city-render-guard')
 // provider style to background/water/admin context before the region layer is
 // installed; City mode intentionally keeps the normal basemap.
 await import('./country-minimal-basemap')
-// Country regions are installed before the main renderer so the same Country
-// aggregates can drive polygon fills while the existing marker renderer remains
-// available as an alternate view and small-country fallback.
-await import('./country-region-ab')
+// Country uses polygon fills as the primary visualization. Aggregate markers are
+// retained only as a fail-safe and for tiny places without a usable 110m polygon.
+await import('./country-regions')
 // Country selection changes camera scale only: polygon-backed countries fit to
 // their whole bounds, tiny fallback countries use a bounded aggregate center,
 // and clearing the selection returns to the world overview.
