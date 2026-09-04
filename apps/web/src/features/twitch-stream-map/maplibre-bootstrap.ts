@@ -34,6 +34,10 @@ Object.assign(window, { maplibregl: bundledMaplibregl })
 // the public contract intentionally does not publish creator coordinates.
 await import('./geography-ui-bootstrap')
 await import('./city-render-guard')
+// Country is a geographic chart rather than a street-navigation map. Prune the
+// provider style to background/water/admin context before the region layer is
+// installed; City mode intentionally keeps the normal basemap.
+await import('./country-minimal-basemap')
 // Country regions are installed before the main renderer so the same Country
 // aggregates can drive polygon fills while the existing marker renderer remains
 // available as an alternate view and small-country fallback.
