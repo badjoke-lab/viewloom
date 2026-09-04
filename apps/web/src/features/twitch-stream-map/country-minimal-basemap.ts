@@ -78,8 +78,8 @@ function keepCountryLayer(layer: StyleLayer): boolean {
   }
 
   if (layer.type === 'symbol') {
-    return containsAny(key, ['country', 'state_label'])
-      && !containsAny(key, ['road', 'route', 'airport', 'transit', 'poi'])
+    return key.includes('country')
+      && !containsAny(key, ['road', 'route', 'airport', 'transit', 'poi', 'city', 'town', 'village'])
   }
 
   return false
