@@ -9,9 +9,11 @@ on:
       - 'apps/web/src/features/twitch-stream-map/maplibre-bootstrap.ts'
       - 'apps/web/src/features/twitch-stream-map/stream-map-entry.ts'
       - 'apps/web/src/features/twitch-stream-map/country-region-ab.ts'
+      - 'apps/web/src/features/twitch-stream-map/country-minimal-basemap.ts'
       - 'apps/web/scripts/install-ci-playwright.mjs'
       - 'apps/web/scripts/twitch-stream-map-renderer-browser.mjs'
       - 'apps/web/scripts/twitch-stream-map-country-regions-default-browser.mjs'
+      - 'apps/web/scripts/twitch-stream-map-country-minimal-basemap-browser.mjs'
       - 'scripts/verify-twitch-stream-map-renderer-bundle.mjs'
       - '.github/workflows/twitch-stream-map-renderer-bundle.yml'
 
@@ -71,3 +73,8 @@ jobs:
           STREAM_MAP_BASE_URL: http://127.0.0.1:4173
           STREAM_MAP_REAL_BASEMAP: '1'
         run: node scripts/twitch-stream-map-renderer-browser.mjs
+      - name: Verify minimal Country basemap with real provider style
+        working-directory: apps/web
+        env:
+          STREAM_MAP_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/twitch-stream-map-country-minimal-basemap-browser.mjs
