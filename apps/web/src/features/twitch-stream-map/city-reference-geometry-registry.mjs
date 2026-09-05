@@ -31,6 +31,7 @@ function reviewedReferencePoint(countryCode, region, city, {
   sourceCountryName,
   sourceRegionName,
   featureClass,
+  matchBasis,
 }) {
   return Object.freeze({
     key: cityAggregateKeyFromParts({ countryCode, region, city }),
@@ -49,7 +50,8 @@ function reviewedReferencePoint(countryCode, region, city, {
       sourceRegionName,
       featureClass,
       countryNameMatchCount: 1,
-      exactFeatureMatchCount: 1,
+      matchBasis,
+      canonicalRegionMatch: region ? sourceRegionName === region : null,
     }),
     reason: null,
   })
@@ -64,6 +66,7 @@ export const TWITCH_CITY_REFERENCE_GEOMETRY_REGISTRY = Object.freeze([
     sourceCountryName: 'Germany',
     sourceRegionName: 'Berlin',
     featureClass: 'Admin-0 capital',
+    matchBasis: 'country_city_region',
   }),
   noGeometry('DE', null, 'Cologne'),
   noGeometry('ES', null, 'Sant Cugat del Valles'),
@@ -75,6 +78,7 @@ export const TWITCH_CITY_REFERENCE_GEOMETRY_REGISTRY = Object.freeze([
     sourceCountryName: 'Japan',
     sourceRegionName: 'Tokyo',
     featureClass: 'Admin-0 capital',
+    matchBasis: 'country_city_unique',
   }),
   noGeometry('RU', null, 'Moscow'),
   noGeometry('US', null, 'Austin'),
@@ -88,6 +92,7 @@ export const TWITCH_CITY_REFERENCE_GEOMETRY_REGISTRY = Object.freeze([
     sourceCountryName: 'United States of America',
     sourceRegionName: 'Texas',
     featureClass: 'Populated place',
+    matchBasis: 'country_city_region',
   }),
 ])
 
