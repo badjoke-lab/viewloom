@@ -45,7 +45,7 @@ await page.route('**/api/twitch-stream-map**', async (route) => {
       source: 'real',
       sourceMode: 'city-reference-point-browser-fixture',
       geographyMode: 'city',
-      publicCityUiActivated: false,
+      publicCityUiActivated: true,
       currentLocationActivated: false,
       updatedAt: '2026-09-05T00:00:00.000Z',
       identityContract: {
@@ -135,6 +135,15 @@ try {
   await page.locator('.stream-map-city-reference-marker').waitFor({ timeout: 10000 })
   await page.waitForFunction(() => document.querySelectorAll('#stream-map-stream-list .stream-map-stream-row').length === 2)
 
+  const currentLocationFilter = page.locator('[data-location-type][value="current_location"]')
+  assert.equal(await currentLocationFilter.isChecked(), false)
+  assert.equal(await currentLocationFilter.isDisabled(), true)
+  assert.equal(await currentLocationFilter.getAttribute('aria-disabled'), 'true')
+  assert.match(await currentLocationFilter.getAttribute('aria-label'), /unavailable in City mode/)
+  const currentLocationLabel = currentLocationFilter.locator('xpath=ancestor::label[1]')
+  assert.equal(await currentLocationLabel.getAttribute('data-city-unavailable'), 'true')
+  assert.match(await currentLocationLabel.getAttribute('title'), /unavailable at City resolution/)
+
   const cityRows = page.locator('[data-city-places] .stream-map-city-place')
   assert.equal(await cityRows.count(), 2)
   const dallas = cityRows.filter({ hasText: 'Dallas' })
@@ -151,6 +160,23 @@ try {
   assert.equal(await dallasMarker.getAttribute('data-city-aggregate-key'), 'US|texas|dallas')
   assert.equal(await dallasMarker.getAttribute('data-reference-role'), 'city_aggregate_reference')
   assert.match(await dallasMarker.getAttribute('aria-label'), /not a creator exact or current location/)
+
+  const resultLayout = await page.evaluate(() => {
+    const grid = document.querySelector('.stream-map-results-grid')
+    const streamCard = document.querySelector('#stream-map-stream-list')?.closest('.stream-map-results-card')
+    const countryCard = document.querySelector('#stream-map-country-list')?.closest('.stream-map-results-card')
+    const gridRect = grid?.getBoundingClientRect()
+    const streamRect = streamCard?.getBoundingClientRect()
+    return {
+      gridWidth: Math.round(gridRect?.width ?? 0),
+      streamCardWidth: Math.round(streamRect?.width ?? 0),
+      countryCardHidden: countryCard instanceof HTMLElement ? countryCard.hidden : null,
+      gridTemplateColumns: grid ? getComputedStyle(grid).gridTemplateColumns : '',
+    }
+  })
+  assert.equal(resultLayout.countryCardHidden, true)
+  assert.ok(resultLayout.gridWidth > 0)
+  assert.ok(resultLayout.streamCardWidth >= resultLayout.gridWidth - 2, `City stream result card did not expand to full grid width: ${JSON.stringify(resultLayout)}`)
 
   await dallasMarker.click()
   await page.locator('[data-selected-city]:not([hidden])').waitFor({ timeout: 5000 })
@@ -183,11 +209,14 @@ try {
   assert.equal(consoleErrors.length, 0, `console errors: ${consoleErrors.join(' | ')}`)
 
   console.log(JSON.stringify({
+    publicCityUiActivated: true,
+    currentLocationFilterEnabled: false,
     cityAggregates: 2,
     referencePointMarkers: 1,
     listOnlyCities: ['Sant Cugat del Valles'],
     selectedViaMapReference: 'Dallas',
     creatorCoordinatesPublished: false,
+    resultLayout,
     mobile,
     pageErrors,
     consoleErrors,
