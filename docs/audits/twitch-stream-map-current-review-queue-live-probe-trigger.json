@@ -13,5 +13,6 @@
   "automaticAcceptanceAuthorized": false,
   "publicCurrentPlacementAuthorized": false,
   "baseMutationAuthorized": false,
-  "purpose": "Run one bounded preview-only Top300 Current/IRL review-queue probe against the merged reviewability package."
+  "requestId": "post-city-c6-readiness-refresh-2026-09-05",
+  "purpose": "Run one bounded preview-only Top300 Current/IRL review-queue refresh after City C6 and the current-main readiness audit."
 }
