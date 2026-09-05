@@ -16,6 +16,14 @@ const requiredBootstrap = [
   "base_city_conflict",
   "stableTwitchUserIdAvailableInMinuteSnapshot",
   "Current / IRL remains unavailable",
+  "if (requestedMode === 'city') disableUnavailableCityLocationType()",
+  'function disableUnavailableCityLocationType()',
+  "[data-location-type][value=\"current_location\"]",
+  'current.checked = false',
+  'current.disabled = true',
+  "current.setAttribute('aria-disabled', 'true')",
+  "label.dataset.cityUnavailable = 'true'",
+  'Current location is unavailable at City resolution.',
 ]
 
 for (const token of requiredBootstrap) {
@@ -99,6 +107,7 @@ console.log(JSON.stringify({
   cityAggregateSelection: true,
   listWorksWithoutGeometry: true,
   currentIrlUiActive: false,
+  cityCurrentLocationFilterEnabled: false,
   preciseLocationFieldsInBootstrap: false,
   reviewedCityReferencePointLayer: true,
   creatorCoordinatePlacement: false,
