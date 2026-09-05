@@ -84,7 +84,7 @@ function verifyStableIdentityState({
   assert.equal(city.identityContract.loginIsStableIdentity, false, `${label}: login must not become stable identity`)
   assert.equal(city.mappedStreams[0].identity.twitchUserId, expectedAlphaId, `${label}: mapped Twitch stable ID`)
   assert.equal(city.mappedStreams[0].identity.stableIdAvailable, Boolean(expectedAlphaId), `${label}: mapped stable-ID flag`)
-  assert.equal(city.publicCityUiActivated, false, `${label}: City public activation remains off`)
+  assert.equal(city.publicCityUiActivated, true, `${label}: City public activation remains on`)
   assert.equal(city.currentLocationActivated, false, `${label}: Current activation remains off`)
 
   const country = projectTwitchStreamMapCountryOnly(model)
