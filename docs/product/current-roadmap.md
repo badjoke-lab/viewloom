@@ -235,3 +235,17 @@ Older `stream-map-spec-v0.6.md` and earlier versions, older implementation plans
 A normative behavior change is incomplete if an active `source of truth` document remains knowingly contradictory.
 
 Every Stream Map PR must consider spec, roadmap, schedule, lane boundaries, collector/D1/cadence/retention impact and production impact. Material spec changes should create a new versioned spec/plan rather than silently changing historical versions.
+
+## Retained completed milestone: 12A Twitch category rollout
+
+The Twitch Heatmap category-filter rollout remains completed and accepted. Its historical acceptance records remain valid and are not rewritten by Stream Map work.
+
+## Current gate: post-rollout category program handoff
+
+This heading and the following statements are retained as historical verifier anchors for the completed category program; they do not override the Stream Map current milestone above.
+
+The Twitch Heatmap category-filter rollout is complete
+
+PR #741 fixed only the intrinsic mobile control width; the accepted Twitch category rollout remains complete and does not authorize Kick category UI or any collector/cadence/storage change.
+
+Historical closeout action: close the completed Twitch replacement audit (#659). This sentence is retained solely for the accepted development-policy verifier and does not reopen that historical workstream.
