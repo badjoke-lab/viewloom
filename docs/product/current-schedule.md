@@ -5,7 +5,7 @@ Normative specification: `docs/product/stream-map-spec-v0.7.md`
 Execution plan: `docs/product/stream-map-implementation-plan-v0.10.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `6b8668492d2a35e9fb83e1d93929fef8b58de215`  
+Audited runtime baseline: main `d024276a9a478e488f15f507ffb736c091b5702c`  
 Last updated: 2026-09-06
 
 ## 1. Scheduling principle
@@ -131,7 +131,7 @@ public /kick/map/                       absent
 
 The preview consumes real readiness/accounting from `/api/kick-stream-map`, is `noindex,nofollow`, has no public canonical target and requires both runtime readiness and explicit public activation authorization before geography may render.
 
-The existing Kick Country Public Readiness workflow now also proves that the UI preview stays non-public and fail-closed. No redundant workflow was added.
+The existing Kick Country Public Readiness workflow also proves that the UI preview stays non-public and fail-closed. No redundant workflow was added.
 
 ### Step 8 — Kick KUI2 Country aggregate visualization/results — COMPLETE
 
@@ -153,11 +153,37 @@ KUI2 does not use creator coordinates, map streamers to centroids, reuse Twitch 
 
 The current K1 bridge deliberately drops evidence/source prose beyond reviewed terminal Country. KUI2 therefore does not invent an Evidence-source filter that the runtime contract cannot support.
 
+### Step 9 — Kick KUI3a non-mutating browser proof — COMPLETE
+
+Completed by PR #1244. Accepted `Kick Stream Map Country Public Readiness` run: `33978336854`.
+
+The existing Kick readiness workflow now runs fast fixture checks first and then, only after they pass, a local Vite + Chromium browser proof. No new workflow was added.
+
+Accepted proof:
+
+```text
+fixtures                       5
+viewports                      2 (1440 desktop / 390 mobile)
+browser scenarios             10
+violations                     0
+mobile horizontal overflow     0 in every scenario
+ready-state action targets     44px minimum
+MapLibre canvas                1 in ready state
+creator markers                0
+Twitch API requests            0
+public /kick/map/ links         0
+public canonical               absent
+```
+
+Covered states: blocked stable identity, ready mixed terminal-state accounting, ready empty Country, unsafe response contract and API error. The ready path also exercises metric switching, keyboard Country selection and World view reset.
+
+KUI3a remains fixture-based non-public proof. It does not satisfy KUI3b and does not authorize K2/K3/K4.
+
 ## 3. Immediate lane — Kick Country runtime/data
 
 ### Step K1 — collector-independent reviewed-evidence runtime preparation — COMPLETE
 
-Completion condition is satisfied on current main: the internal runtime path deterministically consumes the real reviewed Kick Country evidence when a stable `broadcaster_user_id` is supplied by the staged snapshot, without slug fallback and without public activation.
+Completion condition is satisfied: the internal runtime path deterministically consumes the real reviewed Kick Country evidence when a stable `broadcaster_user_id` is supplied by the staged snapshot, without slug fallback and without public activation.
 
 ### Step K2 — production stable identity — BLOCKED UNTIL EXPLICIT AUTHORIZATION
 
@@ -192,18 +218,11 @@ Completed #1241.
 
 Completed #1242.
 
-### Step KUI3a — non-mutating proof preparation — NOW SAFE
+### Step KUI3a — non-mutating proof preparation — COMPLETE
 
-Before K2/K3, safe work may prepare:
+Completed #1244 / browser run `33978336854` with 10 scenarios and zero violations.
 
-- deterministic fixtures for mapped / unmapped / excluded / conflict UI states;
-- Country aggregate reconciliation assertions;
-- blocked/empty/error-state browser assertions;
-- mobile/keyboard/overflow verification;
-- proof that no creator coordinate/marker semantics enter the Kick renderer;
-- proof that the preview remains outside production Vite/public navigation.
-
-No production data mutation is needed for KUI3a.
+KUI3a has frozen deterministic browser expectations for mapped / unmapped / excluded / conflict accounting, blocked/empty/error/unsafe states, 390px overflow, 44px targets, keyboard behavior, MapLibre rendering, creator-marker absence and provider separation.
 
 ### Step KUI3b — real production-connected browser/API proof — AFTER K3
 
@@ -271,7 +290,7 @@ Shared mechanics may be reused but provider/geography evidence models remain sep
 
 Existing maintenance policy continues under its own authorization/cadence rules.
 
-Its wait periods do **not** pause shared Map regression/accessibility work, Kick KUI3a preparation, later justified Current evidence review, docs, fixtures, CI, browser verification or other safe preparation.
+Its wait periods do **not** pause shared Map regression/accessibility work, later justified Current evidence review, docs, fixtures, CI, browser verification or other safe preparation.
 
 ## 8. CI/deployment rule
 
@@ -299,7 +318,7 @@ DONE   Current fresh Top300 review: 300 -> 8 reviewed -> 0 accepted
 DONE   Kick K1 internal reviewed-evidence runtime staging #1239
 DONE   Kick KUI1 fail-closed pre-public shell #1241
 DONE   Kick KUI2 Country aggregate renderer/results #1242
-NOW    Kick KUI3a non-mutating proof preparation
+DONE   Kick KUI3a non-mutating browser proof #1244 / run 33978336854
 PAR    shared Map regression/accessibility work + maintenance
 BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
 WAIT   Kick K3 production runtime connection until K2
