@@ -1,14 +1,14 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Stream Map audited runtime baseline: main `119505fa5742802f6b9bf8df95d95c4bc0ba8b2d`  
+Stream Map audited runtime baseline: main `1e70f93e2e6b5db44dbaf527ec6f7e63357e3e8e`  
 Last updated: 2026-09-05
 
 ## Read first for Stream Map work
 
 1. `docs/operations/development-and-deployment-policy.md`
 2. `docs/product/stream-map-spec-v0.7.md`
-3. `docs/product/stream-map-implementation-plan-v0.8.md`
+3. `docs/product/stream-map-implementation-plan-v0.9.md`
 4. `docs/product/current-roadmap.md`
 5. `docs/product/current-schedule.md`
 6. the relevant lane contract/specification
@@ -36,7 +36,7 @@ Stream Map updates must not delete or reinterpret accepted records for other Vie
 
 ```text
 Program mainline                         Stream Map
-Audited runtime baseline                 119505fa5742802f6b9bf8df95d95c4bc0ba8b2d
+Audited runtime baseline                 1e70f93e2e6b5db44dbaf527ec6f7e63357e3e8e
 Twitch Country                           closed at current product boundary
 Country primary renderer                 choropleth / filled regions
 Country UI issue #1214                   completed / closed
@@ -52,8 +52,10 @@ Current fresh qualifying evidence        0
 Current accepted placement               0
 Current true unresolved conflicts        2
 Kick Country review                      100/100 complete: 7 accepted / 3 excluded / 90 no evidence
-Kick public adapter                      stable-ID capable / ready in code
+Kick internal runtime staging            connected / validated on real review artifacts
+Kick public reviewed-evidence runtime    not activated
 Kick production stable ID                blocked pending collector authorization
+Kick public activation                   blocked pending separate authorization/proof
 Twitch production stable ID              blocked pending collector authorization
 Twitch/Kick aggregation                  forbidden
 Top20 weekly review                      maintenance sublane only
@@ -67,7 +69,7 @@ Top20 weekly review                      maintenance sublane only
 
 ### Active implementation sequence
 
-`docs/product/stream-map-implementation-plan-v0.8.md`
+`docs/product/stream-map-implementation-plan-v0.9.md`
 
 ### Current status
 
@@ -193,26 +195,27 @@ Kick remains provider-separated. Its stable identity is `broadcaster_user_id`, n
 
 The four reviewed Country batches are complete: 100 identities reviewed, 7 accepted, 3 excluded non-person, 90 with no qualifying evidence.
 
-Ready in code: stable-ID-capable snapshot parser, public adapter, reviewed-evidence bridge, stable-ID live join and Country response core.
+Ready in code: stable-ID-capable snapshot parser, public adapter, reviewed-evidence bridge, stable-ID live join, Country response core and internal reviewed-evidence runtime staging.
 
-Kick blockers:
+K1 completed in PR #1239. The existing reviewed-evidence workflow validates the real four result files through the internal runtime staging path with reconciliation passing. The public Kick route remains unchanged and public activation remains false.
+
+Kick blockers now are:
 
 ```text
 production Kick snapshot does not retain broadcaster_user_id
-reviewed Kick Country evidence is not connected to the public runtime
 public Kick Country activation is not authorized
 ```
 
-The immediate safe implementation lane is to stage the reviewed-evidence runtime connection while keeping stable-ID absence fail-closed and public activation false. Stale Draft #1083 is not a merge candidate as-is. Twitch evidence reuse and automatic Kick geography remain prohibited.
+K2 production stable-ID persistence requires explicit collector authorization. Stale Draft #1083 is not a merge candidate as-is. Twitch evidence reuse and automatic Kick geography remain prohibited.
 
 ## Scheduling rule
 
 The reviewed-evidence Top-20 cadence is maintenance-only and does not block:
 
-- Kick read-only/evidence/API/runtime preparation;
+- shared Map UI/accessibility/regression work;
 - later justified Current/IRL read-only/evidence work;
-- Map UI/accessibility work;
-- docs, fixtures, CI and preview-only verification.
+- docs, fixtures, CI and preview-only verification;
+- other safe non-mutating lane maintenance.
 
 Explicit production collector authorization is required before either blocked stable-ID persistence change is implemented/merged.
 
@@ -243,10 +246,12 @@ DONE   City C1-C6 through #1233
 DONE   Twitch Current current-main readiness gate #1234
 DONE   Kick Country current-main readiness gate #1235
 DONE   Current fresh Top300 review: 300 -> 8 reviewed -> 0 accepted
-NOW    Kick collector-independent reviewed-evidence runtime preparation
-BLOCK  Kick production stable-ID persistence pending explicit collector authorization
+DONE   Kick K1 internal reviewed-evidence runtime staging #1239
+BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
+BLOCK  Kick public activation pending separate authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
 BLOCK  Current public path additionally pending fresh accepted temporal evidence
+NOW    shared Map regression/accessibility work and non-mutating lane maintenance
 ```
 
 There is no active schedule that sends development back to City C1-C5.
@@ -277,7 +282,7 @@ Material changes to a versioned specification/plan use a new version rather than
 
 ## Retained Twitch category rollout
 
-The completed Twitch category/Heatmap rollout remains a historical accepted milestone and is preserved independently of Stream Map changes.
+The completed Twitch category/Heatmap rollout remains a historical accepted milestone and is preserved independently of Stream Map work.
 
 - final seven-day audit accepted `2016 / 2016` expected slots;
 - category-reference coverage was `0.995353`;

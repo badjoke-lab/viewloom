@@ -2,15 +2,15 @@
 
 Status: source of truth for current Stream Map program state  
 Normative specification: `docs/product/stream-map-spec-v0.7.md`  
-Execution plan: `docs/product/stream-map-implementation-plan-v0.8.md`  
+Execution plan: `docs/product/stream-map-implementation-plan-v0.9.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `119505fa5742802f6b9bf8df95d95c4bc0ba8b2d`  
+Audited runtime baseline: main `1e70f93e2e6b5db44dbaf527ec6f7e63357e3e8e`  
 Last updated: 2026-09-05
 
 ## 1. Current milestone
 
-**Twitch Country and Twitch City are closed at their current public product boundaries. Current / IRL completed a fresh September 5 Top300 review and remains fail-closed with zero accepted temporal placements. The active collector-independent implementation lane is therefore Kick Country runtime preparation; production collector mutations still require explicit authorization.**
+**Twitch Country and Twitch City are closed at their current public product boundaries. Current / IRL completed a fresh September 5 Top300 review and remains fail-closed with zero accepted temporal placements. Kick Country K1 collector-independent reviewed-evidence runtime staging is complete through #1239; the next Kick production step is blocked pending explicit collector authorization.**
 
 The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock.
 
@@ -20,7 +20,7 @@ The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock
 | --- | --- | --- |
 | Twitch Country | closed; choropleth/UI/production proof complete; #1214 completed | scoped defects/accessibility/evidence maintenance only |
 | Twitch City | C1-C6 complete; public City activation, reviewed aggregate reference points/list-only fallback and production acceptance complete | scoped quality/coverage work only; no new C-stage scheduled |
-| Kick Country | 100/100 review complete; snapshot parser/public adapter/reviewed-evidence bridge/live join/response core ready in code | stage collector-independent reviewed-evidence runtime integration; stable production identity remains separately blocked |
+| Kick Country | K1 complete: 100/100 reviewed evidence now passes the internal runtime staging path; public route unchanged | K2 production `broadcaster_user_id` persistence only after explicit collector authorization; later separate public activation gate |
 | Current / IRL | fresh 2026-09-05 Top300 probe/review complete: 300 measured, 8 reviewed, 0 accepted, 2 unresolved true conflicts; public control remains disabled | fail closed; rerun only on justified new signal/review window, or resume after separately authorized stable-ID/public-path prerequisites |
 | Shared Map UI | Country and City accepted on desktop/mobile/browser production checks | scoped regression/accessibility work |
 | Reviewed-evidence maintenance | bounded maintenance process | continue only under its own policy; never block Map lanes |
@@ -100,7 +100,7 @@ Current acceptance audit:
 
 No roadmap item sends development back to C1-C5 as unfinished work.
 
-## 5. Kick Country — ACTIVE PARALLEL LANE / BLOCKED PRODUCTION DEPENDENCY
+## 5. Kick Country — K1 COMPLETE / BLOCKED PRODUCTION DEPENDENCY
 
 Provider boundary remains:
 
@@ -121,7 +121,7 @@ excluded non-person       3
 no qualifying evidence   90
 ```
 
-Current main already has these components ready in code:
+Current main has these components ready in code:
 
 - read-only latest snapshot source;
 - optional `broadcaster_user_id` parsing;
@@ -129,17 +129,19 @@ Current main already has these components ready in code:
 - reviewed Country evidence bridge;
 - deterministic stable-ID live join;
 - Country response core;
+- internal reviewed-evidence runtime staging core;
 - readiness gate.
+
+K1 was completed by PR #1239, merge `1e70f93e2e6b5db44dbaf527ec6f7e63357e3e8e`. The existing reviewed-evidence workflow validates the real four review files through the internal staging path: 100 reviewed, 7 accepted, 3 excluded non-person, 90 no qualifying evidence, 0 conflicts, reconciliation pass. Public activation remains false and the public route is unchanged.
 
 Current exact blockers:
 
 ```text
 1. production livestream snapshot does not retain broadcaster_user_id
-2. reviewed Kick Country evidence is not connected to the public runtime
-3. public Kick Country activation is not authorized
+2. public Kick Country activation is not authorized
 ```
 
-Blocker 1 is a production collector mutation and requires explicit authorization. Blocker 2 can be prepared/staged without public activation so long as the runtime remains fail-closed when stable identity is absent. Stale Draft #1083 is not a merge candidate as-is. If collector authorization is later given, create a clean current-main PR rather than blindly merging/rebasing the stale Draft.
+Blocker 1 is a production collector mutation and requires explicit authorization. The reviewed-evidence runtime staging blocker is closed at the internal K1 boundary; it has not been promoted to the public route. Stale Draft #1083 is not a merge candidate as-is. If collector authorization is later given, create a clean current-main PR rather than blindly merging/rebasing the stale Draft.
 
 ## 6. Current Location / IRL — FRESH REVIEW COMPLETE / FAIL CLOSED
 
@@ -216,9 +218,8 @@ The bounded Top-20 policy remains valid only for its own maintenance work.
 
 Its cadence never pauses:
 
-- Kick collector-independent runtime preparation;
+- safe shared Map regression/accessibility work;
 - later justified Current/IRL evidence work;
-- accessibility/UI regression work;
 - docs, fixtures, CI and preview-only verification;
 - clean non-mutating preparation for blocked lanes.
 
@@ -247,10 +248,12 @@ DONE   City C1-C6 through #1233
 DONE   Twitch Current current-main readiness gate #1234
 DONE   Kick Country current-main readiness gate #1235
 DONE   Current fresh Top300 probe + 8-identity temporal review, accepted 0
-NOW    Kick collector-independent reviewed-evidence runtime preparation
-BLOCK  Kick production stable-ID persistence pending explicit collector authorization
+DONE   Kick K1 collector-independent reviewed-evidence runtime staging #1239
+BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
+BLOCK  Kick public activation pending separate authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
 BLOCK  Current public path additionally pending fresh accepted temporal evidence
+NOW    safe shared Map regression/accessibility work and non-mutating lane maintenance
 ```
 
 CI waiting or a blocked production dependency in one lane does not pause safe work in another lane.
@@ -259,7 +262,7 @@ CI waiting or a blocked production dependency in one lane does not pause safe wo
 
 1. `docs/operations/development-and-deployment-policy.md`
 2. `docs/product/stream-map-spec-v0.7.md`
-3. `docs/product/stream-map-implementation-plan-v0.8.md`
+3. `docs/product/stream-map-implementation-plan-v0.9.md`
 4. `docs/product/current-roadmap.md`
 5. `docs/product/current-schedule.md`
 6. `docs/product/stream-map-city-confidence-contract-v0.1.md`
