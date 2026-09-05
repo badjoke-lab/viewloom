@@ -2,6 +2,10 @@ import './stream-map-population.css'
 import './geography-ui-bootstrap'
 import { buildUnmappedReasonView, type StreamMapUnmappedReasonView } from './unmapped-reason-core.mjs'
 
+const requestedCity = new URL(window.location.href).searchParams.get('geography') === 'city'
+
+if (requestedCity) reorderCityResultSections()
+
 type StreamMapCoverageForUnmapped = {
   mappedStreams: number
   unmappedStreams: number
@@ -36,6 +40,20 @@ export function renderUnmappedReasonAnalysis(input: {
   renderExcludedRows(input.excludedNonPersonStreams)
   renderReconciliation(model)
   return model
+}
+
+function reorderCityResultSections(): void {
+  const run = () => {
+    const results = document.querySelector<HTMLElement>('.stream-map-results')
+    const unmapped = document.querySelector<HTMLElement>('.stream-map-unmapped')
+    const host = unmapped?.parentElement
+    if (!host || !results || !unmapped || results.parentElement !== host) return
+    host.insertBefore(results, unmapped)
+    document.documentElement.dataset.cityResultOrder = 'mapped-before-unmapped'
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true })
+  else run()
 }
 
 function renderReasonRows(model: StreamMapUnmappedReasonView): void {
