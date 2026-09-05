@@ -10,6 +10,7 @@ on:
       - 'apps/web/functions/api/kick-stream-map-public-adapter-core.mjs'
       - 'apps/web/src/features/kick-stream-map/**'
       - 'apps/web/preview/kick-stream-map/**'
+      - 'apps/web/scripts/kick-stream-map-preview-browser-audit.mjs'
       - 'apps/web/vite.config.ts'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
@@ -19,6 +20,7 @@ on:
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
       - 'scripts/verify-kick-stream-map-ui-preview.mjs'
       - 'scripts/verify-kick-stream-map-ui-country-preview.mjs'
+      - 'scripts/verify-kick-stream-map-ui-kui3a-fixtures.mjs'
       - '.github/workflows/kick-stream-map-country-public-readiness.yml'
   push:
     branches: [main]
@@ -29,6 +31,7 @@ on:
       - 'apps/web/functions/api/kick-stream-map-public-adapter-core.mjs'
       - 'apps/web/src/features/kick-stream-map/**'
       - 'apps/web/preview/kick-stream-map/**'
+      - 'apps/web/scripts/kick-stream-map-preview-browser-audit.mjs'
       - 'apps/web/vite.config.ts'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
@@ -38,6 +41,7 @@ on:
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
       - 'scripts/verify-kick-stream-map-ui-preview.mjs'
       - 'scripts/verify-kick-stream-map-ui-country-preview.mjs'
+      - 'scripts/verify-kick-stream-map-ui-kui3a-fixtures.mjs'
       - '.github/workflows/kick-stream-map-country-public-readiness.yml'
 
 permissions:
@@ -58,3 +62,50 @@ jobs:
         run: node scripts/verify-kick-stream-map-ui-preview.mjs
       - name: Verify Kick Country aggregate preview renderer
         run: node scripts/verify-kick-stream-map-ui-country-preview.mjs
+      - name: Verify KUI3a browser fixtures and explicit states
+        run: node scripts/verify-kick-stream-map-ui-kui3a-fixtures.mjs
+
+  preview-browser:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      KICK_MAP_PREVIEW_ORIGIN: http://127.0.0.1:4174
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install web dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Install Playwright in isolated prefix
+        working-directory: apps/web
+        run: node scripts/install-ci-playwright.mjs
+      - name: Install Chromium
+        run: /tmp/viewloom-playwright/node_modules/.bin/playwright install --with-deps chromium
+      - name: Start non-public Kick Map preview
+        working-directory: apps/web
+        shell: bash
+        run: |
+          pnpm exec vite --host 127.0.0.1 --port 4174 > /tmp/kick-map-preview-vite.log 2>&1 &
+          for attempt in {1..50}; do
+            curl --silent --fail http://127.0.0.1:4174/preview/kick-stream-map/ > /dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/kick-map-preview-vite.log
+          exit 1
+      - name: Run KUI3a desktop/mobile browser proof
+        working-directory: apps/web
+        run: node scripts/kick-stream-map-preview-browser-audit.mjs
+      - name: Upload KUI3a browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kick-stream-map-kui3a-browser-audit
+          path: |
+            /tmp/kick-stream-map-preview-browser-audit/**
+            /tmp/kick-map-preview-vite.log
+          if-no-files-found: warn

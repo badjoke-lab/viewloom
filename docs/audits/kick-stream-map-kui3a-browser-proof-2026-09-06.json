@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "viewloom-kick-stream-map-kui3a-browser-proof-v1",
+  "status": "accepted_on_merge_candidate",
+  "date": "2026-09-06",
+  "provider": "kick",
+  "geographyMode": "country",
+  "pullRequest": 1244,
+  "auditedMainBaseline": "d024276a9a478e488f15f507ffb736c091b5702c",
+  "acceptedCodeHead": "423f007569d633b7946e446ecd8e3227e268b38e",
+  "workflow": {
+    "name": "Kick Stream Map Country Public Readiness",
+    "acceptedRunId": 33978336854,
+    "acceptedArtifactId": 9972991279,
+    "acceptedArtifactDigest": "sha256:188c5115be507450622895e91460b5c822c8a02af6b75bdc989ea1bae9fbe6c6",
+    "newWorkflowAdded": false
+  },
+  "proof": {
+    "surface": "apps/web/preview/kick-stream-map/",
+    "publicRouteCreated": false,
+    "productionViteInputAdded": false,
+    "publicNavigationAdded": false,
+    "canonicalPublicUrlAdded": false,
+    "fixtures": 5,
+    "viewports": [
+      { "name": "desktop-1440", "width": 1440, "height": 1000 },
+      { "name": "mobile-390", "width": 390, "height": 844 }
+    ],
+    "browserScenarios": 10,
+    "violations": 0,
+    "mobileHorizontalOverflowPx": 0,
+    "readyActionTargetMinHeightPx": 44,
+    "readyMapLibreCanvasCount": 1,
+    "creatorMarkerCount": 0,
+    "twitchApiRequestCount": 0,
+    "publicKickMapLinkCount": 0,
+    "canonicalPublicUrl": null
+  },
+  "fixtureStates": [
+    "blocked_stable_identity",
+    "ready_mixed_terminal_states",
+    "ready_empty_country",
+    "unsafe_response_contract",
+    "api_error"
+  ],
+  "readyInteractionProof": [
+    "viewers_streams_metric_switch",
+    "keyboard_country_selection",
+    "world_view_reset",
+    "maplibre_country_region_rendering",
+    "mapped_stream_result_filtering"
+  ],
+  "rejectedCandidate": {
+    "workflowRunId": 33978104622,
+    "head": "627ca0ee5f57e3020ed87b6bcbffca8ee1e3afd4",
+    "result": "rejected",
+    "violations": [
+      "mobile_horizontal_overflow",
+      "world_view_target_below_44px",
+      "expected_503_fixture_console_entry_misclassified_as_unexpected"
+    ],
+    "resolution": [
+      "scoped Kick preview min-width and wrapping repair",
+      "World view minimum target raised to 44px",
+      "only the intentional HTTP 503 fixture resource console entry is classified as expected"
+    ]
+  },
+  "safetyBoundaries": {
+    "productionCollectorMutationPerformed": false,
+    "d1WritePerformed": false,
+    "schemaChanged": false,
+    "cadenceChanged": false,
+    "retentionChanged": false,
+    "productionReviewedEvidenceRuntimeConnected": false,
+    "publicKickCountryActivationPerformed": false,
+    "stableIdentity": "broadcaster_user_id",
+    "slugIsStableIdentity": false,
+    "twitchEvidenceReuseAllowed": false,
+    "providerAggregationAllowed": false,
+    "cityInferenceAllowed": false,
+    "currentLocationPromotionAllowed": false,
+    "creatorCoordinatesPublished": false
+  },
+  "remainingGates": {
+    "K2": "blocked_pending_explicit_production_collector_authorization",
+    "K3": "waits_for_K2",
+    "KUI3b": "waits_for_K3_real_production_connected_rows",
+    "K4": "separate_public_activation_gate"
+  }
+}

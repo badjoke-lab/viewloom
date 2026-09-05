@@ -1,6 +1,32 @@
 .kick-map-preview {
   display: grid;
   gap: 18px;
+  min-width: 0;
+}
+
+.kick-map-preview > *,
+.kick-map-preview .page-head > *,
+.kick-map-preview .head-facts,
+.kick-map-preview .fact,
+.kick-map-preview .surface,
+.kick-map-preview__facts > *,
+.kick-map-preview__grid > *,
+.kick-map-preview__results-grid > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.kick-map-preview .fact strong,
+.kick-map-preview__card strong,
+.kick-map-preview__list li span,
+.kick-map-preview__note {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.kick-map-preview .stream-map-shell__head {
+  min-width: 0;
+  flex-wrap: wrap;
 }
 
 .kick-map-preview__gate {
@@ -100,6 +126,7 @@
 
 .kick-map-preview__list li {
   display: flex;
+  min-width: 0;
   justify-content: space-between;
   gap: 12px;
   padding: 10px 12px;
@@ -121,13 +148,17 @@
 .kick-map-preview__metric {
   display: grid;
   gap: 6px;
-  min-width: 160px;
+  min-width: 0;
+  max-width: 100%;
   color: var(--muted, #9ca3af);
   font-size: 12px;
   font-weight: 700;
 }
 
 .kick-map-preview__metric select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: 44px;
   padding: 8px 34px 8px 10px;
   border: 1px solid var(--line, #3b4250);
@@ -146,11 +177,13 @@
 .kick-map-preview__stream-list {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 .kick-map-preview__country-row,
 .kick-map-preview__stream-row {
   width: 100%;
+  min-width: 0;
   min-height: 44px;
   padding: 10px 12px;
   border: 1px solid var(--line, #30363d);
@@ -171,6 +204,10 @@
 .kick-map-preview__country-row[aria-pressed='true'] {
   border-color: #53fc18;
   box-shadow: inset 0 0 0 1px #53fc18;
+}
+
+[data-kick-preview-world] {
+  min-height: 44px;
 }
 
 .kick-map-preview__country-row:focus-visible,
@@ -203,14 +240,26 @@
   }
 
   .kick-map-preview__results-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (max-width: 560px) {
+  .kick-map-preview .page-head,
+  .kick-map-preview .stream-map-shell__head,
   .kick-map-preview__facts,
   .kick-map-preview__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kick-map-preview .page-head,
+  .kick-map-preview .stream-map-shell__head {
+    display: grid;
+    gap: 14px;
+  }
+
+  .kick-map-preview .head-facts {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .kick-map-preview__gate {
@@ -225,5 +274,11 @@
 
   .kick-map-preview__metric {
     width: 100%;
+    min-width: 0;
+  }
+
+  .kick-map-preview__list li,
+  .kick-map-preview__country-row {
+    flex-wrap: wrap;
   }
 }
