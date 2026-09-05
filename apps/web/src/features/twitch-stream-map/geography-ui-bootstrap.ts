@@ -238,7 +238,8 @@ function injectStyles(): void {
     .stream-map-geography-panel{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;margin-bottom:16px;padding:18px}
     .stream-map-geography-copy p,.stream-map-geography-state,.stream-map-city-accounting p{margin:5px 0 0;color:var(--muted,#9ca3af);font-size:13px}
     .stream-map-geography-options{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-    .stream-map-geography-options button{border:1px solid var(--line,#30363d);background:transparent;color:inherit;border-radius:999px;padding:8px 13px;cursor:pointer}
+    .stream-map-geography-options button{border:1px solid var(--line,#30363d);background:transparent;color:inherit;border-radius:999px;padding:8px 13px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+    .stream-map-geography-options button:focus-visible{outline:2px solid var(--accent,#905aff);outline-offset:2px}
     .stream-map-geography-options button[data-active="true"]{background:rgba(255,255,255,.09);border-color:currentColor;font-weight:700}
     .stream-map-geography-options button:disabled{opacity:.45;cursor:not-allowed}
     .stream-map-filter-option[data-city-unavailable="true"]{opacity:.45;cursor:not-allowed}
