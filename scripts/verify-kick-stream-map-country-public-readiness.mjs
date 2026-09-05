@@ -8,6 +8,8 @@ const publicAdapterSource = readFileSync('apps/web/functions/api/kick-stream-map
 const publicRouteSource = readFileSync('apps/web/functions/api/kick-stream-map.ts', 'utf8')
 const reviewedEvidenceBridgeSource = readFileSync('scripts/kick-stream-map-reviewed-country-evidence-core.mjs', 'utf8')
 const responseCoreSource = readFileSync('scripts/kick-stream-map-country-response-core.mjs', 'utf8')
+const runtimeStagingSource = readFileSync('scripts/kick-stream-map-country-runtime-staging-core.mjs', 'utf8')
+const reviewedEvidenceVerifierSource = readFileSync('scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs', 'utf8')
 
 // Production remains blocked until the collector actually retains the official
 // broadcaster_user_id. The staged public source/parser and adapter are already
@@ -29,8 +31,16 @@ const reviewedEvidenceBridgeReady = reviewedEvidenceBridgeSource.includes('build
 const responseCoreReady = responseCoreSource.includes('buildKickCountryResponse') &&
   responseCoreSource.includes("stableIdentity: 'broadcaster_user_id'") &&
   responseCoreSource.includes('publicActivationAuthorized: false')
-const reviewedEvidenceRuntimeConnected = publicRouteSource.includes('buildKickReviewedCountryEvidence') &&
-  publicRouteSource.includes('buildKickCountryResponse')
+const reviewedEvidenceRuntimeStaged = runtimeStagingSource.includes("from './kick-stream-map-reviewed-country-evidence-core.mjs'") &&
+  runtimeStagingSource.includes("from './kick-stream-map-country-response-core.mjs'") &&
+  runtimeStagingSource.includes('buildKickReviewedCountryEvidence(reviewResults)') &&
+  runtimeStagingSource.includes('buildKickCountryResponse({') &&
+  runtimeStagingSource.includes('publicActivationAuthorized: false') &&
+  reviewedEvidenceVerifierSource.includes("from './kick-stream-map-country-runtime-staging-core.mjs'") &&
+  reviewedEvidenceVerifierSource.includes('buildKickCountryRuntimeStaging({')
+const publicReviewedEvidenceRuntimeActivated = publicRouteSource.includes('buildKickReviewedCountryEvidence') ||
+  publicRouteSource.includes('buildKickCountryResponse') ||
+  publicRouteSource.includes('kick-stream-map-country-runtime-staging-core.mjs')
 const publicActivationAuthorized = !publicAdapterSource.includes('publicActivationAuthorized: false') ||
   !responseCoreSource.includes('publicActivationAuthorized: false')
 
@@ -40,7 +50,8 @@ assert.equal(publicAdapterAcceptsStableId, true, 'Kick public adapter must remai
 assert.equal(publicRouteUsesStagedAdapter, true, 'Kick public route must remain wired to the staged snapshot source and public adapter')
 assert.equal(reviewedEvidenceBridgeReady, true, 'reviewed Kick Country evidence bridge must remain ready in code')
 assert.equal(responseCoreReady, true, 'Kick Country response core must remain ready in code')
-assert.equal(reviewedEvidenceRuntimeConnected, false, 'reviewed Kick Country evidence unexpectedly reached the public runtime; re-audit activation boundary')
+assert.equal(reviewedEvidenceRuntimeStaged, true, 'reviewed Kick Country evidence must remain connected to the internal runtime staging path')
+assert.equal(publicReviewedEvidenceRuntimeActivated, false, 'reviewed Kick Country evidence unexpectedly reached the public route; re-audit activation boundary')
 assert.equal(publicActivationAuthorized, false, 'Kick Country public activation must remain unauthorized')
 
 const slugOnly = deriveKickCountryLiveStates({
@@ -63,12 +74,12 @@ assert.deepEqual(stableJoin.map(({ state, reason, stableKickUserId, placement })
 
 const blockers = [
   !collectorRetainsStableId ? 'production_livestream_snapshot_does_not_retain_broadcaster_user_id' : null,
-  !reviewedEvidenceRuntimeConnected ? 'reviewed_kick_country_evidence_runtime_not_connected' : null,
+  !reviewedEvidenceRuntimeStaged ? 'reviewed_kick_country_evidence_runtime_not_connected' : null,
   !publicActivationAuthorized ? 'public_country_activation_not_authorized' : null,
 ].filter(Boolean)
 
 const readiness = {
-  schemaVersion: 'viewloom-kick-stream-map-country-public-readiness-v0.2',
+  schemaVersion: 'viewloom-kick-stream-map-country-public-readiness-v0.3',
   provider: 'kick',
   publicCountryActivationReady: blockers.length === 0,
   blockers,
@@ -78,7 +89,8 @@ const readiness = {
     publicAdapterStableIdentityConsumption: publicAdapterAcceptsStableId && publicRouteUsesStagedAdapter ? 'ready_in_code' : 'blocked',
     reviewedCountryEvidenceBridge: reviewedEvidenceBridgeReady ? 'ready_in_code' : 'blocked',
     countryResponseCore: responseCoreReady ? 'ready_in_code' : 'blocked',
-    publicReviewedEvidenceRuntime: reviewedEvidenceRuntimeConnected ? 'ready_in_code' : 'blocked',
+    reviewedCountryEvidenceRuntimeStaging: reviewedEvidenceRuntimeStaged ? 'ready_in_code' : 'blocked',
+    publicReviewedEvidenceRuntime: publicReviewedEvidenceRuntimeActivated ? 'active' : 'not_activated',
     publicCountryActivation: publicActivationAuthorized ? 'authorized' : 'blocked',
   },
   invariant: {
@@ -93,7 +105,6 @@ const readiness = {
 assert.equal(readiness.publicCountryActivationReady, false)
 assert.deepEqual(readiness.blockers, [
   'production_livestream_snapshot_does_not_retain_broadcaster_user_id',
-  'reviewed_kick_country_evidence_runtime_not_connected',
   'public_country_activation_not_authorized',
 ])
 assert.equal(readiness.stages.collectorStableIdentityPersistence, 'blocked')
@@ -101,7 +112,8 @@ assert.equal(readiness.stages.publicSnapshotStableIdentityConsumption, 'ready_in
 assert.equal(readiness.stages.publicAdapterStableIdentityConsumption, 'ready_in_code')
 assert.equal(readiness.stages.reviewedCountryEvidenceBridge, 'ready_in_code')
 assert.equal(readiness.stages.countryResponseCore, 'ready_in_code')
-assert.equal(readiness.stages.publicReviewedEvidenceRuntime, 'blocked')
+assert.equal(readiness.stages.reviewedCountryEvidenceRuntimeStaging, 'ready_in_code')
+assert.equal(readiness.stages.publicReviewedEvidenceRuntime, 'not_activated')
 assert.equal(readiness.stages.publicCountryActivation, 'blocked')
 
 console.log(JSON.stringify(readiness, null, 2))
