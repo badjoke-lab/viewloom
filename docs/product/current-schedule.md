@@ -2,10 +2,10 @@
 
 Status: source of truth for immediate Stream Map sequencing  
 Normative specification: `docs/product/stream-map-spec-v0.7.md`  
-Execution plan: `docs/product/stream-map-implementation-plan-v0.8.md`  
+Execution plan: `docs/product/stream-map-implementation-plan-v0.9.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `119505fa5742802f6b9bf8df95d95c4bc0ba8b2d`  
+Audited runtime baseline: main `1e70f93e2e6b5db44dbaf527ec6f7e63357e3e8e`  
 Last updated: 2026-09-05
 
 ## 1. Scheduling principle
@@ -29,8 +29,6 @@ Country choropleth, compact responsive UI, browser/OpenFreeMap verification and 
 Country is now maintenance/scoped-defect work only and does not block City, Kick or Current/IRL.
 
 ### Step 2 — Twitch City C1-C6 — COMPLETE
-
-Completed sequence:
 
 ```text
 C1  City aggregate model + selection                                   #1222
@@ -66,23 +64,7 @@ Common stable-ID consumption and the fail-closed Current response core are ready
 
 PR #1235 corrected the readiness model to the actual public snapshot source/adapter path.
 
-Ready in code:
-
-- optional `broadcaster_user_id` snapshot parsing;
-- public stable-ID adapter without slug fallback;
-- reviewed Country evidence bridge;
-- stable-ID live join;
-- Country response core.
-
 Reviewed Country work is complete across 100 identities: 7 accepted, 3 excluded non-person, 90 no qualifying evidence.
-
-Current exact blockers:
-
-```text
-production_livestream_snapshot_does_not_retain_broadcaster_user_id
-reviewed_kick_country_evidence_runtime_not_connected
-public_country_activation_not_authorized
-```
 
 ### Step 5 — Current fresh Top300 temporal-evidence re-audit — COMPLETE
 
@@ -116,19 +98,47 @@ Audit records:
 
 Current remains fail-closed. The same live probe is not scheduled to repeat immediately simply to seek a non-zero result.
 
+### Step 6 — Kick K1 collector-independent reviewed-evidence runtime staging — COMPLETE
+
+Completed by PR #1239, merge `1e70f93e2e6b5db44dbaf527ec6f7e63357e3e8e`.
+
+Internal staged path:
+
+```text
+completed manual Kick Country review artifacts
+-> buildKickReviewedCountryEvidence(...)
+-> internal runtime staging core
+-> buildKickCountryResponse(...)
+```
+
+Validated by the existing reviewed-evidence workflow against the real four result files:
+
+```text
+result files                  4
+reviewed                    100
+accepted                      7
+excluded non-person           3
+no qualifying evidence       90
+conflict unmapped             0
+runtime staging connected   true
+reconciliation passes       true
+public activation           false
+```
+
+The public `/api/kick-stream-map` route is unchanged. No collector, D1, schema, cadence or retention change was made. No new workflow was added.
+
+Current Kick readiness blockers are now exactly:
+
+```text
+production_livestream_snapshot_does_not_retain_broadcaster_user_id
+public_country_activation_not_authorized
+```
+
 ## 3. Immediate lane — Kick Country
 
-### Step K1 — collector-independent reviewed-evidence runtime preparation — NOW
+### Step K1 — collector-independent reviewed-evidence runtime preparation — COMPLETE
 
-Allowed without production collector authorization:
-
-- maintain/read-only-audit the stable-ID-capable snapshot source and public adapter;
-- maintain the real 100-result reviewed-evidence reconciliation;
-- stage the existing reviewed-evidence bridge into the runtime response path while keeping public activation false and fail-closed when stable identity is absent;
-- maintain stable-ID live-join/response fixtures and validators;
-- keep provider-specific boundaries explicit.
-
-Completion condition: current-main internal runtime path can deterministically consume Kick-reviewed Country evidence when a stable `broadcaster_user_id` is supplied by a fixture/staged snapshot, without slug fallback and without public activation.
+Completion condition is satisfied on current main: the internal runtime path deterministically consumes the real reviewed Kick Country evidence when a stable `broadcaster_user_id` is supplied by the staged snapshot, without slug fallback and without public activation.
 
 ### Step K2 — production stable identity — BLOCKED UNTIL EXPLICIT AUTHORIZATION
 
@@ -143,9 +153,9 @@ This is a production collector mutation. It is not authorized by this schedule.
 
 Stale Draft #1083 must not be merged as-is. If authorization is later given, implement/re-audit the minimal change on current main.
 
-### Step K3 — production runtime connection — AFTER K1 + K2
+### Step K3 — production runtime connection — AFTER K2
 
-Once the production snapshot supplies stable IDs, enable only the already-staged reviewed Kick Country runtime join and verify production reconciliation.
+Once the production snapshot supplies stable IDs, connect only the already-staged provider-specific reviewed Country path to production runtime and verify production reconciliation.
 
 Do not reuse Twitch evidence or treat slug/login as stable identity.
 
@@ -172,8 +182,6 @@ This is a production collector mutation. Stale Draft #1107 must not be merged as
 
 ### Step R3 — fresh accepted Current evidence — BLOCKED BY CURRENT DATA STATE
 
-The September 5 accepted-evidence review has:
-
 ```text
 fresh qualifying evidence    0
 accepted Current placement   0
@@ -187,9 +195,9 @@ If a later justified review produces fresh accepted temporal evidence and stable
 
 Current never becomes Base City and never survives expiry.
 
-## 5. Shared UI/accessibility lane
+## 5. Shared UI/accessibility lane — NOW SAFE INDEPENDENT WORK
 
-Safe independent work includes:
+With Kick K1 complete and K2 blocked, safe immediate work includes:
 
 - keyboard/focus verification;
 - mobile tap targets;
@@ -205,7 +213,7 @@ Do not force Country, City and Current into one geometry model.
 
 Existing maintenance policy continues under its own authorization/cadence rules.
 
-Its wait periods do **not** pause Kick collector-independent runtime work, later justified Current evidence review, docs, fixtures, CI, browser verification or other safe preparation.
+Its wait periods do **not** pause shared Map regression/accessibility work, later justified Current evidence review, docs, fixtures, CI, browser verification or other safe preparation.
 
 ## 7. CI/deployment rule
 
@@ -230,10 +238,12 @@ DONE   City C1-C6 through #1233
 DONE   Twitch Current readiness re-audit #1234
 DONE   Kick Country readiness re-audit #1235
 DONE   Current fresh Top300 review: 300 -> 8 reviewed -> 0 accepted
-NOW    Kick collector-independent reviewed-evidence runtime preparation
-BLOCK  Kick production stable-ID persistence pending explicit collector authorization
+DONE   Kick K1 internal reviewed-evidence runtime staging #1239
+BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
+BLOCK  Kick K4 public activation pending separate authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
 BLOCK  Current public path additionally pending fresh accepted temporal evidence
+NOW    shared Map regression/accessibility work and non-mutating lane maintenance
 ```
 
 There is no scheduled return to City C1/C2/C3/C4/C5.
