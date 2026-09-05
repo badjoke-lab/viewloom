@@ -1,0 +1,200 @@
+const safeSemantics = {
+  stableIdentity: 'broadcaster_user_id',
+  slugIsStableIdentity: false,
+  twitchEvidenceReuseAllowed: false,
+  providerAggregationAllowed: false,
+  automaticGeographyPromotionAllowed: false,
+  cityInferenceFromCountryAllowed: false,
+  currentLocationUsedForBasePlacement: false,
+  preciseAddressPublished: false,
+  coordinatesPublished: false,
+}
+
+const mappedStreams = [
+  {
+    provider: 'kick',
+    slug: 'alpha',
+    displayName: 'Alpha',
+    viewers: 1200,
+    url: 'https://kick.com/alpha',
+    geography: { mode: 'country', state: 'mapped', reason: 'reviewed_country_accepted', countryCode: 'US' },
+  },
+  {
+    provider: 'kick',
+    slug: 'beta',
+    displayName: 'Beta',
+    viewers: 800,
+    url: 'https://kick.com/beta',
+    geography: { mode: 'country', state: 'mapped', reason: 'reviewed_country_accepted', countryCode: 'US' },
+  },
+  {
+    provider: 'kick',
+    slug: 'gamma',
+    displayName: 'Gamma',
+    viewers: 600,
+    url: 'https://kick.com/gamma',
+    geography: { mode: 'country', state: 'mapped', reason: 'reviewed_country_accepted', countryCode: 'JP' },
+  },
+]
+
+function basePayload(overrides = {}) {
+  return {
+    version: 'viewloom-kick-stream-map-country-response-v0.1',
+    provider: 'kick',
+    geographyMode: 'country',
+    state: 'ready_for_country_preview',
+    updatedAt: '2026-09-06T00:00:00.000Z',
+    publicActivationAuthorized: true,
+    mappedStreams,
+    unmappedStreams: [{ slug: 'unknown' }],
+    excludedStreams: [{ slug: 'event-channel' }],
+    conflictStreams: [{ slug: 'conflict-channel' }],
+    coverage: {
+      observedStreams: 6,
+      observedViewers: 3200,
+      stableIdentityStreams: 6,
+      mappedStreams: 3,
+      mappedViewers: 2600,
+      mappedCountryCount: 2,
+      unmappedStreams: 1,
+      unmappedViewers: 300,
+      excludedStreams: 1,
+      excludedViewers: 100,
+      conflictStreams: 1,
+      conflictViewers: 200,
+      unmappedReasons: { no_qualifying_reviewed_country: 1 },
+      reconciliation: { selectedPopulation: 6, reconciledPopulation: 6, passes: true },
+    },
+    identity: {
+      stableKey: 'broadcaster_user_id',
+      stableIdentityCoverageState: 'available',
+      stableIdentityStreams: 6,
+      missingStableIdentityStreams: 0,
+      slugIsStableIdentity: false,
+      loginDisplayMetadataOnly: true,
+    },
+    activation: {
+      publicCountryActivationReady: true,
+      blockers: [],
+    },
+    semantics: safeSemantics,
+    ...overrides,
+  }
+}
+
+export const kickMapKui3aScenarios = [
+  {
+    id: 'blocked-stable-identity',
+    httpStatus: 200,
+    payload: basePayload({
+      state: 'blocked_stable_identity',
+      publicActivationAuthorized: false,
+      activation: {
+        publicCountryActivationReady: false,
+        blockers: [
+          'production_livestream_snapshot_missing_broadcaster_user_id',
+          'public_country_activation_not_authorized',
+        ],
+      },
+      coverage: {
+        observedStreams: 6,
+        observedViewers: 3200,
+        stableIdentityStreams: 0,
+        mappedStreams: 3,
+        mappedViewers: 2600,
+        mappedCountryCount: 2,
+        unmappedStreams: 6,
+        unmappedViewers: 3200,
+        excludedStreams: 0,
+        excludedViewers: 0,
+        conflictStreams: 0,
+        conflictViewers: 0,
+        unmappedReasons: { stable_identity_unavailable: 6 },
+        reconciliation: { selectedPopulation: 6, reconciledPopulation: 6, passes: true },
+      },
+      identity: {
+        stableKey: 'broadcaster_user_id',
+        stableIdentityCoverageState: 'unavailable',
+        stableIdentityStreams: 0,
+        missingStableIdentityStreams: 6,
+        slugIsStableIdentity: false,
+        loginDisplayMetadataOnly: true,
+      },
+    }),
+    expect: {
+      state: 'country_blocked',
+      gateHeading: 'Country geography is gated',
+      mapVisible: false,
+      resultsVisible: false,
+    },
+  },
+  {
+    id: 'ready-mixed',
+    httpStatus: 200,
+    payload: basePayload(),
+    expect: {
+      state: 'country_ready_for_preview',
+      mapVisible: true,
+      resultsVisible: true,
+      countryCodes: ['US', 'JP'],
+      mappedStreams: 3,
+      excludedStreams: 1,
+      conflictStreams: 1,
+    },
+  },
+  {
+    id: 'ready-empty',
+    httpStatus: 200,
+    payload: basePayload({
+      mappedStreams: [],
+      coverage: {
+        observedStreams: 2,
+        observedViewers: 900,
+        stableIdentityStreams: 2,
+        mappedStreams: 0,
+        mappedViewers: 0,
+        mappedCountryCount: 0,
+        unmappedStreams: 1,
+        unmappedViewers: 500,
+        excludedStreams: 1,
+        excludedViewers: 400,
+        conflictStreams: 0,
+        conflictViewers: 0,
+        unmappedReasons: { no_qualifying_reviewed_country: 1 },
+        reconciliation: { selectedPopulation: 2, reconciledPopulation: 2, passes: true },
+      },
+    }),
+    expect: {
+      state: 'country_empty',
+      gateHeading: 'No reviewed Country rows to render',
+      mapVisible: false,
+      resultsVisible: false,
+    },
+  },
+  {
+    id: 'unsafe-contract',
+    httpStatus: 200,
+    payload: basePayload({
+      semantics: { ...safeSemantics, twitchEvidenceReuseAllowed: true },
+    }),
+    expect: {
+      state: 'country_contract_blocked',
+      gateHeading: 'Country response contract is unsafe',
+      mapVisible: false,
+      resultsVisible: false,
+    },
+  },
+  {
+    id: 'api-error',
+    httpStatus: 503,
+    payload: { error: 'fixture unavailable' },
+    expect: {
+      state: 'Unavailable',
+      gateHeading: 'Preview data unavailable',
+      mapVisible: false,
+      resultsVisible: false,
+    },
+  },
+]
+
+export { safeSemantics }
