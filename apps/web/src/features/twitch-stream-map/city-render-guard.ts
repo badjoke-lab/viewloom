@@ -33,6 +33,7 @@ function injectCityStyles(): void {
   style.textContent = `
     .stream-map-city-mode .stream-map-country-marker{display:none!important}
     .stream-map-city-mode #stream-map-selected-country{display:none!important}
+    .stream-map-city-mode .stream-map-stream-row[hidden],.stream-map-selected-city[hidden]{display:none!important}
     .stream-map-city-places{grid-column:1/-1;display:grid;gap:8px;border-top:1px solid var(--line,#30363d);padding-top:12px}
     .stream-map-city-place{width:100%;display:flex;justify-content:space-between;gap:14px;padding:9px 0;border:0;border-bottom:1px solid var(--line,#30363d);background:transparent;color:inherit;text-align:left;cursor:pointer}
     .stream-map-city-place span{color:var(--muted,#9ca3af);font-size:13px;text-align:right}
