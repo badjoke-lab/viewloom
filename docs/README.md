@@ -1,22 +1,27 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Stream Map baseline: main `6ee0402d38aa47856e7d841b2c4a4544959b70c6`  
+Stream Map audited runtime baseline: main `24cd444bfe564588b70c16a335f07d2c41627c0b`  
 Last updated: 2026-09-05
 
 ## Read first for Stream Map work
 
 1. `docs/operations/development-and-deployment-policy.md`
 2. `docs/product/stream-map-spec-v0.7.md`
-3. `docs/product/stream-map-implementation-plan-v0.6.md`
+3. `docs/product/stream-map-implementation-plan-v0.7.md`
 4. `docs/product/current-roadmap.md`
 5. `docs/product/current-schedule.md`
-6. the relevant lane-specific contract
+6. the relevant lane-specific contract/specification
 7. the current implementation/tests on `main`
+
+For Twitch City visualization work, also read:
+
+- `docs/product/stream-map-city-confidence-contract-v0.1.md`
+- `docs/product/stream-map-city-visualization-spec-v0.1.md`
 
 This is the current Stream Map authority chain. Older versioned Stream Map specs/plans remain in the repository as history but do not override the documents above.
 
-`docs/product/stream-map-current-execution-v0.1.md` is now a superseded historical execution snapshot, not an additional current override.
+`docs/product/stream-map-current-execution-v0.1.md` is a superseded historical execution snapshot, not an additional current override.
 
 ## Permanent product records outside the Stream Map authority chain
 
@@ -34,15 +39,21 @@ These Watchlist records remain permanent and independent of the Stream Map sched
 
 ```text
 Program mainline                    Stream Map
-Baseline                            6ee0402d38aa47856e7d841b2c4a4544959b70c6
-Twitch Country public API/map       active
+Audited runtime baseline            24cd444bfe564588b70c16a335f07d2c41627c0b
+Twitch Country                      closed at current product boundary
 Country primary renderer            choropleth / filled regions
 Country marker/region A-B switch    retired
 Country intensity                   Streams / Viewers, 5 log buckets
 Country compact UI                  merged #1218
+Country stale marker contract       repaired #1220
+Country production deploy           33934879891 success
+Country + City production smoke     33934879840 success
 City explicit API/UI                implemented
 City stable-ID coverage states      implemented
+City primary semantic object        City aggregate
 City creator coordinates            not published / not inferred
+City C1 aggregate selection         NOW
+City C2 geometry-source audit       NOW / parallel
 Country -> City inference           forbidden
 Current / IRL public placement      separate; fail closed without fresh accepted evidence
 Kick reviewed Country path          advancing separately
@@ -60,7 +71,7 @@ Use this to answer what the product is allowed to mean and how Country/City/Kick
 
 ### Active implementation sequence
 
-`docs/product/stream-map-implementation-plan-v0.6.md`
+`docs/product/stream-map-implementation-plan-v0.7.md`
 
 Use this to answer what has already been implemented and the next gate inside each parallel lane.
 
@@ -81,6 +92,7 @@ Use this for the current mainline order and parallel work that may continue with
 Important Stream Map contracts include:
 
 - `docs/product/stream-map-city-confidence-contract-v0.1.md`
+- `docs/product/stream-map-city-visualization-spec-v0.1.md`
 - `docs/product/stream-map-current-location-irl-contract-v0.1.md`
 - `docs/product/stream-map-current-location-reviewability-contract-v0.1.md`
 - `docs/product/kick-stream-map-country-live-join-contract-v0.1.md`
@@ -92,7 +104,7 @@ A lane contract narrows its lane. It does not authorize another lane or override
 
 ## Current Country contract summary
 
-Country placement remains accepted-evidence-only.
+Country is closed at its current product boundary. Placement remains accepted-evidence-only.
 
 Current renderer/UI:
 
@@ -120,20 +132,47 @@ Map
 
 The full mapped list remains available for exact values, keyboard/accessibility paths and geometry fallback cases.
 
+Closeout record:
+
+`docs/audits/twitch-stream-map-country-closeout-2026-09-05.md`
+
+Future Country work is scoped defect/accessibility/evidence maintenance and does not block City/Kick/Current work.
+
 ## Current City contract summary
 
-City is already implemented as an explicit opt-in geography mode, but it remains evidence-safe and intentionally non-precise.
+City is already implemented as an explicit opt-in geography mode and remains evidence-safe/non-precise.
 
 ```text
 /api/twitch-stream-map?geography=city
 /twitch/map/?geography=city
 ```
 
-Only accepted `home_base` / `declared_location` City evidence can place Base City. Country-only evidence is not promoted. Current/temporary evidence is not Base City.
-
-The City renderer suppresses Country aggregate markers and does not publish or infer creator City coordinates. Country centroids are not creator locations.
+Only accepted `home_base` / `declared_location` City evidence can place Base City. Country-only evidence is not promoted. Current/temporary evidence is not Base City. Conflicting Base City evidence fails closed.
 
 Stable Twitch ID availability is represented honestly (`unavailable`, `partial`, `available`); login is not treated as a stable ID.
+
+The City visualization specification now fixes:
+
+```text
+primary object              City aggregate
+aggregate key               countryCode + region + city
+creator point layer         prohibited
+exact list                  first-class
+map geometry                reviewed City reference geometry only
+missing map geometry        list-only; no invented target
+```
+
+The City renderer must not publish or infer creator City coordinates. Country/region centroids are not creator locations.
+
+Current City work:
+
+```text
+C1 aggregate model + selection       NOW
+C2 reference-geometry source audit   NOW / parallel
+C3 aggregate map renderer            only after C2 accepts a source
+C4 responsive/detail UI              after/with C3
+C5 production proof                  after C3/C4
+```
 
 ## Current / IRL boundary
 
@@ -158,8 +197,8 @@ The reviewed-evidence Top-20 cadence is maintenance-only.
 
 It does not block otherwise-safe:
 
-- Country closeout;
-- City specification/implementation;
+- City aggregate/model/UI work;
+- City reference-geometry audit;
 - Kick read-only/evidence/API work;
 - Current/IRL read-only/evidence work;
 - Map UI/accessibility work;
@@ -174,7 +213,8 @@ It does not block otherwise-safe:
 - no nationality/birthplace-as-residence/current placement;
 - no City inference from Country;
 - no Current inference from Country/Home/Base;
-- no Country centroid as creator City coordinate;
+- no Country/region centroid as creator City coordinate;
+- no arbitrary/fuzzy geocoder City placement;
 - no non-person-as-person placement;
 - no silent geography conflict resolution;
 - no demo geography presented as real;
@@ -185,11 +225,13 @@ It does not block otherwise-safe:
 ## Current mainline order
 
 ```text
-1. reconcile documentation source of truth
-2. close out Country against spec v0.7
-3. freeze richer City visualization/interaction specification
-4. implement City from that specification
-5. verify City while preserving Country behavior
+DONE  documentation source-of-truth reconciliation #1219
+DONE  Country closeout + stale marker contract repair #1220
+NOW   City C1 aggregate model/selection
+NOW   City C2 reference-geometry source audit
+NEXT  City C3 aggregate renderer only after accepted geometry source
+NEXT  City C4 responsive/detail UI
+THEN  City C5 browser + production proof
 ```
 
 Kick Country, Current/IRL, shared UI/accessibility and reviewed-evidence maintenance continue as parallel lanes under their own gates.
@@ -199,7 +241,7 @@ Kick Country, Current/IRL, shared UI/accessibility and reviewed-evidence mainten
 Older Stream Map files such as:
 
 - `stream-map-spec-v0.6.md` and earlier;
-- `stream-map-implementation-plan-v0.5.md` and earlier;
+- `stream-map-implementation-plan-v0.6.md` and earlier;
 - `stream-map-current-execution-v0.1.md`;
 - dated Stream Map audits/measurement/maintenance closeouts;
 
