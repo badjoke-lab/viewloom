@@ -84,6 +84,9 @@ async function auditScenario(browser, fixture, viewport) {
 
   const facts = await readFacts(page)
   const violations = []
+  const unexpectedConsoleErrors = consoleErrors.filter((message) => {
+    return !(fixture.id === 'api-error' && /status of 503|503 \(Service Unavailable\)/i.test(message))
+  })
 
   if (response?.status() !== 200) violations.push(`preview route returned ${response?.status() ?? 'null'}`)
   if (facts.title !== 'Kick Stream Map Preview — ViewLoom') violations.push(`unexpected title: ${facts.title}`)
@@ -101,7 +104,7 @@ async function auditScenario(browser, fixture, viewport) {
   if (facts.markerCount !== 0) violations.push(`marker semantics present: ${facts.markerCount}`)
   if (apiRequests.some((request) => /twitch/i.test(request))) violations.push(`Twitch API request from Kick preview: ${apiRequests.join(', ')}`)
   if (pageErrors.length) violations.push(`page errors: ${pageErrors.join(' | ')}`)
-  if (consoleErrors.length) violations.push(`console errors: ${consoleErrors.join(' | ')}`)
+  if (unexpectedConsoleErrors.length) violations.push(`console errors: ${unexpectedConsoleErrors.join(' | ')}`)
 
   if (fixture.id === 'ready-mixed') {
     if (facts.canvasCount !== 1) violations.push(`ready map canvas count ${facts.canvasCount}`)
@@ -142,6 +145,7 @@ async function auditScenario(browser, fixture, viewport) {
     facts,
     apiRequests,
     consoleErrors,
+    unexpectedConsoleErrors,
     pageErrors,
     violations,
     screenshot,
