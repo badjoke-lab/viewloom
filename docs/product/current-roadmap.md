@@ -2,7 +2,7 @@
 
 Status: source of truth for current Stream Map program state  
 Normative specification: `docs/product/stream-map-spec-v0.7.md`  
-Execution plan: `docs/product/stream-map-implementation-plan-v0.6.md`  
+Execution plan: `docs/product/stream-map-implementation-plan-v0.7.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 Audited runtime baseline: main `24cd444bfe564588b70c16a335f07d2c41627c0b`  
 Last updated: 2026-09-05
@@ -17,8 +17,8 @@ The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock
 
 | Lane | Current state | Next product gate |
 | --- | --- | --- |
-| Twitch Country | closeout accepted at runtime baseline `24cd444...`; public API/map, choropleth, compact UI and production proof complete | maintenance/scoped defects only; no serial blocker |
-| Twitch City | explicit API/UI, stable-ID coverage states, renderer isolation and production structural smoke implemented; visualization spec v0.1 frozen on merge | C1 aggregate model/selection + C2 reference-geometry source audit in parallel |
+| Twitch Country | closeout accepted at runtime baseline `24cd444...`; public API/map, filters, choropleth, compact UI and production proof complete | maintenance/scoped defects only; no serial blocker |
+| Twitch City | explicit API/UI, stable-ID coverage states, renderer isolation and production structural smoke implemented; visualization spec v0.1 accepted on merge | C1 aggregate model/selection + C2 reference-geometry source audit in parallel |
 | Kick Country | source/identity/response foundations plus reviewed evidence bridge and review batches advanced | re-audit actual main readiness, then complete Kick-only API/public activation gates |
 | Current / IRL | temporal contract/evaluator/candidate work plus stable-ID snapshot adapter implemented | re-audit fresh accepted evidence; public layer remains separate and fail-closed |
 | Shared Map UI | Country mobile/desktop density and interaction work implemented | City accessibility/cross-mode verification as C1-C4 advance |
@@ -253,14 +253,14 @@ Read these for new Stream Map work:
 
 1. `docs/operations/development-and-deployment-policy.md`
 2. `docs/product/stream-map-spec-v0.7.md`
-3. `docs/product/stream-map-implementation-plan-v0.6.md`
+3. `docs/product/stream-map-implementation-plan-v0.7.md`
 4. `docs/product/current-roadmap.md`
 5. `docs/product/current-schedule.md`
 6. `docs/product/stream-map-city-visualization-spec-v0.1.md` for City visualization work
 7. relevant lane contract, such as City confidence, Current/IRL, or Kick live-join contracts
 8. current implementation/tests on `main`
 
-Older `stream-map-spec-v0.6.md` and earlier versions, older implementation plans, and pre-v0.7 execution snapshots are historical/superseded for current execution. They must not override the list above.
+Older `stream-map-spec-v0.6.md` and earlier versions, older implementation plans including `stream-map-implementation-plan-v0.6.md`, and pre-v0.7 execution snapshots are historical/superseded for current execution. They must not override the list above.
 
 ## 11. Documentation synchronization rule
 
