@@ -2,7 +2,7 @@
 
 Status: source of truth for immediate Stream Map sequencing  
 Normative specification: `docs/product/stream-map-spec-v0.7.md`  
-Execution plan: `docs/product/stream-map-implementation-plan-v0.6.md`  
+Execution plan: `docs/product/stream-map-implementation-plan-v0.7.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 Audited runtime baseline: main `24cd444bfe564588b70c16a335f07d2c41627c0b`  
 Last updated: 2026-09-05
@@ -24,11 +24,10 @@ Completed in PR #1219.
 Accepted output:
 
 - `stream-map-spec-v0.7.md` is the current normative Stream Map spec;
-- `stream-map-implementation-plan-v0.6.md` is the active plan;
+- `stream-map-implementation-plan-v0.6.md` is retained as the reconciled pre-closeout plan;
 - `current-roadmap.md` and this schedule reflect implemented City state;
 - `docs/README.md` points new Stream Map work at the current authority chain;
 - the old execution snapshot is historical/superseded;
-- Country and City implementation state is recorded;
 - weekly Top-20 maintenance is a maintenance sublane only.
 
 ### Step 1 — Twitch Country closeout audit — COMPLETE
@@ -53,6 +52,8 @@ Country remains on scoped maintenance/accessibility/evidence-quality work only. 
 ### Step 2 — City visualization / interaction specification — COMPLETE ON MERGE
 
 `docs/product/stream-map-city-visualization-spec-v0.1.md` freezes the City visualization boundary.
+
+Active execution plan becomes `docs/product/stream-map-implementation-plan-v0.7.md` on this merge.
 
 Key decision:
 
