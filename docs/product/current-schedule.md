@@ -189,3 +189,16 @@ shared accessibility/verification
 ```
 
 The old schedule that made a weekly maintenance reservation the next global Stream Map event is superseded.
+
+## Retained category-program state
+
+Phase 12A-5B-R2 Twitch category stability + Heatmap public rollout remains completed. Its historical acceptance records remain valid and are not rewritten by Stream Map work.
+
+The following strings remain historical category-rollout verifier anchors and are not the current Stream Map execution schedule:
+
+```text
+Twitch category stability + Heatmap public rollout complete
+Public production acceptance run 31244148651 success
+Twitch public category filter active yes
+keep #623 open as the parent category program
+```
