@@ -16,6 +16,7 @@ on:
       - 'apps/web/scripts/public-browser-audit.mjs'
       - 'apps/web/scripts/public-browser-fixtures.mjs'
       - 'apps/web/scripts/public-current-browser-audit.mjs'
+      - 'apps/web/scripts/twitch-stream-map-geography-accessibility-audit.mjs'
       - 'scripts/verify-public-current-browser-audit.mjs'
       - '.github/workflows/public-browser-audit.yml'
 
@@ -94,6 +95,13 @@ jobs:
       - name: Verify current candidate browser evidence
         run: node scripts/verify-public-current-browser-audit.mjs /tmp/public-current-browser-audit/evidence.json
 
+      - name: Verify Twitch Stream Map geography accessibility
+        working-directory: apps/web
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/twitch-stream-map-geography-accessibility-audit.mjs 2>&1 | tee /tmp/twitch-stream-map-geography-accessibility-run.log
+
       - name: Upload current public browser artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -102,5 +110,6 @@ jobs:
           path: |
             /tmp/public-current-browser-audit/**
             /tmp/public-current-browser-audit-run.log
+            /tmp/twitch-stream-map-geography-accessibility-run.log
             /tmp/public-browser-preview.log
           if-no-files-found: warn
