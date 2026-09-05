@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-city-public-acceptance-v0.2",
+  "auditDate": "2026-09-05",
+  "baselineIssue": 1060,
+  "mainSha": "13ec47f995bbf9664474d05edd6b0cad24c20dfc",
+  "countryDefault": true,
+  "cityExplicitQuery": "geography=city",
+  "publicCityUiActivated": true,
+  "currentLocationActivated": false,
+  "currentIrlUiActive": false,
+  "cityPlacementLocationTypes": [
+    "home_base",
+    "declared_location"
+  ],
+  "currentLocationFilterEnabledInCity": false,
+  "countryOnlyPromotedToCity": false,
+  "creatorCoordinatesPublished": false,
+  "cityReferenceRole": "city_aggregate_reference",
+  "noGeometryFallback": "list_only",
+  "mappedResultsBeforeUnmapped": true,
+  "cityResultsFullWidth": true,
+  "populationFiltersOrthogonal": true,
+  "evidenceFiltersOrthogonal": true,
+  "loginIsStableIdentity": false,
+  "stableIdentityStateExposed": true,
+  "productionBrowserSmoke": {
+    "runId": 33959062990,
+    "conclusion": "success",
+    "mainSha": "13ec47f995bbf9664474d05edd6b0cad24c20dfc",
+    "pageErrors": 0,
+    "consoleErrors": 0
+  },
+  "productionMutationPerformedByAudit": false,
+  "d1MutationPerformedByAudit": false,
+  "collectorCadenceChangedByAudit": false,
+  "collectorChangedByAudit": false,
+  "retentionChangedByAudit": false
+}
