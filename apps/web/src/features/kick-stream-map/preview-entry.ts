@@ -5,6 +5,13 @@ import type { KickCountryPreviewMapController } from './country-preview-map'
 
 type PreviewModel = ReturnType<typeof buildKickStreamMapPreviewModel>
 
+type SurfacePresentation = {
+  ready: boolean
+  state: string
+  heading: string
+  detail: string
+}
+
 const root = document.querySelector<HTMLElement>('[data-kick-map-preview]')
 if (!root) throw new Error('Kick Stream Map preview root is missing')
 
@@ -29,14 +36,13 @@ async function boot(): Promise<void> {
     renderReadiness(readiness, countryModel)
     await renderCountrySurface(countryModel)
   } catch (error) {
-    setText('[data-kick-preview-state]', 'Unavailable')
-    setText('[data-kick-preview-gate-heading]', 'Preview data unavailable')
-    setText('[data-kick-preview-gate-detail]', error instanceof Error ? error.message : String(error))
+    renderLoadError(error)
   }
 }
 
 function renderReadiness(model: PreviewModel, country: KickCountryPreviewModel): void {
-  setText('[data-kick-preview-state]', model.presentation.state)
+  const surface = deriveSurfacePresentation(model, country)
+  setText('[data-kick-preview-state]', surface.state)
   setText('[data-kick-preview-updated]', model.updatedAt || '—')
   setText('[data-kick-preview-observed]', number(model.coverage.observedStreams))
   setText('[data-kick-preview-stable]', number(model.coverage.stableIdentityStreams))
@@ -44,13 +50,18 @@ function renderReadiness(model: PreviewModel, country: KickCountryPreviewModel):
   setText('[data-kick-preview-unmapped]', number(model.coverage.unmappedStreams))
   setText('[data-kick-preview-excluded]', number(country.accounting.excludedStreams))
   setText('[data-kick-preview-conflicts]', number(country.accounting.conflictStreams))
-  setText('[data-kick-preview-gate-heading]', model.presentation.heading)
-  setText('[data-kick-preview-gate-detail]', model.presentation.detail)
+  setText('[data-kick-preview-gate-heading]', surface.heading)
+  setText('[data-kick-preview-gate-detail]', surface.detail)
 
   const gate = root?.querySelector<HTMLElement>('[data-kick-preview-gate]')
-  if (gate) gate.dataset.ready = String(model.canRenderCountryGeography)
+  if (gate) gate.dataset.ready = String(surface.ready)
 
-  renderList('[data-kick-preview-blockers]', model.blockers.map((label) => ({ label, value: 'blocked' })))
+  const blockers = [...model.blockers]
+  if (!country.contractSafe) blockers.unshift('unsafe_country_response_contract')
+  if (model.canRenderCountryGeography && country.contractSafe && country.countryRows.length === 0) {
+    blockers.unshift('no_reviewed_country_rows')
+  }
+  renderList('[data-kick-preview-blockers]', [...new Set(blockers)].map((label) => ({ label, value: 'blocked' })))
   renderList(
     '[data-kick-preview-reasons]',
     model.coverage.reasonRows.map((row) => ({ label: row.reason, value: number(row.count) })),
@@ -61,6 +72,39 @@ function renderReadiness(model: PreviewModel, country: KickCountryPreviewModel):
     : 'invalid contract'
   setText('[data-kick-preview-identity-contract]', contract)
   setText('[data-kick-preview-activation]', model.publicActivationAuthorized ? 'authorized' : 'not authorized')
+}
+
+function deriveSurfacePresentation(model: PreviewModel, country: KickCountryPreviewModel): SurfacePresentation {
+  if (!model.canRenderCountryGeography) {
+    return {
+      ready: false,
+      state: model.presentation.state,
+      heading: model.presentation.heading,
+      detail: model.presentation.detail,
+    }
+  }
+  if (!country.contractSafe) {
+    return {
+      ready: false,
+      state: 'country_contract_blocked',
+      heading: 'Country response contract is unsafe',
+      detail: 'The preview suppressed geography because the Kick Country response violates provider, identity, or geography safety semantics.',
+    }
+  }
+  if (country.countryRows.length === 0) {
+    return {
+      ready: false,
+      state: 'country_empty',
+      heading: 'No reviewed Country rows to render',
+      detail: 'The activation gates are open, but the current response contains no reviewed mapped Kick Country rows.',
+    }
+  }
+  return {
+    ready: true,
+    state: model.presentation.state,
+    heading: model.presentation.heading,
+    detail: model.presentation.detail,
+  }
 }
 
 async function renderCountrySurface(model: KickCountryPreviewModel): Promise<void> {
@@ -96,6 +140,25 @@ async function renderCountrySurface(model: KickCountryPreviewModel): Promise<voi
   mapController?.destroy()
   mapController = await renderKickCountryPreviewMap(mapRoot, model)
   bindInteractions()
+}
+
+function renderLoadError(error: unknown): void {
+  mapController?.destroy()
+  mapController = null
+  setText('[data-kick-preview-state]', 'Unavailable')
+  setText('[data-kick-preview-gate-heading]', 'Preview data unavailable')
+  setText('[data-kick-preview-gate-detail]', error instanceof Error ? error.message : String(error))
+  const gate = root?.querySelector<HTMLElement>('[data-kick-preview-gate]')
+  const mapRoot = root?.querySelector<HTMLElement>('[data-kick-preview-map]')
+  const results = root?.querySelector<HTMLElement>('[data-kick-preview-country-results]')
+  const metric = root?.querySelector<HTMLSelectElement>('[data-kick-preview-metric]')
+  if (gate) {
+    gate.hidden = false
+    gate.dataset.ready = 'false'
+  }
+  if (mapRoot) mapRoot.hidden = true
+  if (results) results.hidden = true
+  if (metric) metric.disabled = true
 }
 
 function bindInteractions(): void {
