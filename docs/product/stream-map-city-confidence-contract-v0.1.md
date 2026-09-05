@@ -1,8 +1,16 @@
 # Stream Map City confidence / ambiguity contract v0.1
 
-Status: candidate contract
-Provider: Twitch only
-Geography layer: Base City only
+Status: accepted semantic contract; implementation has advanced beyond the original activation boundary  
+Provider: Twitch only  
+Geography layer: Base City only  
+Current parent: `stream-map-spec-v0.7.md` / `stream-map-implementation-plan-v0.6.md`  
+Status note updated: 2026-09-05
+
+## Current implementation note
+
+The classification/privacy semantics below remain the City evidence contract. Since this v0.1 was first written, the repository has implemented the explicit City API/UI, stable-ID coverage states, City renderer isolation and structural production smoke. Those later implementation steps do not weaken the rules below.
+
+In particular, City still does not derive a creator coordinate from Country geometry/centroids, and Current/IRL still cannot mutate Base City.
 
 ## Purpose
 
@@ -76,16 +84,14 @@ No address, coordinates, precise travel path, or private venue detail may be pub
 
 This contract is Twitch-only. Twitch and Kick geography are not aggregated. Kick requires its own stable identity and evidence path.
 
-## Activation boundary
+## Original activation boundary and present meaning
 
-This package is a pure classification / validation layer. It does not:
+The original v0.1 package itself was a pure classification/validation layer and did not authorize deployment, D1/schema/cadence/retention changes or Current/IRL activation.
 
-- deploy production
-- write D1
-- change schema
-- change collector cadence or retention
-- activate Current / IRL publicly
-- change the existing Country default
-- change `apps/web/**`
+Later accepted City API/UI/renderer work has now consumed this contract. That later implementation does **not** authorize:
 
-Public UI/API changes remain a separate production-boundary step.
+- production data mutation by implication;
+- Current/IRL activation;
+- precise creator coordinates;
+- Country-to-City inference;
+- Twitch/Kick geography aggregation.
