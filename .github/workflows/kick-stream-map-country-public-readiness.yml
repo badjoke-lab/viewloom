@@ -5,16 +5,24 @@ on:
     branches: [main]
     paths:
       - 'workers/collector-kick/src/official-livestreams.ts'
-      - 'apps/web/functions/_home/model.ts'
+      - 'apps/web/functions/api/kick-stream-map.ts'
+      - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-public-adapter-core.mjs'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
+      - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
+      - 'scripts/kick-stream-map-country-response-core.mjs'
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
       - '.github/workflows/kick-stream-map-country-public-readiness.yml'
   push:
     branches: [main]
     paths:
       - 'workers/collector-kick/src/official-livestreams.ts'
-      - 'apps/web/functions/_home/model.ts'
+      - 'apps/web/functions/api/kick-stream-map.ts'
+      - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-public-adapter-core.mjs'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
+      - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
+      - 'scripts/kick-stream-map-country-response-core.mjs'
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
       - '.github/workflows/kick-stream-map-country-public-readiness.yml'
 
