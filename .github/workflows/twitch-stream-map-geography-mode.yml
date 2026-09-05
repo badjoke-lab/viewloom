@@ -11,11 +11,16 @@ on:
       - 'apps/web/src/features/twitch-stream-map/city-aggregate-core.mjs'
       - 'apps/web/src/features/twitch-stream-map/city-aggregate-core.d.mts'
       - 'apps/web/src/features/twitch-stream-map/city-reference-geometry-registry.mjs'
+      - 'apps/web/src/features/twitch-stream-map/city-reference-point-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/city-reference-point-core.d.mts'
+      - 'apps/web/src/features/twitch-stream-map/stream-map-runtime.ts'
+      - 'apps/web/src/features/twitch-stream-map/maplibre-bootstrap.ts'
       - 'apps/web/src/features/twitch-stream-map/unmapped-reason-core.mjs'
       - 'apps/web/src/features/twitch-stream-map/unmapped-reason-view.ts'
       - 'apps/web/fixtures/twitch-stream-map-city-ui-request-fixture.json'
       - 'apps/web/scripts/verify-twitch-stream-map-city-aggregate.mjs'
       - 'apps/web/scripts/verify-twitch-stream-map-city-reference-geometry.mjs'
+      - 'apps/web/scripts/verify-twitch-stream-map-city-reference-point-rendering.mjs'
       - 'scripts/verify-twitch-stream-map-geography-mode.mjs'
       - 'scripts/verify-twitch-stream-map-city-ui-gate-audit.mjs'
       - 'scripts/verify-twitch-stream-map-city-ui-request-fixture.mjs'
@@ -38,11 +43,16 @@ on:
       - 'apps/web/src/features/twitch-stream-map/city-aggregate-core.mjs'
       - 'apps/web/src/features/twitch-stream-map/city-aggregate-core.d.mts'
       - 'apps/web/src/features/twitch-stream-map/city-reference-geometry-registry.mjs'
+      - 'apps/web/src/features/twitch-stream-map/city-reference-point-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/city-reference-point-core.d.mts'
+      - 'apps/web/src/features/twitch-stream-map/stream-map-runtime.ts'
+      - 'apps/web/src/features/twitch-stream-map/maplibre-bootstrap.ts'
       - 'apps/web/src/features/twitch-stream-map/unmapped-reason-core.mjs'
       - 'apps/web/src/features/twitch-stream-map/unmapped-reason-view.ts'
       - 'apps/web/fixtures/twitch-stream-map-city-ui-request-fixture.json'
       - 'apps/web/scripts/verify-twitch-stream-map-city-aggregate.mjs'
       - 'apps/web/scripts/verify-twitch-stream-map-city-reference-geometry.mjs'
+      - 'apps/web/scripts/verify-twitch-stream-map-city-reference-point-rendering.mjs'
       - 'scripts/verify-twitch-stream-map-geography-mode.mjs'
       - 'scripts/verify-twitch-stream-map-city-ui-gate-audit.mjs'
       - 'scripts/verify-twitch-stream-map-city-ui-request-fixture.mjs'
@@ -77,3 +87,5 @@ jobs:
         run: node apps/web/scripts/verify-twitch-stream-map-city-aggregate.mjs
       - name: Verify City reference geometry registry
         run: node apps/web/scripts/verify-twitch-stream-map-city-reference-geometry.mjs
+      - name: Verify City reference point rendering
+        run: node apps/web/scripts/verify-twitch-stream-map-city-reference-point-rendering.mjs

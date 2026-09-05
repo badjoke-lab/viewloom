@@ -1,5 +1,7 @@
 import { filterMappedStreams, type StreamMapMappedStream } from './location-filter-core.mjs'
 import { cityAggregateKeyFromStream, citySelectionState, type CitySelectionState } from './city-aggregate-core.mjs'
+import { cityReferencePointAggregates, cityReferencePointForAggregate } from './city-reference-point-core.mjs'
+import { subscribeStreamMapRuntimeMap, type StreamMapRuntimeMap } from './stream-map-runtime'
 
 type CityPayload = {
   mappedStreams?: StreamMapMappedStream[]
@@ -9,6 +11,20 @@ type CityPayloadWindow = Window & {
   __viewloomStreamMapCityPayload?: CityPayload | null
 }
 
+type CityMapLibreMarker = {
+  setLngLat(lngLat: [number, number]): CityMapLibreMarker
+  addTo(map: StreamMapRuntimeMap): CityMapLibreMarker
+  remove(): void
+}
+
+type CityMapLibreNamespace = {
+  Marker: new (options: { element: HTMLElement; anchor?: string }) => CityMapLibreMarker
+}
+
+type CityMapWindow = CityPayloadWindow & {
+  maplibregl?: CityMapLibreNamespace
+}
+
 const requestedCity = new URL(window.location.href).searchParams.get('geography') === 'city'
 let selectedCityKey: string | null = null
 let selectedCityLabel = ''
@@ -16,6 +32,8 @@ let latestRows: StreamMapMappedStream[] = []
 let lastPayload: CityPayload | null = null
 let streamListObserver: MutationObserver | null = null
 let payloadObserver: MutationObserver | null = null
+let runtimeMap: StreamMapRuntimeMap | null = null
+let cityMarkers: CityMapLibreMarker[] = []
 
 if (requestedCity) bootCityRendering()
 
@@ -24,6 +42,10 @@ function bootCityRendering(): void {
   injectCityStyles()
   updateStaticCityCopy()
   bindFilterRefresh()
+  subscribeStreamMapRuntimeMap((map) => {
+    runtimeMap = map
+    renderCityView()
+  })
   renderWhenPayloadArrives()
 }
 
@@ -38,14 +60,17 @@ function injectCityStyles(): void {
     .stream-map-city-place{width:100%;display:flex;justify-content:space-between;gap:14px;padding:9px 0;border:0;border-bottom:1px solid var(--line,#30363d);background:transparent;color:inherit;text-align:left;cursor:pointer}
     .stream-map-city-place span{color:var(--muted,#9ca3af);font-size:13px;text-align:right}
     .stream-map-city-place[aria-pressed="true"]{font-weight:700;border-bottom-color:currentColor}
-    .stream-map-city-place:focus-visible,.stream-map-selected-city button:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+    .stream-map-city-place:focus-visible,.stream-map-selected-city button:focus-visible,.stream-map-city-reference-marker:focus-visible{outline:2px solid currentColor;outline-offset:3px}
     .stream-map-selected-city{grid-column:1/-1;display:grid;gap:9px;border-top:1px solid var(--line,#30363d);padding-top:12px}
     .stream-map-selected-city__head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
     .stream-map-selected-city__actions{display:flex;gap:8px;flex-wrap:wrap}
     .stream-map-selected-city__facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
     .stream-map-selected-city__facts div{display:flex;flex-direction:column;gap:3px}.stream-map-selected-city__facts small{color:var(--muted,#9ca3af)}
     .stream-map-selected-city__sources{display:flex;gap:6px;flex-wrap:wrap}
-    @media (max-width:720px){.stream-map-city-place{min-height:44px;align-items:center}.stream-map-city-place span{text-align:left}.stream-map-selected-city__head{display:grid}.stream-map-selected-city__facts{grid-template-columns:1fr}}
+    .stream-map-city-reference-marker{display:grid;place-items:center;min-width:48px;min-height:48px;padding:5px 8px;border:1px solid rgba(255,255,255,.58);border-radius:999px;background:rgba(12,18,28,.92);box-shadow:0 3px 14px rgba(0,0,0,.34);color:#fff;cursor:pointer;line-height:1.05;text-align:center}
+    .stream-map-city-reference-marker strong{font-size:13px}.stream-map-city-reference-marker span{max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:#d8dee9}
+    .stream-map-city-reference-marker.is-selected{border-width:2px;background:rgba(28,43,61,.98);box-shadow:0 0 0 3px rgba(255,255,255,.18),0 4px 16px rgba(0,0,0,.38)}
+    @media (max-width:720px){.stream-map-city-place{min-height:44px;align-items:center}.stream-map-city-place span{text-align:left}.stream-map-selected-city__head{display:grid}.stream-map-selected-city__facts{grid-template-columns:1fr}.stream-map-city-reference-marker{min-width:44px;min-height:44px;padding:4px 7px}}
   `
   document.head.append(style)
 }
@@ -56,10 +81,10 @@ function updateStaticCityCopy(): void {
     const heading = shell?.querySelector<HTMLElement>('h2')
     const copy = shell?.querySelector<HTMLElement>('p')
     if (heading) heading.textContent = 'City view'
-    if (copy) copy.textContent = 'City mode groups only accepted home/base or declared-location evidence by City. Creator coordinates are not published, so country-centroid markers are intentionally suppressed.'
+    if (copy) copy.textContent = 'City mode groups only accepted home/base or declared-location evidence by City. Reviewed City aggregate reference points may appear on the map; they are not creator positions.'
 
     const interaction = document.querySelector<HTMLElement>('.stream-map-interaction-note')
-    if (interaction) interaction.textContent = 'Select an accepted City aggregate from the list. The basemap remains geographic context; creator City coordinates are not published or inferred.'
+    if (interaction) interaction.textContent = 'Select a reviewed City aggregate reference point or use the full City list. Cities without reviewed geometry remain list-only; creator coordinates are never inferred.'
 
     const resultsHead = document.querySelector<HTMLElement>('.stream-map-results__head')
     const resultsHeading = resultsHead?.querySelector<HTMLElement>('h2')
@@ -77,7 +102,7 @@ function updateStaticCityCopy(): void {
     if (countryCard) countryCard.hidden = true
 
     const root = document.getElementById('stream-map-root')
-    root?.setAttribute('aria-label', 'World basemap for City mode; creator city coordinates are not published')
+    root?.setAttribute('aria-label', 'World basemap with reviewed City aggregate reference points; reference points are not creator exact or current locations')
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true })
@@ -148,6 +173,7 @@ function renderCityView(): void {
   renderCityPlaces(selection)
   renderSelectedCity(selection)
   applyStreamSelection(selection, filtered)
+  renderCityReferenceMarkers(selection)
 }
 
 function renderCityPlaces(selection: CitySelectionState<StreamMapMappedStream>): void {
@@ -178,16 +204,18 @@ function renderCityPlaces(selection: CitySelectionState<StreamMapMappedStream>):
   }
 
   for (const place of selection.aggregates) {
+    const referencePoint = cityReferencePointForAggregate(place)
     const row = document.createElement('button')
     row.type = 'button'
     row.className = 'stream-map-city-place'
     row.dataset.cityAggregateKey = place.key
+    row.dataset.cityGeometry = referencePoint ? 'reference_point' : 'list_only'
     row.setAttribute('aria-pressed', String(selection.selectedKey === place.key))
-    row.setAttribute('aria-label', `Show ${place.label}: ${format(place.streams.length)} mapped streams, ${format(place.viewers)} viewers`)
+    row.setAttribute('aria-label', `Show ${place.label}: ${format(place.streams.length)} mapped streams, ${format(place.viewers)} viewers${referencePoint ? ', reviewed map reference available' : ', list only because reviewed map geometry is unavailable'}`)
     const name = document.createElement('strong')
     name.textContent = place.label
     const detail = document.createElement('span')
-    detail.textContent = `${format(place.streams.length)} stream${place.streams.length === 1 ? '' : 's'} · ${format(place.viewers)} viewers`
+    detail.textContent = `${format(place.streams.length)} stream${place.streams.length === 1 ? '' : 's'} · ${format(place.viewers)} viewers · ${referencePoint ? 'map reference' : 'list only'}`
     row.append(name, detail)
     row.addEventListener('click', () => {
       selectedCityKey = place.key
@@ -196,6 +224,46 @@ function renderCityPlaces(selection: CitySelectionState<StreamMapMappedStream>):
     })
     host.append(row)
   }
+}
+
+function renderCityReferenceMarkers(selection: CitySelectionState<StreamMapMappedStream>): void {
+  clearCityReferenceMarkers()
+  const maplibregl = (window as CityMapWindow).maplibregl
+  if (!runtimeMap || !maplibregl) return
+
+  for (const { aggregate, referencePoint } of cityReferencePointAggregates(selection.aggregates)) {
+    const element = document.createElement('button')
+    element.type = 'button'
+    element.className = 'stream-map-city-reference-marker'
+    element.dataset.cityAggregateKey = aggregate.key
+    element.dataset.referenceRole = referencePoint.referenceRole
+    element.setAttribute('aria-pressed', String(selection.selectedKey === aggregate.key))
+    element.setAttribute('aria-label', `Select ${aggregate.label} City aggregate reference point: ${format(aggregate.streams.length)} mapped streams, ${format(aggregate.viewers)} viewers. This point is not a creator exact or current location.`)
+    element.title = `City aggregate reference point · ${aggregate.label}`
+    if (selection.selectedKey === aggregate.key) element.classList.add('is-selected')
+
+    const count = document.createElement('strong')
+    count.textContent = format(aggregate.streams.length)
+    const label = document.createElement('span')
+    label.textContent = aggregate.city
+    element.append(count, label)
+    element.addEventListener('click', () => {
+      selectedCityKey = aggregate.key
+      selectedCityLabel = aggregate.label
+      renderCityView()
+    })
+
+    cityMarkers.push(
+      new maplibregl.Marker({ element, anchor: 'center' })
+        .setLngLat([referencePoint.longitude, referencePoint.latitude])
+        .addTo(runtimeMap),
+    )
+  }
+}
+
+function clearCityReferenceMarkers(): void {
+  for (const marker of cityMarkers) marker.remove()
+  cityMarkers = []
 }
 
 function renderSelectedCity(selection: CitySelectionState<StreamMapMappedStream>): void {
@@ -255,7 +323,7 @@ function renderSelectedCity(selection: CitySelectionState<StreamMapMappedStream>
   const note = document.createElement('p')
   note.className = 'stream-map-filter-note'
   note.textContent = aggregate
-    ? `${label} is selected. Stream drilldown is restricted to this accepted City aggregate; this is not a creator exact/current location.`
+    ? `${label} is selected. Stream drilldown is restricted to this accepted City aggregate; any map point is only a reviewed City aggregate reference and is not a creator exact/current location.`
     : `${label} remains selected, but no accepted City row matches the active population/evidence filters. No alternative City was inferred.`
 
   host.append(head, facts, note)
