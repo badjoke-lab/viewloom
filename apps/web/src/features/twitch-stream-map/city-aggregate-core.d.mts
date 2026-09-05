@@ -11,6 +11,12 @@ export type CityAggregateStream = {
   }
 }
 
+export type CityAggregateLocationParts = {
+  countryCode?: string | null
+  region?: string | null
+  city?: string | null
+}
+
 export type CityAggregate<T extends CityAggregateStream = CityAggregateStream> = {
   key: string
   city: string
@@ -32,6 +38,7 @@ export type CitySelectionState<T extends CityAggregateStream = CityAggregateStre
   visibleStreams: T[]
 }
 
+export function cityAggregateKeyFromParts(parts?: CityAggregateLocationParts): string
 export function cityAggregateKeyFromStream<T extends CityAggregateStream>(stream: T): string
 export function groupCityMappedStreams<T extends CityAggregateStream>(streams: T[]): CityAggregate<T>[]
 export function citySelectionState<T extends CityAggregateStream>(streams: T[], selectedKey: string | null | undefined): CitySelectionState<T>

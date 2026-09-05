@@ -1,12 +1,19 @@
 const MISSING_REGION = '__none__'
 
+export function cityAggregateKeyFromParts({ countryCode, region, city } = {}) {
+  const normalizedCity = normalize(city)
+  if (!normalizedCity) return ''
+  const normalizedCountryCode = clean(countryCode).toUpperCase()
+  if (!normalizedCountryCode) return ''
+  return [normalizedCountryCode, normalize(region) || MISSING_REGION, normalizedCity].join('|')
+}
+
 export function cityAggregateKeyFromStream(stream) {
-  const city = clean(stream?.location?.cities?.[0])
-  if (!city) return ''
-  const countryCode = clean(stream?.location?.countryCode).toUpperCase()
-  if (!countryCode) return ''
-  const region = clean(stream?.location?.regions?.[0])
-  return [countryCode, normalize(region) || MISSING_REGION, normalize(city)].join('|')
+  return cityAggregateKeyFromParts({
+    countryCode: stream?.location?.countryCode,
+    region: stream?.location?.regions?.[0],
+    city: stream?.location?.cities?.[0],
+  })
 }
 
 export function groupCityMappedStreams(streams) {
