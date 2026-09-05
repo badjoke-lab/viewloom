@@ -18,6 +18,7 @@ on:
       - 'scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
       - 'scripts/verify-kick-stream-map-ui-preview.mjs'
+      - 'scripts/verify-kick-stream-map-ui-country-preview.mjs'
       - '.github/workflows/kick-stream-map-country-public-readiness.yml'
   push:
     branches: [main]
@@ -36,6 +37,7 @@ on:
       - 'scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
       - 'scripts/verify-kick-stream-map-ui-preview.mjs'
+      - 'scripts/verify-kick-stream-map-ui-country-preview.mjs'
       - '.github/workflows/kick-stream-map-country-public-readiness.yml'
 
 permissions:
@@ -54,3 +56,5 @@ jobs:
         run: node scripts/verify-kick-stream-map-country-public-readiness.mjs
       - name: Verify Kick Map UI preview remains non-public and fail closed
         run: node scripts/verify-kick-stream-map-ui-preview.mjs
+      - name: Verify Kick Country aggregate preview renderer
+        run: node scripts/verify-kick-stream-map-ui-country-preview.mjs

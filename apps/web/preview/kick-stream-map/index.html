@@ -23,7 +23,7 @@
         <div>
           <div class="kicker">KICK DATA · WHERE · PREVIEW ONLY</div>
           <h1>Stream Map</h1>
-          <p class="lede">Pre-public Country UI shell for the Kick Stream Map contract. It may display real readiness and accounting from <code>/api/kick-stream-map</code>, but geography remains hidden until both production readiness and separate public activation gates are true.</p>
+          <p class="lede">Pre-public Country UI for the Kick Stream Map contract. It may display real readiness and accounting from <code>/api/kick-stream-map</code>, but geography remains hidden until both production readiness and separate public activation gates are true.</p>
         </div>
         <div class="head-facts">
           <div class="fact"><small>State</small><strong data-kick-preview-state>Loading</strong></div>
@@ -43,9 +43,15 @@
           <div>
             <div class="stream-map-shell__eyebrow">Country surface</div>
             <h2>World map</h2>
-            <p class="kick-map-preview__note">No candidate, staged, inferred, Twitch-derived, City or Current geography is rendered here.</p>
+            <p class="kick-map-preview__note">Only reviewed Kick Country terminal states may color a region. No candidate, inferred, Twitch-derived, City, Current or creator-coordinate placement is rendered.</p>
           </div>
-          <span class="kick-map-preview__badge">Kick · Country only</span>
+          <label class="kick-map-preview__metric">
+            <span>Country intensity</span>
+            <select data-kick-preview-metric aria-label="Kick Country intensity metric" disabled>
+              <option value="viewers" selected>Viewers</option>
+              <option value="streams">Streams</option>
+            </select>
+          </label>
         </div>
         <div class="kick-map-preview__gate" data-kick-preview-gate data-ready="false" role="status" aria-live="polite">
           <div>
@@ -53,6 +59,8 @@
             <p data-kick-preview-gate-detail>Loading the current Kick Stream Map readiness contract…</p>
           </div>
         </div>
+        <div class="kick-map-preview__map" data-kick-preview-map hidden role="region" aria-label="Kick Country aggregate world map"></div>
+        <p class="kick-map-preview__note">Country selection changes the result list only. It does not change evidence acceptance and does not infer a streamer position inside the country.</p>
       </section>
 
       <section class="kick-map-preview__grid">
@@ -66,6 +74,37 @@
           <strong data-kick-preview-activation>—</strong>
           <p class="kick-map-preview__note">This preview does not authorize <code>/kick/map/</code>.</p>
         </article>
+        <article class="kick-map-preview__card">
+          <small>Excluded non-person</small>
+          <strong data-kick-preview-excluded>—</strong>
+          <p class="kick-map-preview__note">Organizations/event channels are accounted for but not placed as people.</p>
+        </article>
+        <article class="kick-map-preview__card">
+          <small>Country conflicts</small>
+          <strong data-kick-preview-conflicts>—</strong>
+          <p class="kick-map-preview__note">Conflicting Country evidence remains unmapped.</p>
+        </article>
+      </section>
+
+      <section class="surface" data-kick-preview-country-results hidden>
+        <div class="stream-map-shell__head">
+          <div>
+            <div class="stream-map-shell__eyebrow">Reviewed Country result</div>
+            <h2>Mapped countries and streams</h2>
+            <p class="kick-map-preview__note" data-kick-preview-reconciliation>Reconciliation pending.</p>
+          </div>
+          <button type="button" class="stream-map-filter-clear" data-kick-preview-world>World view</button>
+        </div>
+        <div class="kick-map-preview__results-grid">
+          <div>
+            <h3>Countries</h3>
+            <div class="kick-map-preview__country-list" data-kick-preview-countries></div>
+          </div>
+          <div>
+            <h3 data-kick-preview-stream-heading>Mapped streams</h3>
+            <div class="kick-map-preview__stream-list" data-kick-preview-streams></div>
+          </div>
+        </div>
       </section>
 
       <section class="kick-map-preview__grid">
