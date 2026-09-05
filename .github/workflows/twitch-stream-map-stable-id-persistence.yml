@@ -1,0 +1,43 @@
+name: Twitch Stream Map Stable ID Persistence
+
+on:
+  pull_request:
+    paths:
+      - 'workers/collector-twitch/src/index-category.ts'
+      - 'scripts/verify-twitch-stream-map-stable-id-persistence.mjs'
+      - 'scripts/verify-twitch-stream-map-current-public-readiness.mjs'
+      - 'scripts/twitch-stream-map-current-response-core.mjs'
+      - 'docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-result-2026-08-29.json'
+      - '.github/workflows/twitch-stream-map-stable-id-persistence.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'workers/collector-twitch/src/index-category.ts'
+      - 'scripts/verify-twitch-stream-map-stable-id-persistence.mjs'
+      - 'scripts/verify-twitch-stream-map-current-public-readiness.mjs'
+      - 'scripts/twitch-stream-map-current-response-core.mjs'
+      - 'docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-result-2026-08-29.json'
+      - '.github/workflows/twitch-stream-map-stable-id-persistence.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.17.1'
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Typecheck collectors
+        run: pnpm typecheck:collectors
+      - name: Verify Twitch stable identity persistence boundary
+        run: node scripts/verify-twitch-stream-map-stable-id-persistence.mjs
+      - name: Verify Twitch Current public readiness remains gated
+        run: node scripts/verify-twitch-stream-map-current-public-readiness.mjs
