@@ -8,12 +8,16 @@ on:
       - 'apps/web/functions/api/kick-stream-map.ts'
       - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.mjs'
       - 'apps/web/functions/api/kick-stream-map-public-adapter-core.mjs'
+      - 'apps/web/src/features/kick-stream-map/**'
+      - 'apps/web/preview/kick-stream-map/**'
+      - 'apps/web/vite.config.ts'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/kick-stream-map-country-response-core.mjs'
       - 'scripts/kick-stream-map-country-runtime-staging-core.mjs'
       - 'scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
+      - 'scripts/verify-kick-stream-map-ui-preview.mjs'
       - '.github/workflows/kick-stream-map-country-public-readiness.yml'
   push:
     branches: [main]
@@ -22,12 +26,16 @@ on:
       - 'apps/web/functions/api/kick-stream-map.ts'
       - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.mjs'
       - 'apps/web/functions/api/kick-stream-map-public-adapter-core.mjs'
+      - 'apps/web/src/features/kick-stream-map/**'
+      - 'apps/web/preview/kick-stream-map/**'
+      - 'apps/web/vite.config.ts'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/kick-stream-map-country-response-core.mjs'
       - 'scripts/kick-stream-map-country-runtime-staging-core.mjs'
       - 'scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
+      - 'scripts/verify-kick-stream-map-ui-preview.mjs'
       - '.github/workflows/kick-stream-map-country-public-readiness.yml'
 
 permissions:
@@ -44,3 +52,5 @@ jobs:
           node-version: '22'
       - name: Verify Kick Country public activation gate
         run: node scripts/verify-kick-stream-map-country-public-readiness.mjs
+      - name: Verify Kick Map UI preview remains non-public and fail closed
+        run: node scripts/verify-kick-stream-map-ui-preview.mjs
