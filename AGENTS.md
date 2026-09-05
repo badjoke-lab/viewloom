@@ -6,13 +6,14 @@ Canonical project state is indexed in `docs/README.md`.
 
 ```text
 Current program: Stream Map
-Audited runtime baseline: 6b8668492d2a35e9fb83e1d93929fef8b58de215
+Audited runtime baseline: d024276a9a478e488f15f507ffb736c091b5702c
 Twitch Country: closed at current public product boundary
 Twitch City: C1-C6 complete / public accepted
 Kick Country runtime: K1 complete / K2 blocked pending explicit collector authorization
-Kick Map pre-public UI: KUI1 #1241 + KUI2 #1242 complete
+Kick Map pre-public UI: KUI1 #1241 + KUI2 #1242 + KUI3a #1244 complete
+Kick KUI3a browser proof: 10 scenarios / 0 violations
 Kick canonical /kick/map/: absent / not public
-Kick KUI3a: safe non-mutating proof preparation
+Kick KUI3b: waits for K3 real production-connected reviewed Country rows
 Kick K3: waits for authorized production broadcaster_user_id persistence
 Kick K4: separate public activation gate
 Current / IRL: fail-closed / 0 accepted fresh placements
@@ -48,13 +49,33 @@ Historical category-program evidence remains accepted but does not override the 
 ## Current execution order
 
 1. Preserve the accepted Twitch Country and Twitch City public boundaries.
-2. Keep Kick KUI1/KUI2 pre-public UI fail-closed and continue KUI3a non-mutating proof preparation where useful.
+2. Treat Kick KUI1/KUI2/KUI3a as completed pre-public preparation; preserve the fail-closed browser proof and do not promote it to a public route.
 3. Do not implement Kick K2 production `broadcaster_user_id` persistence without explicit collector authorization.
 4. After an authorized K2, connect only the staged Kick reviewed Country path in K3 and verify reconciliation.
-5. Run KUI3b against real production-connected reviewed Country rows only after K3.
+5. Run KUI3b against real production-connected reviewed Country rows only after K3; fixtures do not satisfy KUI3b.
 6. Create/activate canonical `/kick/map/` only through separate K4 public authorization and production/browser/API proof.
 7. Keep Current / IRL fail-closed until both separately authorized production identity and fresh accepted temporal evidence exist.
 8. Continue shared Map accessibility/regression work and bounded reviewed-evidence maintenance in parallel.
+
+## Kick KUI3a accepted proof
+
+PR #1244 adds a non-mutating browser proof to the existing `Kick Stream Map Country Public Readiness` workflow. The accepted candidate run is `33978336854`.
+
+```text
+fixtures                       5
+viewports                      2 (1440 desktop / 390 mobile)
+browser scenarios             10
+violations                     0
+mobile horizontal overflow     0 in every scenario
+ready-state action targets     44px minimum
+MapLibre canvas                1 in ready state
+creator markers                0
+Twitch API requests            0
+public /kick/map/ links         0
+public canonical               absent
+```
+
+The proof covers blocked stable identity, ready mixed terminal states, ready empty Country state, unsafe response contract and API error. The ready case exercises metric switching, keyboard Country selection and World view reset. KUI3a proves only the non-public UI contract; it does not substitute for KUI3b real production-connected proof.
 
 ## Historical accepted category-program state
 
