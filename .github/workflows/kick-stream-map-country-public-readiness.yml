@@ -11,6 +11,8 @@ on:
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/kick-stream-map-country-response-core.mjs'
+      - 'scripts/kick-stream-map-country-runtime-staging-core.mjs'
+      - 'scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
       - '.github/workflows/kick-stream-map-country-public-readiness.yml'
   push:
@@ -23,6 +25,8 @@ on:
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/kick-stream-map-country-response-core.mjs'
+      - 'scripts/kick-stream-map-country-runtime-staging-core.mjs'
+      - 'scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
       - '.github/workflows/kick-stream-map-country-public-readiness.yml'
 

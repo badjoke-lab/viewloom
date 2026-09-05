@@ -6,6 +6,7 @@ on:
     paths:
       - 'docs/audits/kick-stream-map-country-review-result-2026-09-02-*.json'
       - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
+      - 'scripts/kick-stream-map-country-runtime-staging-core.mjs'
       - 'scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-country-snapshot-adapter-core.mjs'
@@ -16,6 +17,7 @@ on:
     paths:
       - 'docs/audits/kick-stream-map-country-review-result-2026-09-02-*.json'
       - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
+      - 'scripts/kick-stream-map-country-runtime-staging-core.mjs'
       - 'scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-country-snapshot-adapter-core.mjs'
