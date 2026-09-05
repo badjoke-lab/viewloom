@@ -4,6 +4,14 @@ Issue: #1060
 
 This gate exposes the already-merged City API contract in the public Twitch Stream Map UI without changing data acquisition, reviewed evidence, storage, or collector cadence.
 
+## Public activation state
+
+- The Country / City geography selector is part of the public Twitch Stream Map UI.
+- City requests are explicit through `?geography=city` and the City API contract reports `publicCityUiActivated: true`.
+- Current / IRL remains unavailable and continues to report `currentLocationActivated: false`.
+- A City reference point represents a reviewed City aggregate reference only; it is not a creator exact, home, or current location.
+- City aggregates without reviewed reference geometry remain available through the list-first fallback.
+
 ## User-visible geography modes
 
 - Country is the default and preserves the existing `/api/twitch-stream-map` request.
@@ -17,7 +25,7 @@ This gate exposes the already-merged City API contract in the public Twitch Stre
 - Country-only rows remain explicitly accounted as `country_only` at City resolution.
 - Base City conflicts remain fail-closed and are not plotted.
 - The UI must expose the API's unstable identity state rather than treating login as a stable Twitch user ID.
-- No address, latitude, longitude, GPS trace, or equivalent precise location may be rendered.
+- No address, latitude, longitude, GPS trace, or equivalent precise creator location may be rendered.
 
 ## Independence
 
