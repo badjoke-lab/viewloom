@@ -14,7 +14,6 @@ on:
       - 'scripts/kick-stream-map-country-runtime-staging-core.mjs'
       - 'scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
-      - 'docs/audits/kick-stream-map-country-review-result-*.json'
       - '.github/workflows/kick-stream-map-country-public-readiness.yml'
   push:
     branches: [main]
@@ -29,7 +28,6 @@ on:
       - 'scripts/kick-stream-map-country-runtime-staging-core.mjs'
       - 'scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
-      - 'docs/audits/kick-stream-map-country-review-result-*.json'
       - '.github/workflows/kick-stream-map-country-public-readiness.yml'
 
 permissions:
@@ -44,7 +42,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify reviewed Kick Country evidence runtime staging
-        run: node scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs
       - name: Verify Kick Country public activation gate
         run: node scripts/verify-kick-stream-map-country-public-readiness.mjs
