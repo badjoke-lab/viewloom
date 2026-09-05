@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Stream Map audited runtime baseline: main `6b8668492d2a35e9fb83e1d93929fef8b58de215`  
+Stream Map audited runtime baseline: main `d024276a9a478e488f15f507ffb736c091b5702c`  
 Last updated: 2026-09-06
 
 ## Read first for Stream Map work
@@ -36,7 +36,7 @@ Stream Map updates must not delete or reinterpret accepted records for other Vie
 
 ```text
 Program mainline                         Stream Map
-Audited runtime baseline                 6b8668492d2a35e9fb83e1d93929fef8b58de215
+Audited runtime baseline                 d024276a9a478e488f15f507ffb736c091b5702c
 Twitch Country                           closed at current product boundary
 Country primary renderer                 choropleth / filled regions
 Country UI issue #1214                   completed / closed
@@ -55,6 +55,8 @@ Kick Country review                      100/100 complete: 7 accepted / 3 exclud
 Kick internal runtime staging            connected / validated on real review artifacts
 Kick KUI1 preview shell                  complete #1241 / non-public
 Kick KUI2 Country aggregate UI           complete #1242 / non-public
+Kick KUI3a browser proof                 complete #1244 / 10 scenarios / 0 violations
+Kick KUI3b real-data proof               waits K3
 Kick canonical /kick/map/                absent
 Kick public reviewed-evidence runtime    not activated
 Kick production stable ID                blocked pending collector authorization
@@ -202,19 +204,21 @@ Runtime/data ready in code: stable-ID-capable snapshot parser, public adapter, r
 
 K1 completed in PR #1239. The existing reviewed-evidence workflow validates the real four result files through the internal runtime staging path with reconciliation passing. Public activation remains false.
 
-The pre-public UI lane is now explicit:
+The pre-public UI lane is explicit:
 
 ```text
 KUI1  fail-closed preview shell                 COMPLETE #1241
 KUI2  Country aggregate choropleth/results      COMPLETE #1242
-KUI3a non-mutating proof preparation            NOW SAFE
+KUI3a non-mutating browser proof                COMPLETE #1244
 KUI3b real production-connected proof           AFTER K3
 K4    canonical /kick/map/ public activation    SEPARATE GATE
 ```
 
-KUI1/KUI2 remain under `apps/web/preview/kick-stream-map/`; they do not create `apps/web/kick/map/`, do not enter production Vite inputs and do not add a public navigation target.
+KUI1/KUI2/KUI3a remain under `apps/web/preview/kick-stream-map/`; they do not create `apps/web/kick/map/`, do not enter production Vite inputs and do not add a public navigation target.
 
 KUI2 aggregates only reviewed terminal `geography.countryCode` rows and paints Country regions. It does not use creator coordinates or Twitch evidence.
+
+KUI3a accepted browser run `33978336854` covers 5 fixture states × 2 viewports = 10 scenarios with zero violations. Every 390px scenario has zero horizontal overflow; the ready path proves 44px action targets, MapLibre canvas rendering, keyboard Country selection, metric switching and World view reset. Creator marker count and Twitch API request count are both zero. This fixture proof does not substitute for KUI3b real production-connected proof.
 
 The current reviewed runtime bridge intentionally drops evidence/source prose beyond terminal reviewed Country. The UI therefore does not invent a source-provenance filter that the runtime contract cannot support.
 
@@ -232,7 +236,6 @@ K2 production stable-ID persistence requires explicit collector authorization. S
 The reviewed-evidence Top-20 cadence is maintenance-only and does not block:
 
 - shared Map UI/accessibility/regression work;
-- Kick KUI3a non-mutating proof preparation;
 - later justified Current/IRL read-only/evidence work;
 - docs, fixtures, CI and preview-only verification;
 - other safe non-mutating lane maintenance.
@@ -269,7 +272,7 @@ DONE   Current fresh Top300 review: 300 -> 8 reviewed -> 0 accepted
 DONE   Kick K1 internal reviewed-evidence runtime staging #1239
 DONE   Kick KUI1 fail-closed pre-public shell #1241
 DONE   Kick KUI2 Country aggregate renderer/results #1242
-NOW    Kick KUI3a non-mutating proof preparation
+DONE   Kick KUI3a non-mutating browser proof #1244 / run 33978336854
 PAR    shared Map regression/accessibility work and non-mutating lane maintenance
 BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
 WAIT   Kick K3 production runtime connection until K2
