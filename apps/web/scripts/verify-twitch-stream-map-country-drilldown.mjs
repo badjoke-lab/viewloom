@@ -85,7 +85,10 @@ assert.ok(page.includes('id="stream-map-selected-country"'))
 assert.ok(page.includes('data-clear-selected-country'))
 assert.ok(page.includes('id="stream-map-selected-country-sources"'))
 assert.ok(page.includes('id="stream-map-stream-list-title"'))
-assert.ok(page.includes('Country markers are buttons and can be selected by keyboard or tap.'))
+assert.ok(page.includes('Select a country on the map or in the country list to drill into its currently mapped streams.'))
+assert.ok(page.includes('small-country fallback controls remain aggregate selectors, not creator locations.'))
+assert.equal(page.includes('Select a country marker'), false)
+assert.equal(page.includes('Country markers are buttons'), false)
 
 assert.ok(entry.includes('let selectedCountry: string | null = null'))
 assert.ok(entry.includes('countrySelectionState(filtered, selectedCountry)'))
@@ -107,7 +110,8 @@ console.log(JSON.stringify({
   countryGrouping: true,
   selectedCountryState: true,
   filteredZeroStateRetained: true,
-  markerSelection: true,
+  countryMapOrListSelectionCopy: true,
+  smallCountryFallbackBoundary: true,
   countryRowSelection: true,
   clearSelection: true,
   keyboardAndTapControls: true,
