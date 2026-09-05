@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Stream Map audited runtime baseline: main `13af00ce399bcf85d3699815730deda5cd78288f`  
+Stream Map audited runtime baseline: main `119505fa5742802f6b9bf8df95d95c4bc0ba8b2d`  
 Last updated: 2026-09-05
 
 ## Read first for Stream Map work
@@ -36,7 +36,7 @@ Stream Map updates must not delete or reinterpret accepted records for other Vie
 
 ```text
 Program mainline                         Stream Map
-Audited runtime baseline                 13af00ce399bcf85d3699815730deda5cd78288f
+Audited runtime baseline                 119505fa5742802f6b9bf8df95d95c4bc0ba8b2d
 Twitch Country                           closed at current product boundary
 Country primary renderer                 choropleth / filled regions
 Country UI issue #1214                   completed / closed
@@ -47,7 +47,10 @@ City no_geometry                         1 / list-only
 City creator coordinates                 not published / not inferred
 City Current-location evidence filter    disabled
 Current / IRL public activation          false / disabled
-Current fresh accepted placement         0
+Current 2026-09-05 live review            300 measured / 8 reviewed
+Current fresh qualifying evidence        0
+Current accepted placement               0
+Current true unresolved conflicts        2
 Kick Country review                      100/100 complete: 7 accepted / 3 excluded / 90 no evidence
 Kick public adapter                      stable-ID capable / ready in code
 Kick production stable ID                blocked pending collector authorization
@@ -150,6 +153,26 @@ Current/IRL  fresh explicitly time-bounded accepted geography
 
 Ready in code: optional stable-ID consumption, stable-ID coverage reporting, fail-closed Current response core and explicit public-readiness validation.
 
+Fresh September 5 evidence state:
+
+```text
+Top300 live population      300
+reviewable candidates         8
+machine conflict rows         3
+reviewed identities           8
+fresh qualifying evidence     0
+accepted Current placement    0
+no qualifying evidence        6
+true unresolved conflicts     2
+```
+
+The live queue's third machine conflict was `Japan` + `Tokyo` granularity for the same country and was not promoted to a competing-country conflict during manual review.
+
+Fresh audit records:
+
+- `docs/audits/twitch-stream-map-current-review-queue-live-result-2026-09-05.json`
+- `docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-result-2026-09-05.json`
+
 Current blockers:
 
 ```text
@@ -157,6 +180,8 @@ production Twitch snapshot does not retain user_id / twitchUserId
 public Twitch geography route has no Current mode
 fresh reviewed Current evidence = 0 accepted placements
 ```
+
+Current remains fail-closed. The same probe is not immediately rerun simply to seek a non-zero result. A later review requires a justified new signal/window.
 
 Current never overwrites Base/Home automatically. Expired Current stops placing. Event venue alone does not prove presence. No inferred travel path or residential/GPS precision is published.
 
@@ -178,14 +203,14 @@ reviewed Kick Country evidence is not connected to the public runtime
 public Kick Country activation is not authorized
 ```
 
-Stale Draft #1083 is not a merge candidate as-is. Twitch evidence reuse and automatic Kick geography remain prohibited.
+The immediate safe implementation lane is to stage the reviewed-evidence runtime connection while keeping stable-ID absence fail-closed and public activation false. Stale Draft #1083 is not a merge candidate as-is. Twitch evidence reuse and automatic Kick geography remain prohibited.
 
 ## Scheduling rule
 
 The reviewed-evidence Top-20 cadence is maintenance-only and does not block:
 
-- Kick read-only/evidence/API preparation;
-- Current/IRL read-only/evidence work;
+- Kick read-only/evidence/API/runtime preparation;
+- later justified Current/IRL read-only/evidence work;
 - Map UI/accessibility work;
 - docs, fixtures, CI and preview-only verification.
 
@@ -217,7 +242,8 @@ DONE   Country closeout + #1214 completion
 DONE   City C1-C6 through #1233
 DONE   Twitch Current current-main readiness gate #1234
 DONE   Kick Country current-main readiness gate #1235
-NOW    safe Kick/Current evidence, validation and non-mutating preparation
+DONE   Current fresh Top300 review: 300 -> 8 reviewed -> 0 accepted
+NOW    Kick collector-independent reviewed-evidence runtime preparation
 BLOCK  Kick production stable-ID persistence pending explicit collector authorization
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
 BLOCK  Current public path additionally pending fresh accepted temporal evidence
