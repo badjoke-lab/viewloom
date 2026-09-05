@@ -25,6 +25,15 @@ if (!page.includes('/src/features/twitch-stream-map/maplibre-bootstrap.ts')) {
 if (page.includes('/src/features/twitch-stream-map/stream-map-entry.ts')) {
   fail('the page must not bypass the renderer bootstrap and load stream-map-entry directly')
 }
+if (page.includes('Select a country marker') || page.includes('Country markers are buttons')) {
+  fail('static Stream Map copy must not describe the retired marker-first Country renderer')
+}
+if (!page.includes('Select a country on the map or in the country list')) {
+  fail('static Stream Map copy must describe Country selection without marker-first semantics')
+}
+if (!page.includes('small-country fallback controls remain aggregate selectors, not creator locations')) {
+  fail('static Stream Map copy must preserve the small-country aggregate fallback boundary')
+}
 if (!bootstrap.includes("from 'maplibre-gl'")) {
   fail('bootstrap must import MapLibre from the web dependency graph')
 }
