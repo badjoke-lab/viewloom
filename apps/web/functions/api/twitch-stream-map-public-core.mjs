@@ -101,7 +101,7 @@ export function projectTwitchStreamMapCityContract(model) {
     ...model,
     version: 'viewloom-stream-map-city-contract-v0.1',
     geographyMode: 'city',
-    publicCityUiActivated: false,
+    publicCityUiActivated: true,
     currentLocationActivated: false,
     identityContract: {
       joinKey: 'login',

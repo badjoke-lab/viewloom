@@ -99,7 +99,7 @@ assert.equal('cityCoverage' in country, false)
 const city = projectTwitchStreamMapCityContract(model)
 assert.equal(city.version, 'viewloom-stream-map-city-contract-v0.1')
 assert.equal(city.geographyMode, 'city')
-assert.equal(city.publicCityUiActivated, false)
+assert.equal(city.publicCityUiActivated, true)
 assert.equal(city.currentLocationActivated, false)
 assert.equal(city.identityContract.joinKey, 'login')
 assert.equal(city.identityContract.stableTwitchUserIdAvailableInMinuteSnapshot, false)
@@ -143,6 +143,13 @@ assert.ok(api.includes('invalid_geography_mode'))
 assert.ok(api.includes('projectTwitchStreamMapCityContract(model)'))
 assert.ok(api.includes('projectTwitchStreamMapCountryOnly(model)'))
 
+const geographyUi = readFileSync('src/features/twitch-stream-map/geography-ui-bootstrap.ts', 'utf8')
+assert.ok(geographyUi.includes('data-geography-mode="country"'))
+assert.ok(geographyUi.includes('data-geography-mode="city"'))
+assert.ok(geographyUi.includes("request.searchParams.set('geography', 'city')"))
+assert.ok(geographyUi.includes('Current / IRL'))
+assert.ok(geographyUi.includes('disabled aria-disabled="true"'))
+
 console.log(JSON.stringify({
   ok: true,
   defaultCountryCompatible: true,
@@ -154,5 +161,6 @@ console.log(JSON.stringify({
   exactReconciliation: true,
   preciseLocationExcluded: true,
   stableIdGapExplicit: true,
-  publicCityUiActivated: false,
+  publicCityUiActivated: true,
+  currentIrlUiActive: false,
 }, null, 2))
