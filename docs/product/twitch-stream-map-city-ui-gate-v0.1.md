@@ -27,6 +27,15 @@ This gate exposes the already-merged City API contract in the public Twitch Stre
 - The UI must expose the API's unstable identity state rather than treating login as a stable Twitch user ID.
 - No address, latitude, longitude, GPS trace, or equivalent precise creator location may be rendered.
 
+## C6 public presentation acceptance
+
+- In City mode, the shared `current_location` evidence checkbox is disabled and unchecked because Current / IRL placement is not active at City resolution.
+- Reviewed City aggregate reference points use the `city_aggregate_reference` role; aggregates without reviewed geometry remain `list_only`.
+- `Mapped City streams` appears before `Why streams are unmapped`, so successful mapped results are presented before failure accounting.
+- The Country results card remains hidden in City mode and the City stream results use the full results width rather than reserving an empty Country column.
+- These presentation decisions do not change evidence acceptance, persistence, City placement semantics, or Country mode layout.
+- The current acceptance record is `docs/audits/twitch-stream-map-city-public-acceptance-2026-09-05.json`.
+
 ## Independence
 
 Geography mode is orthogonal to population and evidence filters. Changing Country/City must not mutate evidence acceptance or persistence.
