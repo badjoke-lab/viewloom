@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Kick Stream Map Preview — ViewLoom</title>
+  <link rel="stylesheet" href="/src/mock-site.css" />
+</head>
+<body data-provider="kick" data-page="kick-stream-map-preview">
+  <div class="site-frame">
+    <header class="masthead">
+      <div class="masthead__inner">
+        <a class="brand" href="/"><span class="brand-mark">VL</span><span>ViewLoom<small>Live data observatory</small></span></a>
+        <div class="status-inline"><span class="dot"></span>Preview only · not a public route</div>
+      </div>
+    </header>
+
+    <main class="page page--full kick-map-preview" data-kick-map-preview>
+      <div class="breadcrumb">ViewLoom / Kick data / Stream Map / Preview only</div>
+
+      <section class="page-head">
+        <div>
+          <div class="kicker">KICK DATA · WHERE · PREVIEW ONLY</div>
+          <h1>Stream Map</h1>
+          <p class="lede">Pre-public Country UI shell for the Kick Stream Map contract. It may display real readiness and accounting from <code>/api/kick-stream-map</code>, but geography remains hidden until both production readiness and separate public activation gates are true.</p>
+        </div>
+        <div class="head-facts">
+          <div class="fact"><small>State</small><strong data-kick-preview-state>Loading</strong></div>
+          <div class="fact"><small>Updated</small><strong data-kick-preview-updated>—</strong></div>
+        </div>
+      </section>
+
+      <section class="kick-map-preview__facts" aria-label="Kick Stream Map readiness accounting">
+        <article class="kick-map-preview__card"><small>Observed streams</small><strong data-kick-preview-observed>—</strong></article>
+        <article class="kick-map-preview__card"><small>Stable identity</small><strong data-kick-preview-stable>—</strong></article>
+        <article class="kick-map-preview__card"><small>Mapped streams</small><strong data-kick-preview-mapped>—</strong></article>
+        <article class="kick-map-preview__card"><small>Unmapped streams</small><strong data-kick-preview-unmapped>—</strong></article>
+      </section>
+
+      <section class="surface" aria-label="Kick Country map preview">
+        <div class="stream-map-shell__head">
+          <div>
+            <div class="stream-map-shell__eyebrow">Country surface</div>
+            <h2>World map</h2>
+            <p class="kick-map-preview__note">No candidate, staged, inferred, Twitch-derived, City or Current geography is rendered here.</p>
+          </div>
+          <span class="kick-map-preview__badge">Kick · Country only</span>
+        </div>
+        <div class="kick-map-preview__gate" data-kick-preview-gate data-ready="false" role="status" aria-live="polite">
+          <div>
+            <strong data-kick-preview-gate-heading>Country geography is gated</strong>
+            <p data-kick-preview-gate-detail>Loading the current Kick Stream Map readiness contract…</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="kick-map-preview__grid">
+        <article class="kick-map-preview__card">
+          <small>Stable identity contract</small>
+          <strong data-kick-preview-identity-contract>—</strong>
+          <p class="kick-map-preview__note">Slug/login/display metadata is never promoted to stable identity.</p>
+        </article>
+        <article class="kick-map-preview__card">
+          <small>Public activation</small>
+          <strong data-kick-preview-activation>—</strong>
+          <p class="kick-map-preview__note">This preview does not authorize <code>/kick/map/</code>.</p>
+        </article>
+      </section>
+
+      <section class="kick-map-preview__grid">
+        <article class="surface">
+          <h2>Current blockers</h2>
+          <ul class="kick-map-preview__list" data-kick-preview-blockers><li>Loading…</li></ul>
+        </article>
+        <article class="surface">
+          <h2>Unmapped reasons</h2>
+          <ul class="kick-map-preview__list" data-kick-preview-reasons><li>Loading…</li></ul>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="/src/features/kick-stream-map/preview-entry.ts"></script>
+</body>
+</html>
