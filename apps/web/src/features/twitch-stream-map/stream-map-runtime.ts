@@ -1,4 +1,8 @@
-export type StreamMapRuntimeMap = object
+export type StreamMapRuntimeMap = {
+  addControl(control: object, position?: string): void
+  scrollZoom: { disable(): void }
+  on(event: 'load' | 'error', handler: () => void): void
+}
 
 type StreamMapRuntimeListener = (map: StreamMapRuntimeMap | null) => void
 
