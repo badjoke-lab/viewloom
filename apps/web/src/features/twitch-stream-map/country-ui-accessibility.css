@@ -1,0 +1,36 @@
+.stream-map-country-ui-v2 .stream-map-geography-options button,
+.stream-map-metric-toggle button,
+.stream-map-world-view {
+  min-height: 44px;
+}
+
+.stream-map-metric-toggle button:focus-visible,
+.stream-map-world-view:focus-visible,
+.stream-map-mobile-filter-toggle:focus-visible,
+.stream-map-country-ui-v2 .stream-map-population-control select:focus-visible,
+.stream-map-country-ui-v2 .stream-map-filter-option:has(input:focus-visible),
+.stream-map-evidence-details > summary:focus-visible {
+  outline: 2px solid var(--accent, #905aff);
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .stream-map-mobile-filter-toggle,
+  .stream-map-country-ui-v2 .stream-map-filter-clear,
+  .stream-map-country-ui-v2 .stream-map-population-control select,
+  .stream-map-country-ui-v2 .stream-map-filter-option,
+  .stream-map-country-ui-v2 .stream-map-country-row,
+  .stream-map-evidence-details > summary {
+    min-height: 44px;
+  }
+
+  .stream-map-evidence-details > summary {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .stream-map-country-ui-v2 .stream-map-canvas .maplibregl-ctrl-group button {
+    width: 44px;
+    height: 44px;
+  }
+}
