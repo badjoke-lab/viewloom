@@ -23,10 +23,10 @@ for (const token of requiredBootstrap) {
 
 for (const token of [
   "citySelectionState(filtered, selectedCityKey)",
-  "data-city-places",
-  "data-selected-city",
-  "data-clear-selected-city",
-  "data-show-selected-city-streams",
+  "[data-city-places]",
+  "[data-selected-city]",
+  "dataset.clearSelectedCity",
+  "dataset.showSelectedCityStreams",
   "City-placeable streams",
   "Country-only evidence stays in accounting",
 ]) {
