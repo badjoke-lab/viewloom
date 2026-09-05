@@ -5,12 +5,12 @@ Normative specification: `docs/product/stream-map-spec-v0.7.md`
 Execution plan: `docs/product/stream-map-implementation-plan-v0.10.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `6b8668492d2a35e9fb83e1d93929fef8b58de215`  
+Audited runtime baseline: main `d024276a9a478e488f15f507ffb736c091b5702c`  
 Last updated: 2026-09-06
 
 ## 1. Current milestone
 
-**Twitch Country and Twitch City are closed at their current public product boundaries. Current / IRL remains fail-closed with zero accepted temporal placements. Kick Country K1 runtime staging plus KUI1/KUI2 pre-public UI are complete through #1242. Kick production stable-ID persistence remains blocked pending explicit collector authorization, and `/kick/map/` is still intentionally absent.**
+**Twitch Country and Twitch City are closed at their current public product boundaries. Current / IRL remains fail-closed with zero accepted temporal placements. Kick Country K1 runtime staging and the complete non-public KUI1/KUI2/KUI3a UI preparation are done through #1244. Kick production stable-ID persistence remains blocked pending explicit collector authorization, KUI3b waits for K3 real production-connected reviewed Country rows, and `/kick/map/` remains intentionally absent.**
 
 The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock.
 
@@ -21,9 +21,9 @@ The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock
 | Twitch Country | closed; choropleth/UI/production proof complete; #1214 completed | scoped defects/accessibility/evidence maintenance only |
 | Twitch City | C1-C6 complete; public City activation, reviewed aggregate references/list-only fallback and production acceptance complete | scoped quality/coverage only |
 | Kick Country runtime | K1 complete: 100/100 reviewed evidence passes the internal stable-ID staging path | K2 production `broadcaster_user_id` persistence after explicit collector authorization; K3 after K2; K4 separate public gate |
-| Kick Country UI | KUI1 fail-closed preview #1241 and KUI2 Country choropleth/results #1242 complete; production Vite/public route unchanged | KUI3a safe proof preparation; KUI3b real-data proof after K3 |
+| Kick Country UI | KUI1 #1241 + KUI2 #1242 + KUI3a #1244 complete; 10 fixture-browser scenarios pass with zero violations; production Vite/public route unchanged | KUI3b real-data proof only after K3 |
 | Current / IRL | 2026-09-05 Top300 review: 300 measured, 8 reviewed, 0 accepted, 2 unresolved true conflicts; public control disabled | fail closed; later work only on justified new evidence window or separately authorized prerequisites |
-| Shared Map UI | Twitch Country/City accepted on desktop/mobile/browser production checks; Kick preview controls have fail-closed/focus/tap coverage | scoped regression/accessibility work |
+| Shared Map UI | Twitch Country/City accepted on desktop/mobile/browser production checks; Kick pre-public browser proof now includes 390px overflow, keyboard/focus and 44px target checks | scoped regression/accessibility work |
 | Reviewed-evidence maintenance | bounded maintenance only | never block Map lanes |
 
 ## 3. Twitch Country — CLOSED
@@ -83,7 +83,7 @@ no_geometry      1
 
 Natural Earth points are `city_aggregate_reference` targets only, never creator coordinates or municipal-boundary claims. `Sant Cugat del Valles` remains `no_geometry` and list-only.
 
-## 5. Kick Country — K1 + KUI1/KUI2 COMPLETE / PRODUCTION DEPENDENCY BLOCKED
+## 5. Kick Country — K1 + KUI1/KUI2/KUI3a COMPLETE / PRODUCTION DEPENDENCY BLOCKED
 
 Provider boundary:
 
@@ -130,6 +130,23 @@ KUI2 PR #1242 added:
 - no marker-as-creator placement;
 - no Twitch evidence reuse, City inference, Current promotion or creator coordinates.
 
+KUI3a PR #1244 completes the non-mutating proof preparation. Accepted browser workflow run `33978336854` exercises the real non-public Vite preview with intercepted deterministic API fixtures:
+
+```text
+fixtures                       5
+viewports                      2 (1440 desktop / 390 mobile)
+browser scenarios             10
+violations                     0
+mobile horizontal overflow     0 in every scenario
+ready-state action targets     44px minimum
+creator markers                0
+Twitch API requests            0
+public /kick/map/ links         0
+public canonical               absent
+```
+
+The covered states are blocked stable identity, ready mixed mapped/unmapped/excluded/conflict accounting, ready empty Country, unsafe response contract and API error. The ready case also proves MapLibre canvas creation, metric switching, keyboard Country selection and World view reset. KUI3a uses fixtures only and therefore does not satisfy KUI3b.
+
 Current exact blockers:
 
 ```text
@@ -142,7 +159,6 @@ Blocker 1 is a production collector mutation and requires explicit authorization
 Next sequence:
 
 ```text
-KUI3a  non-mutating proof preparation                                  NOW SAFE
 K2     persist official broadcaster_user_id in production snapshot     BLOCKED AUTH
 K3     connect staged reviewed Country path to production runtime       AFTER K2
 KUI3b  real production-connected Country UI/API/browser proof           AFTER K3
@@ -182,7 +198,7 @@ Hard boundaries: no Base/Home mutation from Current, no expired/future-early pla
 
 ## 7. Reviewed-evidence maintenance — maintenance only
 
-The bounded Top-20 process does not serialize Map development or authorize collector/schema/cadence/retention changes. Its wait periods never pause safe shared UI work, Kick KUI3a, docs, fixtures, CI or other non-mutating preparation.
+The bounded Top-20 process does not serialize Map development or authorize collector/schema/cadence/retention changes. Its wait periods never pause safe shared UI work, docs, fixtures, CI or other non-mutating preparation.
 
 ## 8. Shared operational boundaries
 
@@ -202,7 +218,7 @@ DONE   Current fresh Top300 probe + 8-identity temporal review, accepted 0
 DONE   Kick K1 collector-independent reviewed-evidence runtime staging #1239
 DONE   Kick KUI1 fail-closed preview shell #1241
 DONE   Kick KUI2 Country aggregate preview renderer #1242
-NOW    Kick KUI3a non-mutating proof preparation
+DONE   Kick KUI3a non-mutating browser proof #1244 / run 33978336854
 PAR    safe shared Map regression/accessibility work and maintenance
 BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
 WAIT   Kick K3 production runtime connection until K2
