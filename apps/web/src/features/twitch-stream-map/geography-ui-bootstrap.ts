@@ -128,6 +128,7 @@ function adaptCityPayloadForExistingRenderer(raw: CityPayload): CityPayload {
 function bootGeographyUi(): void {
   const run = () => {
     injectStyles()
+    if (requestedMode === 'city') disableUnavailableCityLocationType()
     const anchor = document.querySelector('.stream-map-population-panel')
     if (!anchor || document.querySelector('[data-stream-map-geography-panel]')) return
 
@@ -162,6 +163,20 @@ function bootGeographyUi(): void {
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true })
   else run()
+}
+
+function disableUnavailableCityLocationType(): void {
+  const current = document.querySelector<HTMLInputElement>('[data-location-type][value="current_location"]')
+  if (!current) return
+  current.checked = false
+  current.disabled = true
+  current.setAttribute('aria-disabled', 'true')
+  current.setAttribute('aria-label', 'Current location unavailable in City mode')
+  const label = current.closest<HTMLLabelElement>('.stream-map-filter-option')
+  if (!label) return
+  label.dataset.cityUnavailable = 'true'
+  label.setAttribute('aria-disabled', 'true')
+  label.title = 'Current location is unavailable at City resolution. City uses accepted home/base or declared-location evidence only.'
 }
 
 function switchMode(mode: GeographyMode): void {
@@ -226,6 +241,8 @@ function injectStyles(): void {
     .stream-map-geography-options button{border:1px solid var(--line,#30363d);background:transparent;color:inherit;border-radius:999px;padding:8px 13px;cursor:pointer}
     .stream-map-geography-options button[data-active="true"]{background:rgba(255,255,255,.09);border-color:currentColor;font-weight:700}
     .stream-map-geography-options button:disabled{opacity:.45;cursor:not-allowed}
+    .stream-map-filter-option[data-city-unavailable="true"]{opacity:.45;cursor:not-allowed}
+    .stream-map-filter-option[data-city-unavailable="true"] input{cursor:not-allowed}
     .stream-map-geography-state{grid-column:1/-1}
     .stream-map-city-accounting{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;border-top:1px solid var(--line,#30363d);padding-top:12px}
     .stream-map-city-accounting div{display:flex;flex-direction:column;gap:3px}.stream-map-city-accounting small{color:var(--muted,#9ca3af)}.stream-map-city-accounting p{grid-column:1/-1}
