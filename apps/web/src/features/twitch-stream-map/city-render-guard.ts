@@ -13,7 +13,9 @@ const requestedCity = new URL(window.location.href).searchParams.get('geography'
 let selectedCityKey: string | null = null
 let selectedCityLabel = ''
 let latestRows: StreamMapMappedStream[] = []
+let lastPayload: CityPayload | null = null
 let streamListObserver: MutationObserver | null = null
+let payloadObserver: MutationObserver | null = null
 
 if (requestedCity) bootCityRendering()
 
@@ -92,22 +94,45 @@ function bindFilterRefresh(): void {
 }
 
 function renderWhenPayloadArrives(): void {
-  const render = () => {
-    const payload = (window as CityPayloadWindow).__viewloomStreamMapCityPayload
-    if (!payload) return false
-    latestRows = Array.isArray(payload.mappedStreams) ? payload.mappedStreams : []
-    renderCityView()
+  const sync = () => {
+    if (!syncLatestPayload()) return false
     installStreamListObserver()
+    installPayloadObserver()
     window.setTimeout(updateStaticCityCopy, 0)
     return true
   }
 
-  if (render()) return
+  if (sync()) return
   const observer = new MutationObserver(() => {
-    if (!render()) return
+    if (!sync()) return
     observer.disconnect()
   })
   observer.observe(document.documentElement, { childList: true, subtree: true })
+}
+
+function syncLatestPayload(): boolean {
+  const payload = (window as CityPayloadWindow).__viewloomStreamMapCityPayload ?? null
+  if (!payload) return false
+  if (payload === lastPayload) return true
+  lastPayload = payload
+  latestRows = Array.isArray(payload.mappedStreams) ? payload.mappedStreams : []
+  renderCityView()
+  return true
+}
+
+function installPayloadObserver(): void {
+  if (payloadObserver) return
+  const panel = document.querySelector<HTMLElement>('[data-stream-map-geography-panel]')
+  if (!panel) {
+    window.setTimeout(installPayloadObserver, 0)
+    return
+  }
+  payloadObserver = new MutationObserver(() => {
+    const before = lastPayload
+    syncLatestPayload()
+    if (lastPayload !== before) window.setTimeout(updateStaticCityCopy, 0)
+  })
+  payloadObserver.observe(panel, { childList: true, subtree: true })
 }
 
 function currentFilteredRows(): StreamMapMappedStream[] {
