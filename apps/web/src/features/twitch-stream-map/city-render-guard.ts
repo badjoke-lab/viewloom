@@ -42,7 +42,6 @@ function injectCityStyles(): void {
     .stream-map-selected-city__facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
     .stream-map-selected-city__facts div{display:flex;flex-direction:column;gap:3px}.stream-map-selected-city__facts small{color:var(--muted,#9ca3af)}
     .stream-map-selected-city__sources{display:flex;gap:6px;flex-wrap:wrap}
-    .stream-map-city-selection-empty{margin:10px 0 0}
     @media (max-width:720px){.stream-map-city-place{min-height:44px;align-items:center}.stream-map-city-place span{text-align:left}.stream-map-selected-city__head{display:grid}.stream-map-selected-city__facts{grid-template-columns:1fr}}
   `
   document.head.append(style)
@@ -273,15 +272,7 @@ function applyStreamSelection(selection: CitySelectionState<StreamMapMappedStrea
     if (show) visible += 1
   }
 
-  list.querySelector('[data-city-selection-empty]')?.remove()
-  if (selection.selectedKey && visible === 0) {
-    const empty = document.createElement('p')
-    empty.className = 'stream-map-empty stream-map-city-selection-empty'
-    empty.dataset.citySelectionEmpty = ''
-    empty.textContent = 'The selected City aggregate has no mapped streamer under the active population/evidence filters. Clear City or change the filters.'
-    list.append(empty)
-  }
-
+  list.dataset.citySelectionEmpty = String(Boolean(selection.selectedKey && visible === 0))
   const title = document.getElementById('stream-map-stream-list-title')
   if (title) title.textContent = selection.selectedKey ? `${selection.aggregate?.label || selectedCityLabel || 'Selected City'} streams` : 'City-placeable streams'
 }
@@ -294,7 +285,8 @@ function installStreamListObserver(): void {
     return
   }
   streamListObserver = new MutationObserver(() => {
-    queueMicrotask(() => applyStreamSelection(citySelectionState(currentFilteredRows(), selectedCityKey) as CitySelectionState<StreamMapMappedStream>, currentFilteredRows()))
+    const filtered = currentFilteredRows()
+    applyStreamSelection(citySelectionState(filtered, selectedCityKey) as CitySelectionState<StreamMapMappedStream>, filtered)
   })
   streamListObserver.observe(list, { childList: true })
 }
