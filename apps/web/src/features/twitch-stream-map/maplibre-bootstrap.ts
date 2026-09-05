@@ -2,6 +2,7 @@ import * as maplibregl from 'maplibre-gl'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './maplibre-bootstrap.css'
+import { publishStreamMapRuntimeMap } from './stream-map-runtime'
 
 type StreamMapOptions = ConstructorParameters<typeof maplibregl.Map>[0]
 
@@ -23,6 +24,7 @@ const safeWorldBounds: [[number, number], [number, number]] = [
 class ViewLoomStreamMap extends maplibregl.Map {
   constructor(options: StreamMapOptions) {
     super({ ...options, maxBounds: safeWorldBounds })
+    publishStreamMapRuntimeMap(this)
   }
 }
 
