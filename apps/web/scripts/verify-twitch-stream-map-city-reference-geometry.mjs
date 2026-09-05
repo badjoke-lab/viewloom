@@ -74,16 +74,21 @@ for (const entry of TWITCH_CITY_REFERENCE_GEOMETRY_REGISTRY) {
   assert.ok(entry.source.sourceCountryName.length > 0)
   assert.equal(typeof entry.source?.sourceRegionName, 'string')
   assert.ok(entry.source.sourceRegionName.length > 0)
-  if (entry.region) {
-    assert.equal(entry.source.sourceRegionName, entry.region, `reference source region mismatch: ${entry.key}`)
-  }
   assert.equal(typeof entry.source?.featureName, 'string')
   assert.ok(entry.source.featureName.length > 0)
   assert.equal(typeof entry.source?.featureClass, 'string')
   assert.ok(entry.source.featureClass.length > 0)
   assert.ok(Number.isSafeInteger(entry.source?.featureId) && entry.source.featureId > 0, `invalid Natural Earth feature id: ${entry.key}`)
   assert.equal(entry.source?.countryNameMatchCount, 1, `Natural Earth country/name match must be unique: ${entry.key}`)
-  assert.equal(entry.source?.exactFeatureMatchCount, 1, `Natural Earth exact feature match must be unique: ${entry.key}`)
+
+  if (entry.region) {
+    assert.equal(entry.source?.matchBasis, 'country_city_region', `region-bearing City must use country/city/region match basis: ${entry.key}`)
+    assert.equal(entry.source?.canonicalRegionMatch, true, `reference source region must match canonical region: ${entry.key}`)
+    assert.equal(entry.source.sourceRegionName, entry.region, `reference source region mismatch: ${entry.key}`)
+  } else {
+    assert.equal(entry.source?.matchBasis, 'country_city_unique', `regionless City must use unique country/city match basis: ${entry.key}`)
+    assert.equal(entry.source?.canonicalRegionMatch, null, `regionless City must not claim a canonical region match: ${entry.key}`)
+  }
 }
 
 assert.equal(reviewedReferencePointCount, 3, 'first City reference-point review batch must contain exactly three reviewed points')
