@@ -8,6 +8,7 @@ const EMPTY_GEOMETRY_STATUSES = new Set(['no_geometry', 'review_needed'])
 const NATURAL_EARTH_DATASET = 'ne_10m_populated_places_simple'
 const NATURAL_EARTH_VERSION = '5.1.2'
 const NATURAL_EARTH_URL = 'https://github.com/nvkelso/natural-earth-vector/blob/v5.1.2/geojson/ne_10m_populated_places_simple.geojson'
+const NATURAL_EARTH_NO_MATCH_REASON = 'natural_earth_v5_1_2_no_matching_reference_feature'
 
 const expectedKeys = [...new Set(TWITCH_REVIEWED_LOCATION_RECORDS.flatMap((record) => {
   if (record.entityKind !== 'person') return []
@@ -31,6 +32,7 @@ assert.equal(new Set(registryKeys).size, registryKeys.length, 'City reference ge
 assert.deepEqual([...registryKeys].sort(), expectedKeys, 'City reference geometry registry must exactly cover accepted City aggregates')
 
 let reviewedReferencePointCount = 0
+let noGeometryCount = 0
 
 for (const entry of TWITCH_CITY_REFERENCE_GEOMETRY_REGISTRY) {
   assert.equal(
@@ -48,6 +50,7 @@ for (const entry of TWITCH_CITY_REFERENCE_GEOMETRY_REGISTRY) {
   )
 
   if (EMPTY_GEOMETRY_STATUSES.has(entry.geometryStatus)) {
+    if (entry.geometryStatus === 'no_geometry') noGeometryCount += 1
     assert.equal(entry.referenceRole, null, `${entry.geometryStatus} entry must not claim a reference role: ${entry.key}`)
     assert.equal(entry.referencePoint, null, `${entry.geometryStatus} entry must not expose a reference point: ${entry.key}`)
     assert.equal(entry.source, null, `${entry.geometryStatus} entry must not claim a source: ${entry.key}`)
@@ -91,6 +94,11 @@ for (const entry of TWITCH_CITY_REFERENCE_GEOMETRY_REGISTRY) {
   }
 }
 
-assert.equal(reviewedReferencePointCount, 3, 'first City reference-point review batch must contain exactly three reviewed points')
+assert.equal(reviewedReferencePointCount, 8, 'completed City reference review must contain eight reviewed Natural Earth points')
+assert.equal(noGeometryCount, 1, 'completed City reference review must leave exactly one no-geometry City')
 
-console.log(`Verified Twitch City reference geometry registry: ${expectedKeys.length} City aggregates, ${reviewedReferencePointCount} reviewed reference points.`)
+const santCugat = TWITCH_CITY_REFERENCE_GEOMETRY_REGISTRY.find((entry) => entry.city === 'Sant Cugat del Valles')
+assert.equal(santCugat?.geometryStatus, 'no_geometry')
+assert.equal(santCugat?.reason, NATURAL_EARTH_NO_MATCH_REASON)
+
+console.log(`Verified Twitch City reference geometry registry: ${expectedKeys.length} City aggregates, ${reviewedReferencePointCount} reviewed reference points, ${noGeometryCount} no-geometry City.`)
