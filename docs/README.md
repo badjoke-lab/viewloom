@@ -210,3 +210,23 @@ production impact
 ```
 
 Material changes to a versioned specification/plan should create a new version and supersede the old one instead of rewriting historical meaning.
+
+## Retained Twitch category rollout
+
+The completed Twitch category/Heatmap rollout remains a historical accepted milestone and is preserved independently of the Stream Map documentation update.
+
+- final seven-day audit accepted `2016 / 2016` expected slots;
+- category-reference coverage was `0.995353`;
+- PR #740 exposed Category + Top;
+- PR #741 repaired the rejected 390px mobile overflow;
+- accepted production SHA was `b006f45d0676c9ff3e05e5d6727458e43802de53`;
+- no Kick category UI was authorized by the Twitch rollout.
+
+Historical development-policy verifier anchors retained below; they do not redefine the current Stream Map milestone:
+
+```text
+Twitch category stability + Heatmap public rollout complete
+Public production acceptance run 31244148651 success
+12a5-twitch-heatmap-category-public-cutover-acceptance.json
+Current-main documents and accepted contracts override cached handoffs
+```
