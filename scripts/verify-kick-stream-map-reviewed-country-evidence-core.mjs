@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { buildKickReviewedCountryEvidence } from './kick-stream-map-reviewed-country-evidence-core.mjs'
-import { buildKickCountryResponse } from './kick-stream-map-country-response-core.mjs'
+import { buildKickCountryRuntimeStaging } from './kick-stream-map-country-runtime-staging-core.mjs'
 
 const auditDir = 'docs/audits'
 const resultFiles = fs.readdirSync(auditDir)
@@ -44,12 +44,17 @@ const snapshotItems = evidence.map((row) => {
   }
 })
 
-const response = buildKickCountryResponse({
+const staging = buildKickCountryRuntimeStaging({
   snapshotItems,
-  reviewedEvidence: evidence,
+  reviewResults: results,
   observedAt: '2026-09-02T00:00:00.000Z',
 })
+const response = staging.countryResponse
 
+assert.equal(staging.schemaVersion, 'viewloom-kick-stream-map-country-runtime-staging-v0.1')
+assert.equal(staging.provider, 'kick')
+assert.equal(staging.publicActivationAuthorized, false)
+assert.equal(staging.reviewedEvidenceCount, evidence.length)
 assert.equal(response.publicActivationAuthorized, false)
 assert.equal(response.coverage.observedStreams, evidence.length)
 assert.equal(response.coverage.mappedStreams, accepted.length)
@@ -74,6 +79,7 @@ console.log(JSON.stringify({
   excludedNonperson: excluded.length,
   noQualifyingEvidence: noQualifying.length,
   conflictUnmapped: conflicts.length,
+  runtimeStagingConnected: true,
   publicActivationAuthorized: response.publicActivationAuthorized,
   stableIdentity: response.semantics.stableIdentity,
   reconciliationPasses: response.coverage.reconciliation.passes,
