@@ -243,6 +243,7 @@ function injectStyles(): void {
     .stream-map-geography-options button:disabled{opacity:.45;cursor:not-allowed}
     .stream-map-filter-option[data-city-unavailable="true"]{opacity:.45;cursor:not-allowed}
     .stream-map-filter-option[data-city-unavailable="true"] input{cursor:not-allowed}
+    .stream-map-city-mode .stream-map-results-grid{grid-template-columns:minmax(0,1fr)}
     .stream-map-geography-state{grid-column:1/-1}
     .stream-map-city-accounting{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;border-top:1px solid var(--line,#30363d);padding-top:12px}
     .stream-map-city-accounting div{display:flex;flex-direction:column;gap:3px}.stream-map-city-accounting small{color:var(--muted,#9ca3af)}.stream-map-city-accounting p{grid-column:1/-1}
