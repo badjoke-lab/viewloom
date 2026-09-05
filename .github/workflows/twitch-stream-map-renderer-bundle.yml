@@ -8,6 +8,9 @@ on:
       - 'apps/web/public/data/geo/**'
       - 'apps/web/src/features/twitch-stream-map/maplibre-bootstrap.ts'
       - 'apps/web/src/features/twitch-stream-map/stream-map-entry.ts'
+      - 'apps/web/src/features/twitch-stream-map/city-render-guard.ts'
+      - 'apps/web/src/features/twitch-stream-map/city-aggregate-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/city-aggregate-core.d.mts'
       - 'apps/web/src/features/twitch-stream-map/country-regions.ts'
       - 'apps/web/src/features/twitch-stream-map/country-minimal-basemap.ts'
       - 'apps/web/src/features/twitch-stream-map/country-focus-bounds.ts'
@@ -15,6 +18,7 @@ on:
       - 'apps/web/src/features/twitch-stream-map/country-ui-density.css'
       - 'apps/web/scripts/install-ci-playwright.mjs'
       - 'apps/web/scripts/twitch-stream-map-renderer-browser.mjs'
+      - 'apps/web/scripts/twitch-stream-map-city-aggregate-browser.mjs'
       - 'apps/web/scripts/twitch-stream-map-country-regions-default-browser.mjs'
       - 'apps/web/scripts/twitch-stream-map-country-minimal-basemap-browser.mjs'
       - 'apps/web/scripts/twitch-stream-map-country-focus-browser.mjs'
@@ -75,7 +79,7 @@ jobs:
             --project-name viewloom \
             --branch "$PREVIEW_BRANCH" \
             --commit-hash "${{ github.event.pull_request.head.sha }}" \
-            --commit-message "Twitch Country PR #${{ github.event.pull_request.number }} preview" \
+            --commit-message "Twitch Stream Map PR #${{ github.event.pull_request.number }} preview" \
             | tee "$GITHUB_WORKSPACE/artifacts/twitch-country-pages-preview/wrangler.log"
           grep -Eo 'https://[A-Za-z0-9.-]+\.pages\.dev' "$GITHUB_WORKSPACE/artifacts/twitch-country-pages-preview/wrangler.log" \
             | tail -1 \
@@ -103,6 +107,11 @@ jobs:
         run: node scripts/install-ci-playwright.mjs
       - name: Install Chromium
         run: /tmp/viewloom-playwright/node_modules/.bin/playwright install --with-deps chromium
+      - name: Verify City aggregate selection and list-first fallback
+        working-directory: apps/web
+        env:
+          STREAM_MAP_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/twitch-stream-map-city-aggregate-browser.mjs
       - name: Verify finalized Country regions and small-country fallback
         working-directory: apps/web
         env:

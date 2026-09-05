@@ -6,9 +6,37 @@ on:
       - 'apps/web/src/features/twitch-stream-map/geography-mode-core.mjs'
       - 'apps/web/src/features/twitch-stream-map/geography-mode-core.d.mts'
       - 'apps/web/src/features/twitch-stream-map/geography-ui-bootstrap.ts'
+      - 'apps/web/src/features/twitch-stream-map/city-render-guard.ts'
+      - 'apps/web/src/features/twitch-stream-map/city-aggregate-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/city-aggregate-core.d.mts'
       - 'apps/web/src/features/twitch-stream-map/unmapped-reason-core.mjs'
       - 'apps/web/src/features/twitch-stream-map/unmapped-reason-view.ts'
       - 'apps/web/fixtures/twitch-stream-map-city-ui-request-fixture.json'
+      - 'apps/web/scripts/verify-twitch-stream-map-city-aggregate.mjs'
+      - 'scripts/verify-twitch-stream-map-geography-mode.mjs'
+      - 'scripts/verify-twitch-stream-map-city-ui-gate-audit.mjs'
+      - 'scripts/verify-twitch-stream-map-city-ui-request-fixture.mjs'
+      - 'scripts/verify-twitch-stream-map-geography-ui-wiring.mjs'
+      - 'docs/product/twitch-stream-map-city-ui-gate-v0.1.md'
+      - 'docs/audits/twitch-stream-map-city-ui-gate-2026-08-26.json'
+      - 'docs/implementation/twitch-stream-map-city-ui-wiring-plan-v0.1.md'
+      - '.github/workflows/twitch-stream-map-geography-mode.yml'
+      - 'apps/web/twitch/map/index.html'
+      - 'apps/web/src/features/twitch-stream-map/stream-map-entry.ts'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/src/features/twitch-stream-map/geography-mode-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/geography-mode-core.d.mts'
+      - 'apps/web/src/features/twitch-stream-map/geography-ui-bootstrap.ts'
+      - 'apps/web/src/features/twitch-stream-map/city-render-guard.ts'
+      - 'apps/web/src/features/twitch-stream-map/city-aggregate-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/city-aggregate-core.d.mts'
+      - 'apps/web/src/features/twitch-stream-map/unmapped-reason-core.mjs'
+      - 'apps/web/src/features/twitch-stream-map/unmapped-reason-view.ts'
+      - 'apps/web/fixtures/twitch-stream-map-city-ui-request-fixture.json'
+      - 'apps/web/scripts/verify-twitch-stream-map-city-aggregate.mjs'
       - 'scripts/verify-twitch-stream-map-geography-mode.mjs'
       - 'scripts/verify-twitch-stream-map-city-ui-gate-audit.mjs'
       - 'scripts/verify-twitch-stream-map-city-ui-request-fixture.mjs'
@@ -39,3 +67,5 @@ jobs:
         run: node scripts/verify-twitch-stream-map-city-ui-request-fixture.mjs
       - name: Verify City UI wiring
         run: node scripts/verify-twitch-stream-map-geography-ui-wiring.mjs
+      - name: Verify City aggregate core
+        run: node apps/web/scripts/verify-twitch-stream-map-city-aggregate.mjs
