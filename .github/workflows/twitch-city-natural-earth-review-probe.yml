@@ -43,9 +43,9 @@ jobs:
 
           const collection = await geojsonResponse.json();
           const targets = [
-            { key: 'GB|england|london', name: 'London', isoA2: 'GB', expectedAdm1: 'England' },
-            { key: 'JP|tokyo|tokyo', name: 'Tokyo', isoA2: 'JP', expectedAdm1: 'Tokyo' },
             { key: 'DE|berlin|berlin', name: 'Berlin', isoA2: 'DE', expectedAdm1: 'Berlin' },
+            { key: 'US|texas|dallas', name: 'Dallas', isoA2: 'US', expectedAdm1: 'Texas' },
+            { key: 'JP|__none__|tokyo', name: 'Tokyo', isoA2: 'JP', expectedAdm1: 'Tokyo' },
           ];
 
           console.log(`dataset=ne_10m_populated_places_simple version=${reportedVersion} featureCount=${collection.features.length}`);
