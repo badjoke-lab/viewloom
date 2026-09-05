@@ -1,0 +1,167 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-current-temporal-evidence-acquisition-result-v0.2",
+  "sourcePlan": "docs/product/stream-map-current-location-reviewability-contract-v0.1.md",
+  "sourceLiveResult": "docs/audits/twitch-stream-map-current-review-queue-live-result-2026-09-05.json",
+  "sourceProbe": {
+    "workflowRunId": 33961161696,
+    "artifactId": 9967979201,
+    "mainSha": "119505fa5742802f6b9bf8df95d95c4bc0ba8b2d",
+    "observedAt": "2026-09-05T10:38:04.069Z"
+  },
+  "reviewedAt": "2026-09-05T10:39:30.000Z",
+  "freshnessCutoff": "2026-09-04T10:39:30.000Z",
+  "taskAccounting": {
+    "livePopulationMeasured": 300,
+    "reviewableCandidateCount": 8,
+    "identityClassPairsReviewed": 32,
+    "plannedAcceptedEvidenceClasses": 4,
+    "providerRequests": 0,
+    "externalSearchRequestCountMechanicallyAudited": false,
+    "supplementalVerificationQueriesPerformed": true,
+    "lookupBudgetComplianceClaimed": false
+  },
+  "acceptedEvidenceClassesReviewed": [
+    "self_controlled_current_statement",
+    "official_affiliated_current_statement",
+    "attributable_editorial_current_statement",
+    "reviewed_direct_self_statement_transcript"
+  ],
+  "summary": {
+    "identitiesReviewed": 8,
+    "freshQualifyingEvidence": 0,
+    "promotedToReview": 0,
+    "acceptedCurrentPlacement": 0,
+    "noFreshQualifyingEvidence": 6,
+    "conflictUnmapped": 2,
+    "publicCurrentPlacementAuthorized": false,
+    "baseMutationAuthorized": false
+  },
+  "entries": [
+    {
+      "twitchUserId": "582336589",
+      "userLogin": "cesgod",
+      "candidatePlaces": [{"kind":"country","countryCode":"MX","countryName":"Mexico","city":null,"sourceClasses":["stream_tag"]}],
+      "reviewedEvidenceClasses": ["self_controlled_current_statement","official_affiliated_current_statement","attributable_editorial_current_statement","reviewed_direct_self_statement_transcript"],
+      "freshQualifyingEvidence": [],
+      "notableRejectedOrExpiredReferences": [
+        {"url":"https://www.twitch.tv/cesgod","referenceKind":"candidate_channel_reference","disposition":"candidate_only","reason":"location signal originated from stream_tag and no separate attributable temporal current statement was established"}
+      ],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "mexico_remained_stream_tag_candidate_only_without_separate_attributable_temporal_current_evidence"
+    },
+    {
+      "twitchUserId": "159498717",
+      "userLogin": "jinnytty",
+      "candidatePlaces": [{"kind":"country","countryCode":"ES","countryName":"Spain","city":null,"sourceClasses":["stream_tag"]}],
+      "reviewedEvidenceClasses": ["self_controlled_current_statement","official_affiliated_current_statement","attributable_editorial_current_statement","reviewed_direct_self_statement_transcript"],
+      "freshQualifyingEvidence": [],
+      "notableRejectedOrExpiredReferences": [
+        {"url":"https://jinnytty.com/c/Schedules","referenceKind":"self_controlled_schedule","disposition":"not_current_eligible","reason":"recent self-controlled schedule material placed travel in Portugal/planning context and did not independently prove Spain presence at the review timestamp"},
+        {"url":"https://streamertimes.tv/streamer/jinnytty","referenceKind":"third_party_live_title_mirror","disposition":"candidate_only","reason":"same-day Spain wording was live stream title metadata and title cannot be final qualifying evidence"}
+      ],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "spain_candidate_had_current_title_signal_but_no_separate_accepted_class_source_proved_fresh_spain_presence"
+    },
+    {
+      "twitchUserId": "274100066",
+      "userLogin": "plumconch836",
+      "candidatePlaces": [{"kind":"country","countryCode":"AU","countryName":"Australia","city":null,"sourceClasses":["stream_tag"]}],
+      "reviewedEvidenceClasses": ["self_controlled_current_statement","official_affiliated_current_statement","attributable_editorial_current_statement","reviewed_direct_self_statement_transcript"],
+      "freshQualifyingEvidence": [],
+      "notableRejectedOrExpiredReferences": [
+        {"url":"https://linktr.ee/plumconch836","referenceKind":"self_controlled_profile_hub","disposition":"not_current_eligible","reason":"Aussie identity/profile context is static and does not establish present location"},
+        {"url":"https://www.sotwe.com/hashtag/thedivision2?lang=tr","referenceKind":"third_party_social_mirror","disposition":"not_current_eligible","reason":"same-day AEST scheduling is timezone context and does not prove current physical presence in Australia"}
+      ],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "australia_candidate_was_supported_only_by_static_identity_or_timezone_context_not_current_location_evidence"
+    },
+    {
+      "twitchUserId": "139847149",
+      "userLogin": "ryuriia",
+      "candidatePlaces": [
+        {"kind":"country","countryCode":"PH","countryName":"Philippines","city":null,"sourceClasses":["stream_tag"]},
+        {"kind":"country","countryCode":"SG","countryName":"Singapore","city":null,"sourceClasses":["stream_tag"]},
+        {"kind":"city","countryCode":"SG","countryName":"Singapore","city":"Singapore","sourceClasses":["stream_tag"]}
+      ],
+      "reviewedEvidenceClasses": ["self_controlled_current_statement","official_affiliated_current_statement","attributable_editorial_current_statement","reviewed_direct_self_statement_transcript"],
+      "freshQualifyingEvidence": [],
+      "notableRejectedOrExpiredReferences": [
+        {"url":"https://ryuriia.crd.co/","referenceKind":"self_controlled_profile","disposition":"not_current_eligible","reason":"profile contains no attributable temporal current geography resolving Philippines versus Singapore"},
+        {"url":"https://www6.twstalker.com/Ryuriia","referenceKind":"third_party_social_mirror","disposition":"not_current_eligible","reason":"recent mirrored social activity did not establish a current country/city resolving the candidate conflict"}
+      ],
+      "outcome": "conflict_unmapped",
+      "reason": "philippines_and_singapore_candidates_conflicted_and_no_accepted_class_source_resolved_current_placement"
+    },
+    {
+      "twitchUserId": "693883340",
+      "userLogin": "clioaite",
+      "candidatePlaces": [{"kind":"country","countryCode":"AU","countryName":"Australia","city":null,"sourceClasses":["stream_tag"]}],
+      "reviewedEvidenceClasses": ["self_controlled_current_statement","official_affiliated_current_statement","attributable_editorial_current_statement","reviewed_direct_self_statement_transcript"],
+      "freshQualifyingEvidence": [],
+      "notableRejectedOrExpiredReferences": [
+        {"url":"https://www6.twstalker.com/ClioAite","referenceKind":"third_party_social_mirror","disposition":"not_current_eligible","reason":"recent mirrored self-account activity did not state current geography"},
+        {"url":"https://vtubie.com/clio-aite/","referenceKind":"third_party_profile","disposition":"not_current_eligible","reason":"Australia tag/profile metadata is static identity context without current-time meaning"}
+      ],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "australia_candidate_remained_static_profile_or_tag_context_without_temporal_current_evidence"
+    },
+    {
+      "twitchUserId": "531019578",
+      "userLogin": "ronnyberger",
+      "candidatePlaces": [{"kind":"city","countryCode":"DE","countryName":"Germany","city":"Berlin","sourceClasses":["stream_tag"]}],
+      "reviewedEvidenceClasses": ["self_controlled_current_statement","official_affiliated_current_statement","attributable_editorial_current_statement","reviewed_direct_self_statement_transcript"],
+      "freshQualifyingEvidence": [],
+      "notableRejectedOrExpiredReferences": [
+        {"url":"https://www.twitchmetrics.net/c/531019578-ronnyberger","referenceKind":"third_party_live_title_mirror","disposition":"candidate_only","reason":"Berlin wording was present in live stream title metadata but title is candidate-only under the Current contract"}
+      ],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "berlin_candidate_remained_live_stream_title_only_without_separate_attributable_temporal_current_statement"
+    },
+    {
+      "twitchUserId": "76020989",
+      "userLogin": "joeykaotyk",
+      "candidatePlaces": [
+        {"kind":"country","countryCode":"JP","countryName":"Japan","city":null,"sourceClasses":["stream_tag"]},
+        {"kind":"city","countryCode":"JP","countryName":"Japan","city":"Tokyo","sourceClasses":["stream_tag"]}
+      ],
+      "reviewedEvidenceClasses": ["self_controlled_current_statement","official_affiliated_current_statement","attributable_editorial_current_statement","reviewed_direct_self_statement_transcript"],
+      "freshQualifyingEvidence": [],
+      "notableRejectedOrExpiredReferences": [
+        {"url":"https://streamrecorder.io/twitch/joeykaotyk","referenceKind":"third_party_stream_history","disposition":"not_current_eligible","reason":"recent tracked stream activity placed the creator in China on September 3 and does not prove Japan at the September 5 review timestamp"},
+        {"url":"https://mobile.twstalker.com/JoeyKaotyk","referenceKind":"third_party_social_mirror","disposition":"not_current_eligible","reason":"available itinerary/social mirror context did not provide a sufficiently reliable accepted-class Japan current statement for the review window"}
+      ],
+      "outcome": "no_fresh_qualifying_temporal_evidence",
+      "reason": "japan_tokyo_candidate_not_supported_by_a_separate_fresh_accepted_class_source_during_review"
+    },
+    {
+      "twitchUserId": "891810381",
+      "userLogin": "nahyunworld",
+      "candidatePlaces": [
+        {"kind":"country","countryCode":"KR","countryName":"South Korea","city":null,"sourceClasses":["stream_tag"]},
+        {"kind":"country","countryCode":"TW","countryName":"Taiwan","city":null,"sourceClasses":["stream_title"]}
+      ],
+      "reviewedEvidenceClasses": ["self_controlled_current_statement","official_affiliated_current_statement","attributable_editorial_current_statement","reviewed_direct_self_statement_transcript"],
+      "freshQualifyingEvidence": [],
+      "notableRejectedOrExpiredReferences": [
+        {"url":"https://linktr.ee/nahyunworld","referenceKind":"self_controlled_profile_hub","disposition":"not_current_eligible","reason":"official link hub contains no temporal geography resolving South Korea versus Taiwan"}
+      ],
+      "outcome": "conflict_unmapped",
+      "reason": "south_korea_and_taiwan_candidates_conflicted_and_no_accepted_class_source_resolved_current_placement"
+    }
+  ],
+  "boundary": {
+    "candidateTitleOrTagCanQualify": false,
+    "profileBaseContextCanQualifyWithoutCurrentTimeMeaning": false,
+    "plannedFutureTravelCanQualify": false,
+    "searchSnippetCanQualify": false,
+    "automaticAcceptanceAuthorized": false,
+    "publicCurrentPlacementAuthorized": false,
+    "baseMutationAuthorized": false,
+    "rawTitleTagLanguageRetained": false,
+    "preciseLocationAllowed": false,
+    "twitchKickAggregationAuthorized": false,
+    "canonicalMutationApplied": false,
+    "productionDeployment": false,
+    "d1Writes": 0
+  }
+}
