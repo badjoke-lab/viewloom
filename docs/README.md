@@ -1,14 +1,14 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Stream Map audited runtime baseline: main `1e70f93e2e6b5db44dbaf527ec6f7e63357e3e8e`  
-Last updated: 2026-09-05
+Stream Map audited runtime baseline: main `6b8668492d2a35e9fb83e1d93929fef8b58de215`  
+Last updated: 2026-09-06
 
 ## Read first for Stream Map work
 
 1. `docs/operations/development-and-deployment-policy.md`
 2. `docs/product/stream-map-spec-v0.7.md`
-3. `docs/product/stream-map-implementation-plan-v0.9.md`
+3. `docs/product/stream-map-implementation-plan-v0.10.md`
 4. `docs/product/current-roadmap.md`
 5. `docs/product/current-schedule.md`
 6. the relevant lane contract/specification
@@ -36,7 +36,7 @@ Stream Map updates must not delete or reinterpret accepted records for other Vie
 
 ```text
 Program mainline                         Stream Map
-Audited runtime baseline                 1e70f93e2e6b5db44dbaf527ec6f7e63357e3e8e
+Audited runtime baseline                 6b8668492d2a35e9fb83e1d93929fef8b58de215
 Twitch Country                           closed at current product boundary
 Country primary renderer                 choropleth / filled regions
 Country UI issue #1214                   completed / closed
@@ -53,6 +53,9 @@ Current accepted placement               0
 Current true unresolved conflicts        2
 Kick Country review                      100/100 complete: 7 accepted / 3 excluded / 90 no evidence
 Kick internal runtime staging            connected / validated on real review artifacts
+Kick KUI1 preview shell                  complete #1241 / non-public
+Kick KUI2 Country aggregate UI           complete #1242 / non-public
+Kick canonical /kick/map/                absent
 Kick public reviewed-evidence runtime    not activated
 Kick production stable ID                blocked pending collector authorization
 Kick public activation                   blocked pending separate authorization/proof
@@ -69,7 +72,7 @@ Top20 weekly review                      maintenance sublane only
 
 ### Active implementation sequence
 
-`docs/product/stream-map-implementation-plan-v0.9.md`
+`docs/product/stream-map-implementation-plan-v0.10.md`
 
 ### Current status
 
@@ -195,11 +198,27 @@ Kick remains provider-separated. Its stable identity is `broadcaster_user_id`, n
 
 The four reviewed Country batches are complete: 100 identities reviewed, 7 accepted, 3 excluded non-person, 90 with no qualifying evidence.
 
-Ready in code: stable-ID-capable snapshot parser, public adapter, reviewed-evidence bridge, stable-ID live join, Country response core and internal reviewed-evidence runtime staging.
+Runtime/data ready in code: stable-ID-capable snapshot parser, public adapter, reviewed-evidence bridge, stable-ID live join, Country response core and internal reviewed-evidence runtime staging.
 
-K1 completed in PR #1239. The existing reviewed-evidence workflow validates the real four result files through the internal runtime staging path with reconciliation passing. The public Kick route remains unchanged and public activation remains false.
+K1 completed in PR #1239. The existing reviewed-evidence workflow validates the real four result files through the internal runtime staging path with reconciliation passing. Public activation remains false.
 
-Kick blockers now are:
+The pre-public UI lane is now explicit:
+
+```text
+KUI1  fail-closed preview shell                 COMPLETE #1241
+KUI2  Country aggregate choropleth/results      COMPLETE #1242
+KUI3a non-mutating proof preparation            NOW SAFE
+KUI3b real production-connected proof           AFTER K3
+K4    canonical /kick/map/ public activation    SEPARATE GATE
+```
+
+KUI1/KUI2 remain under `apps/web/preview/kick-stream-map/`; they do not create `apps/web/kick/map/`, do not enter production Vite inputs and do not add a public navigation target.
+
+KUI2 aggregates only reviewed terminal `geography.countryCode` rows and paints Country regions. It does not use creator coordinates or Twitch evidence.
+
+The current reviewed runtime bridge intentionally drops evidence/source prose beyond terminal reviewed Country. The UI therefore does not invent a source-provenance filter that the runtime contract cannot support.
+
+Kick blockers remain:
 
 ```text
 production Kick snapshot does not retain broadcaster_user_id
@@ -213,6 +232,7 @@ K2 production stable-ID persistence requires explicit collector authorization. S
 The reviewed-evidence Top-20 cadence is maintenance-only and does not block:
 
 - shared Map UI/accessibility/regression work;
+- Kick KUI3a non-mutating proof preparation;
 - later justified Current/IRL read-only/evidence work;
 - docs, fixtures, CI and preview-only verification;
 - other safe non-mutating lane maintenance.
@@ -247,11 +267,16 @@ DONE   Twitch Current current-main readiness gate #1234
 DONE   Kick Country current-main readiness gate #1235
 DONE   Current fresh Top300 review: 300 -> 8 reviewed -> 0 accepted
 DONE   Kick K1 internal reviewed-evidence runtime staging #1239
+DONE   Kick KUI1 fail-closed pre-public shell #1241
+DONE   Kick KUI2 Country aggregate renderer/results #1242
+NOW    Kick KUI3a non-mutating proof preparation
+PAR    shared Map regression/accessibility work and non-mutating lane maintenance
 BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
-BLOCK  Kick public activation pending separate authorization/proof
+WAIT   Kick K3 production runtime connection until K2
+WAIT   Kick KUI3b real production-connected proof until K3
+BLOCK  Kick K4 canonical /kick/map/ activation pending separate authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
 BLOCK  Current public path additionally pending fresh accepted temporal evidence
-NOW    shared Map regression/accessibility work and non-mutating lane maintenance
 ```
 
 There is no active schedule that sends development back to City C1-C5.

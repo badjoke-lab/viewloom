@@ -5,7 +5,63 @@ Canonical project state is indexed in `docs/README.md`.
 ## Current state
 
 ```text
-Current phase: 12A-5B-R2 Twitch category stability + Heatmap public rollout complete
+Current program: Stream Map
+Audited runtime baseline: 6b8668492d2a35e9fb83e1d93929fef8b58de215
+Twitch Country: closed at current public product boundary
+Twitch City: C1-C6 complete / public accepted
+Kick Country runtime: K1 complete / K2 blocked pending explicit collector authorization
+Kick Map pre-public UI: KUI1 #1241 + KUI2 #1242 complete
+Kick canonical /kick/map/: absent / not public
+Kick KUI3a: safe non-mutating proof preparation
+Kick K3: waits for authorized production broadcaster_user_id persistence
+Kick K4: separate public activation gate
+Current / IRL: fail-closed / 0 accepted fresh placements
+Top20 reviewed-evidence cadence: maintenance sublane only
+Twitch cadence: */5 * * * *
+Kick cadence: */5 * * * *
+```
+
+The active Stream Map execution plan is `docs/product/stream-map-implementation-plan-v0.10.md`. Country, City, Kick runtime/data, Kick pre-public UI, Current / IRL and shared Map UI are parallel lanes. A blocked production dependency in one lane does not pause safe work in another lane.
+
+## Mandatory authorities
+
+Before every branch and merge, read current-main `docs/README.md`, `docs/product/current-roadmap.md`, `docs/product/current-schedule.md`, `docs/operations/development-and-deployment-policy.md`, the affected current specification/implementation plan, relevant lane contracts and current implementation/tests.
+
+Historical category-program evidence remains accepted but does not override the current Stream Map authority chain. Cached chat summaries, old handoffs and branch-local historical copies are not authorization.
+
+## Stream Map hard boundaries
+
+- Provider identity/evidence remains separated; no Twitch/Kick aggregation.
+- Kick stable identity is `broadcaster_user_id`, never slug/login.
+- No Twitch evidence reuse for Kick.
+- No language/timezone/name/category/IP geography inference.
+- No candidate-only geography placement.
+- No City inference from Country.
+- No Current inference from Country/Home/Base.
+- Home/Base and Current/IRL never overwrite each other automatically.
+- No Country/region centroid as a creator City coordinate.
+- No creator residential address/GPS/precise-coordinate publication.
+- No inferred travel path.
+- No production collector, D1/schema/binding, cadence, retention or backfill mutation without its separate authorization/gate.
+- Preview-only Kick UI does not authorize or create `/kick/map/`.
+
+## Current execution order
+
+1. Preserve the accepted Twitch Country and Twitch City public boundaries.
+2. Keep Kick KUI1/KUI2 pre-public UI fail-closed and continue KUI3a non-mutating proof preparation where useful.
+3. Do not implement Kick K2 production `broadcaster_user_id` persistence without explicit collector authorization.
+4. After an authorized K2, connect only the staged Kick reviewed Country path in K3 and verify reconciliation.
+5. Run KUI3b against real production-connected reviewed Country rows only after K3.
+6. Create/activate canonical `/kick/map/` only through separate K4 public authorization and production/browser/API proof.
+7. Keep Current / IRL fail-closed until both separately authorized production identity and fresh accepted temporal evidence exist.
+8. Continue shared Map accessibility/regression work and bounded reviewed-evidence maintenance in parallel.
+
+## Historical accepted category-program state
+
+The completed category rollout remains accepted historical product evidence and is not reopened by Stream Map work.
+
+```text
+Twitch category stability + Heatmap public rollout complete
 Historical runtime gate: viewloom-12a2-current-gate-state-v33 retained as immutable accumulation evidence
 Final audit accepted: PR #736
 Final-mode decision accepted: PR #737
@@ -17,15 +73,10 @@ Pages deploy run: 31244148642 success
 Public production acceptance run: 31244148651 success
 Twitch Heatmap public category-filter exposure: active
 Kick category UI: unauthorized
-Twitch cadence: */5 * * * *
-Kick cadence: */5 * * * *
+Keep parent category program #623 open
 ```
 
-## Mandatory authorities
-
-Before every branch and merge, read current-main docs index, roadmap, schedule, development policy, the immutable historical runtime gate, final Twitch audit evidence/acceptance, final-mode decision, hidden production revalidation evidence/acceptance, public-cutover decision, deployed public evidence/acceptance, affected feature plan, and current WIP/handoff.
-
-## Accepted decisions
+Accepted category decisions remain preserved:
 
 - Provider-scoped category identity is `(provider, categoryProviderId)`.
 - Only source pairs with both provider ID and category name create a category reference.
@@ -36,17 +87,10 @@ Before every branch and merge, read current-main docs index, roadmap, schedule, 
 - The first public candidate was correctly rejected for 390px mobile overflow (`474 / 390`); PR #741 repaired the presentation-only width defect.
 - Accepted production SHA `b006f45d0676c9ff3e05e5d6727458e43802de53` passed deployed public acceptance with 390px `scrollWidth=390`.
 
-## Current execution order
-
-1. Freeze and preserve the accepted Twitch Heatmap public rollout evidence and provenance.
-2. Close completed audit issue #659 and Twitch Heatmap rollout issue #635 after the closeout PR merges.
-3. Keep parent category program #623 open.
-4. Treat Day Flow category UI, History category UI, and Kick category UI as separate future decisions.
-
 ## Production safety
 
 - `main` is production; no direct push.
 - Do not recreate retired observation/final-audit execution paths without a new governed decision.
 - No backfill, threshold relaxation, synthetic category mapping, or cross-provider identity/totals/rankings.
 - No automatic Kick, Day Flow, or History category UI rollout from the Twitch Heatmap acceptance.
-- Existing Twitch and Kick five-minute collector cadences, D1 boundaries, bindings, and retention remain unchanged.
+- Existing Twitch and Kick five-minute collector cadences, D1 boundaries, bindings, and retention remain unchanged unless separately authorized.
