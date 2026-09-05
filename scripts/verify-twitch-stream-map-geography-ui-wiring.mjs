@@ -33,7 +33,7 @@ for (const token of [
   "cityReferencePointAggregates(selection.aggregates)",
   "referencePoint.longitude",
   "referencePoint.latitude",
-  "city_aggregate_reference",
+  "element.dataset.referenceRole = referencePoint.referenceRole",
 ]) {
   if (!cityGuard.includes(token)) throw new Error(`missing City aggregate UI token: ${token}`)
 }
