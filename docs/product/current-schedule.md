@@ -3,7 +3,8 @@
 Status: source of truth for immediate Stream Map sequencing  
 Normative specification: `docs/product/stream-map-spec-v0.7.md`  
 Execution plan: `docs/product/stream-map-implementation-plan-v0.6.md`  
-Baseline: main `6ee0402d38aa47856e7d841b2c4a4544959b70c6`  
+City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
+Audited runtime baseline: main `24cd444bfe564588b70c16a335f07d2c41627c0b`  
 Last updated: 2026-09-05
 
 ## 1. Scheduling principle
@@ -16,87 +17,127 @@ No schedule item silently authorizes collector, D1, schema, cadence, retention o
 
 ## 2. Immediate mainline
 
-### Step 0 — documentation source-of-truth reconciliation — IN PROGRESS
+### Step 0 — documentation source-of-truth reconciliation — COMPLETE
 
-Bring active repository documentation up to the actual current main state.
+Completed in PR #1219.
 
-Required output:
+Accepted output:
 
-- `stream-map-spec-v0.7.md` becomes the current normative spec;
-- `stream-map-implementation-plan-v0.6.md` becomes the active plan;
-- `current-roadmap.md` and this schedule stop claiming City is unauthorized;
-- `docs/README.md` points new work at current documents;
-- old execution snapshot is marked superseded/currently non-authoritative;
-- Country #1213/#1218 behavior and City #1199-#1217 behavior are recorded;
-- weekly Top-20 maintenance is explicitly a maintenance sublane only.
+- `stream-map-spec-v0.7.md` is the current normative Stream Map spec;
+- `stream-map-implementation-plan-v0.6.md` is the active plan;
+- `current-roadmap.md` and this schedule reflect implemented City state;
+- `docs/README.md` points new Stream Map work at the current authority chain;
+- the old execution snapshot is historical/superseded;
+- Country and City implementation state is recorded;
+- weekly Top-20 maintenance is a maintenance sublane only.
 
-Completion condition: documentation-only PR merges with no runtime change and no active source-of-truth file contradicts known current Stream Map state.
+### Step 1 — Twitch Country closeout audit — COMPLETE
 
-### Step 1 — Twitch Country closeout audit — NEXT
+Country closeout found and repaired the last known marker-first source/test contradiction in PR #1220.
 
-Compare current main against spec v0.7.
+Accepted baseline:
 
-Verify at minimum:
+```text
+main                             24cd444bfe564588b70c16a335f07d2c41627c0b
+Deploy Web Pages                 33934879891 success
+Production Browser Smoke         33934879840 success
+Country + City render smoke      success
+```
 
-- Country region source/fill/outline path exists;
-- ordinary Country aggregate markers are suppressed under normal choropleth operation;
-- small-country fallback markers remain aggregate fallbacks only;
-- Streams/Viewers control and five log buckets are intact;
-- mobile world view and Country max zoom remain bounded;
-- selecting Country does not automatically move camera;
-- `World view` resets camera while `Clear country` clears selection;
-- Country/map/list selection synchronization remains intact;
-- effective Country content order is Map → selected Country → mapped countries/streams → unmapped diagnostics;
-- City isolation remains unaffected;
-- browser tests and production smoke represent the current structural behavior rather than retired marker/copy assumptions.
+Closeout record:
 
-Completion condition: no spec/code/test contradiction. Any defect becomes a scoped issue/PR; do not reopen the retired Markers/Regions A/B experiment.
+`docs/audits/twitch-stream-map-country-closeout-2026-09-05.md`
 
-### Step 2 — City visualization / interaction specification — AFTER STEP 1
+Country remains on scoped maintenance/accessibility/evidence-quality work only. Do not reopen the retired Markers/Regions A/B experiment.
 
-Do not begin a richer City renderer from assumptions.
+### Step 2 — City visualization / interaction specification — COMPLETE ON MERGE
 
-Freeze:
+`docs/product/stream-map-city-visualization-spec-v0.1.md` freezes the City visualization boundary.
 
-- accepted City evidence and provenance display;
-- City conflict/country-only/empty states;
-- stable-ID availability semantics;
-- whether the user sees grouped City rows, City boundaries, point targets, clusters or a zoom-dependent combination;
-- allowed geometry/coordinate sources;
-- prohibition on Country-centroid creator placement;
-- desktop hover/select;
-- mobile tap/detail;
-- population/evidence filter behavior;
-- URL/geography state;
-- accessibility;
-- browser and production smoke contract.
+Key decision:
 
-Completion condition: a testable City spec exists before implementation changes City visualization semantics.
+```text
+primary semantic object    City aggregate
+creator point layer        not authorized
+list                       first-class exact-value/accessibility surface
+map boundary/target        only from accepted public City reference geometry
+missing geometry           list remains usable; no invented map target
+```
 
-### Step 3 — City implementation — AFTER STEP 2
+Base City remains accepted `home_base` / `declared_location` only. Current/temporary, country-only, conflict and precise-location data do not become Base City placement.
 
-Implement only the accepted City specification.
+### Step 3A — City C1 aggregate model and selection — NOW
 
-Preserve current hard boundaries:
+Implement a provider-scoped deterministic City aggregate model before richer map geometry.
 
-- Country-only evidence never becomes City;
-- only accepted Base City `home_base` / `declared_location` can place Base City;
-- Current/temporary evidence does not mutate Base City;
-- login is not a stable Twitch ID;
-- no address/GPS/private precise location;
-- no Country centroid or invented coordinate as creator City position.
+Required:
 
-Completion condition: City API/UI/renderer tests green on desktop/mobile with explicit empty/conflict behavior.
+- aggregate key uses `countryCode + region + city`;
+- identical City names in different places remain distinct;
+- mapped aggregate stream/viewer totals reconcile exactly;
+- country-only and Base City conflicts never enter mapped aggregate totals;
+- Current/temporary rows never enter Base City aggregate totals;
+- aggregate list works without MapLibre/geometry;
+- City selection state is deterministic and independently testable;
+- selection can drive the mapped-stream drilldown;
+- selected-City detail can expose City/region/country, streams, viewers and source summary without coordinates.
 
-### Step 4 — City production proof — AFTER STEP 3
+Completion condition: core model + structural/UI tests green with no new geography inference.
+
+### Step 3B — City C2 reference-geometry source audit — NOW / parallel with C1
+
+Do not block C1 while auditing geometry.
+
+Before any City map target is added, freeze:
+
+- data source and license;
+- update/hosting model;
+- boundary vs aggregate reference-point semantics;
+- deterministic matching from `countryCode + region + city`;
+- ambiguity/collision handling;
+- missing-geometry behavior;
+- build/runtime/network cost;
+- no silent fuzzy matching;
+- no creator/Country-centroid/venue substitution.
+
+Completion condition: an accepted geometry-source contract exists. If no acceptable source is found, City stays list-first and C3 map targets remain blocked.
+
+### Step 4 — City C3 aggregate map renderer — AFTER C2
+
+Implement only accepted City reference geometry.
+
+Preserve:
+
+- aggregate target semantics, not creator-location semantics;
+- map/list selection synchronization;
+- no automatic street-level precision implication;
+- fail closed to list-only when geometry does not resolve;
+- Country mode remains unchanged.
+
+Completion condition: City aggregate map tests green for resolved and unresolved geometry.
+
+### Step 5 — City C4 responsive/detail UI — AFTER/WITH C3
+
+Implement:
+
+- selected-City detail;
+- mapped-stream drilldown;
+- explicit country-only/conflict diagnostics;
+- desktop hover/select where geometry exists;
+- mobile list-first selection;
+- compact filters;
+- keyboard/focus/tap-target/accessibility requirements;
+- no 390px horizontal overflow.
+
+### Step 6 — City C5 production proof — AFTER C3/C4
 
 Use stable structural browser assertions, not transient prose fragments.
 
-Completion condition: accepted current City contract passes the applicable deployment/browser verification and Country remains unchanged.
+Completion condition: accepted City contract passes applicable browser/deployment verification and production smoke, and Country remains unchanged.
 
 ## 3. Parallel lane — Kick Country
 
-Kick work may proceed while Steps 1-4 advance.
+Kick work proceeds while City C1-C5 advance.
 
 Current known baseline includes provider source/identity/response contracts, reviewed Country evidence bridge #1197 and review batches #1203.
 
@@ -119,7 +160,7 @@ Do not:
 
 ## 4. Parallel lane — Current Location / IRL
 
-Current work may proceed while Steps 1-4 advance.
+Current work proceeds while City C1-C5 advance.
 
 Current baseline includes temporal contract/evaluator/candidate work and #1198 stable-ID snapshot adapter.
 
@@ -139,7 +180,7 @@ Current never becomes Base City and never survives expiry.
 
 Existing maintenance policy continues under its own authorization/cadence rules.
 
-This lane may pause itself between authorized runs. That pause does **not** pause Country closeout, City work, Kick work, Current/IRL work, documentation, fixtures, CI or preview-only verification.
+This lane may pause itself between authorized runs. That pause does **not** pause City work, Kick work, Current/IRL work, documentation, fixtures, CI or preview-only verification.
 
 Coverage quality is ongoing maintenance, not a serial prerequisite for every Map feature.
 
@@ -162,21 +203,25 @@ CI waiting in one lane is not a reason to stop another safe lane.
 
 A production-affecting merge remains subject to `docs/operations/development-and-deployment-policy.md` and the actual workflow triggers on current main.
 
-For documentation-only reconciliation:
+City C1/C2 must not imply:
 
-- no `apps/web/**` runtime change;
-- no collector change;
-- no D1/schema change;
-- no cadence/retention change;
-- no production data mutation.
+- production collector change;
+- D1/schema/binding change;
+- cadence/retention change;
+- production data mutation;
+- Current/IRL activation;
+- Kick activation.
 
 ## 8. Current completion order
 
 ```text
-NOW   docs reconciliation
-NEXT  Country closeout
-THEN  City spec
-THEN  City implementation + proof
+DONE  docs reconciliation #1219
+DONE  Country closeout + stale marker contract repair #1220
+NOW   City C1 aggregate model/selection
+NOW   City C2 reference-geometry source audit
+NEXT  City C3 aggregate map renderer if C2 accepts a source
+NEXT  City C4 responsive/detail UI
+THEN  City C5 browser + production proof
 ```
 
 Concurrently:
