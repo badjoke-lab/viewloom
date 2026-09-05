@@ -2,10 +2,10 @@
 
 Status: source of truth for immediate Stream Map sequencing  
 Normative specification: `docs/product/stream-map-spec-v0.7.md`  
-Execution plan: `docs/product/stream-map-implementation-plan-v0.7.md`  
+Execution plan: `docs/product/stream-map-implementation-plan-v0.8.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `801860483b50bf418d8edfb5295542244e69c138`  
+Audited runtime baseline: main `13af00ce399bcf85d3699815730deda5cd78288f`  
 Last updated: 2026-09-05
 
 ## 1. Scheduling principle
@@ -14,7 +14,7 @@ Stream Map work is not one serial queue.
 
 Country, City, Kick, Current Location / IRL and shared Map UI are parallel lanes. The reviewed-evidence Top-20 cadence governs only its own maintenance runs. It does not impose idle time on other safe work.
 
-No schedule item silently authorizes collector, D1, schema, cadence, retention or production mutation.
+No schedule item silently authorizes production collector, D1, schema, cadence, retention or production-data mutation.
 
 ## 2. Completed mainline gates
 
@@ -22,165 +22,147 @@ No schedule item silently authorizes collector, D1, schema, cadence, retention o
 
 Completed in PR #1219.
 
-### Step 1 — Twitch Country closeout — COMPLETE
+### Step 1 — Twitch Country current product boundary — COMPLETE
 
-Completed through #1220 and the accepted closeout record:
-
-`docs/audits/twitch-stream-map-country-closeout-2026-09-05.md`
-
-Accepted production proof:
-
-```text
-main                             24cd444bfe564588b70c16a335f07d2c41627c0b
-Deploy Web Pages                 33934879891 success
-Production Browser Smoke         33934879840 success
-Country + City render smoke      success
-```
+Country choropleth, compact responsive UI, browser/OpenFreeMap verification and production proof are complete. Issue #1214 is closed as completed.
 
 Country is now maintenance/scoped-defect work only and does not block City, Kick or Current/IRL.
 
-### Step 2 — City visualization / interaction specification — COMPLETE
+### Step 2 — Twitch City C1-C6 — COMPLETE
 
-`docs/product/stream-map-city-visualization-spec-v0.1.md` fixes:
-
-```text
-primary semantic object    City aggregate
-creator point layer        not authorized
-list                       first-class exact-value/accessibility surface
-map boundary/target        only from reviewed City reference geometry
-missing geometry           list remains usable; no invented map target
-```
-
-## 3. Immediate City mainline
-
-### Step 3A — City C1 aggregate model and selection — IN REVIEW #1222
-
-Implementation PR #1222 adds:
-
-- deterministic `countryCode + region + city` aggregate keys;
-- same-name collision separation;
-- exact stream/viewer/source totals;
-- list-first City aggregate selection;
-- selected-City stream drilldown using the existing provenance rows;
-- retained zero state when filters remove the selected City;
-- population/category payload refresh handling;
-- desktop/mobile browser verification;
-- no City geometry or creator coordinates.
-
-Completion condition: #1222 CI green, merge, then current production Country+City structural smoke green.
-
-### Step 3B — City C2 reference-geometry source audit — COMPLETE ON #1223 MERGE
-
-Source audit:
-
-`docs/audits/twitch-stream-map-city-reference-geometry-source-audit-2026-09-05.md`
-
-Contract:
-
-`docs/product/stream-map-city-reference-geometry-contract-v0.1.md`
-
-Accepted strategy:
+Completed sequence:
 
 ```text
-City evidence acceptance
--> exact C1 City aggregate key
--> reviewed static geometry registry
-   -> reviewed geoBoundaries gbOpen City/municipal polygon when semantically valid
-   -> otherwise reviewed Natural Earth Populated Places aggregate reference point when unambiguous
-   -> otherwise no_geometry / list-only
+C1  City aggregate model + selection                                   #1222
+C2  reference-geometry source contract                                #1223
+C3  bounded reviewed reference-geometry registry/review               #1224-#1226
+C4  reviewed aggregate reference-point rendering                     #1227
+C5  public activation + production structural verification           #1228-#1229
+C6  result ordering/filter/layout cleanup + public acceptance         #1230-#1233
 ```
 
-Explicit decisions:
-
-- no automatic global City-name resolver;
-- no fixed `ADM level = City` rule;
-- no fuzzy matching;
-- no Country/region centroid fallback;
-- no venue/creator coordinate substitution;
-- no public/runtime Nominatim dependency;
-- Overture Divisions deferred for v0.1 pending a separate ODbL/coverage decision;
-- public runtime calls no external geometry API.
-
-### Step 3C — review current City aggregate geometry registry — NEXT / may run beside C1
-
-After #1223 merges, review geometry only for City aggregate keys that ViewLoom can actually place.
-
-For each aggregate:
-
-1. attempt an explicit reviewed geoBoundaries gbOpen municipal/City boundary match;
-2. if no suitable polygon exists, attempt an explicit reviewed Natural Earth City point match;
-3. retain source feature ID/version/URL/license/attribution;
-4. unresolved or ambiguous City stays `no_geometry`;
-5. generate no world-scale bulk municipal dataset.
-
-Completion condition: bounded reviewed registry + validator + static artifact for accepted entries.
-
-### Step 4 — City C3 aggregate map renderer — AFTER C2 + REGISTRY ENTRIES
-
-Render only accepted registry geometry.
-
-Required:
-
-- exact aggregate-key join only;
-- boundary as City aggregate area;
-- reference point as visibly non-creator aggregate target;
-- map/list selection synchronization;
-- no automatic street-level precision implication;
-- no target when geometry is absent/unresolved;
-- list/drilldown remains complete without geometry;
-- Country mode unchanged.
-
-### Step 5 — City C4 responsive/detail UI — AFTER/WITH C3
-
-Implement remaining City detail/diagnostic/accessibility work:
-
-- explicit country-only/conflict states;
-- desktop hover/select where geometry exists;
-- mobile list-first selection;
-- compact filters;
-- keyboard/focus/tap-target requirements;
-- no 390px horizontal overflow.
-
-### Step 6 — City C5 production proof — AFTER C3/C4
-
-Use structural browser assertions, not transient prose fragments.
-
-Completion condition: accepted City contract passes browser/deployment verification and production smoke while Country remains unchanged.
-
-## 4. Parallel lane — Kick Country
-
-Kick proceeds independently.
+Current City registry:
 
 ```text
-re-audit current Kick stable-ID/persistence/response readiness
--> identify only missing provider-specific gate
--> deterministic/API verification
--> public Kick activation only after real Kick data path is ready
+reference_point  8
+no_geometry      1
 ```
 
-Do not copy Twitch evidence, treat slug/login as stable identity, auto-accept geography, publish demo geography or imply collector/D1/cadence/retention expansion.
+`no_geometry` remains list-only. Reviewed points remain City aggregate references, never creator coordinates.
 
-## 5. Parallel lane — Current Location / IRL
+Current acceptance record:
 
-Current remains separate from Base City.
+`docs/audits/twitch-stream-map-city-public-acceptance-2026-09-05.json`
+
+No further C1-C6 implementation step is scheduled.
+
+### Step 3 — Twitch Current current-main readiness re-audit — COMPLETE
+
+PR #1234 added the current public-readiness gate without changing the production collector.
+
+Current exact blockers:
 
 ```text
-re-audit fresh accepted current/temporary evidence
--> insufficient: remain disabled/fail closed
--> sufficient: freeze Current API contract
--> separate Current UI mode
--> expiry/conflict/browser verification
+production_twitch_snapshot_does_not_retain_user_id
+public_current_geography_mode_not_wired
+no_fresh_reviewed_current_evidence
 ```
+
+Common stable-ID consumption and the fail-closed Current response core are ready in code. Public Current / IRL remains disabled.
+
+### Step 4 — Kick Country current-main readiness re-audit — COMPLETE
+
+PR #1235 corrected the readiness model to the actual public snapshot source/adapter path.
+
+Ready in code:
+
+- optional `broadcaster_user_id` snapshot parsing;
+- public stable-ID adapter without slug fallback;
+- reviewed Country evidence bridge;
+- stable-ID live join;
+- Country response core.
+
+Reviewed Country work is complete across 100 identities: 7 accepted, 3 excluded non-person, 90 no qualifying evidence.
+
+Current exact blockers:
+
+```text
+production_livestream_snapshot_does_not_retain_broadcaster_user_id
+reviewed_kick_country_evidence_runtime_not_connected
+public_country_activation_not_authorized
+```
+
+## 3. Immediate lane — Kick Country
+
+### Step K1 — collector-independent preparation — NOW
+
+Allowed without production collector authorization:
+
+- maintain/read-only-audit the stable-ID-capable snapshot source and public adapter;
+- maintain the real 100-result reviewed-evidence reconciliation;
+- maintain stable-ID live-join/response fixtures and validators;
+- prepare clean current-main runtime integration without activating a public surface;
+- keep provider-specific boundaries explicit.
+
+### Step K2 — production stable identity — BLOCKED UNTIL EXPLICIT AUTHORIZATION
+
+Required production dependency:
+
+```text
+Kick official livestream collection
+-> retain official broadcaster_user_id in production minute snapshot
+```
+
+This is a production collector mutation. It is not authorized by this schedule.
+
+Stale Draft #1083 must not be merged as-is. If authorization is later given, implement/re-audit the minimal change on current main.
+
+### Step K3 — reviewed evidence runtime connection — AFTER K2
+
+Once the production snapshot supplies stable IDs, connect only the existing Kick-reviewed Country evidence path to the public response core and verify reconciliation.
+
+Do not reuse Twitch evidence or treat slug/login as stable identity.
+
+### Step K4 — public Kick Country activation — SEPARATE GATE
+
+Activation requires its own explicit decision and production/browser/API proof. K2/K3 do not automatically authorize it.
+
+## 4. Immediate lane — Current Location / IRL
+
+### Step R1 — evidence/readiness work — NOW
+
+Allowed while collector activation is blocked:
+
+- read-only fresh temporal-evidence review;
+- expiry/conflict validator maintenance;
+- Current response-core verification;
+- explicit blocked-state readiness auditing;
+- non-activating API/UI preparation.
+
+### Step R2 — production stable Twitch identity — BLOCKED UNTIL EXPLICIT AUTHORIZATION
+
+Required production dependency:
+
+```text
+Twitch Helix streams.user_id
+-> retain twitchUserId in production minute snapshot
+```
+
+This is a production collector mutation. Stale Draft #1107 must not be merged as-is.
+
+### Step R3 — fresh accepted Current evidence — BLOCKED BY CURRENT DATA STATE
+
+The latest accepted acquisition result has zero fresh qualifying evidence and zero accepted Current placement.
+
+Stable-ID persistence alone cannot clear this gate.
+
+### Step R4 — public Current route/UI — ONLY AFTER R2 + R3
+
+If fresh accepted temporal evidence exists and stable identity is available, freeze a separate Current API contract, add a separate Current UI mode, verify expiry/conflict behavior and then perform an explicit public activation decision.
 
 Current never becomes Base City and never survives expiry.
 
-## 6. Parallel lane — reviewed-evidence maintenance
-
-Existing maintenance policy continues under its own authorization/cadence rules.
-
-Its wait periods do **not** pause City C1/C2/C3 work, Kick, Current/IRL, docs, fixtures, CI or preview-only verification.
-
-## 7. Shared UI/accessibility lane
+## 5. Shared UI/accessibility lane
 
 Safe independent work includes:
 
@@ -189,15 +171,22 @@ Safe independent work includes:
 - overflow/regression checks;
 - map/legend labels;
 - explicit empty/conflict/unmapped presentation;
-- geography URL-state verification.
+- geography URL-state verification;
+- production/browser structural verification.
 
 Do not force Country, City and Current into one geometry model.
 
-## 8. CI/deployment rule
+## 6. Reviewed-evidence maintenance lane
+
+Existing maintenance policy continues under its own authorization/cadence rules.
+
+Its wait periods do **not** pause Kick/Current read-only work, docs, fixtures, CI, browser verification or other safe preparation.
+
+## 7. CI/deployment rule
 
 CI waiting in one lane is not a reason to stop another safe lane.
 
-City C1/C2/C3 do not imply:
+Nothing in this schedule implies:
 
 - production collector change;
 - D1/schema/binding change;
@@ -207,28 +196,21 @@ City C1/C2/C3 do not imply:
 - Current/IRL activation;
 - Kick activation.
 
-## 9. Current completion order
+## 8. Current completion order
 
 ```text
-DONE      docs reconciliation #1219
-DONE      Country closeout #1220
-DONE      City visualization spec #1221
-IN REVIEW City C1 aggregate model/selection #1222
-IN REVIEW City C2 source contract #1223
-NEXT      bounded reviewed City geometry registry/artifact
-NEXT      City C3 aggregate renderer
-NEXT      City C4 responsive/detail UI
-THEN      City C5 production proof
+DONE   docs reconciliation #1219
+DONE   Country current boundary + #1214 completion
+DONE   City C1-C6 through #1233
+DONE   Twitch Current readiness re-audit #1234
+DONE   Kick Country readiness re-audit #1235
+NOW    safe Kick/Current evidence, validation and non-mutating preparation
+BLOCK  Kick production stable-ID persistence pending explicit collector authorization
+BLOCK  Current production stable-ID persistence pending explicit collector authorization
+BLOCK  Current public path additionally pending fresh accepted temporal evidence
 ```
 
-Concurrently:
-
-```text
-Kick Country readiness/API/public lane
-Current/IRL evidence/API/UI lane
-maintenance sublane
-shared accessibility/verification
-```
+There is no scheduled return to City C1/C2/C3/C4/C5.
 
 ## Retained category-program state
 

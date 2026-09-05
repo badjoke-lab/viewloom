@@ -1,14 +1,14 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Stream Map audited runtime baseline: main `801860483b50bf418d8edfb5295542244e69c138`  
+Stream Map audited runtime baseline: main `13af00ce399bcf85d3699815730deda5cd78288f`  
 Last updated: 2026-09-05
 
 ## Read first for Stream Map work
 
 1. `docs/operations/development-and-deployment-policy.md`
 2. `docs/product/stream-map-spec-v0.7.md`
-3. `docs/product/stream-map-implementation-plan-v0.7.md`
+3. `docs/product/stream-map-implementation-plan-v0.8.md`
 4. `docs/product/current-roadmap.md`
 5. `docs/product/current-schedule.md`
 6. the relevant lane contract/specification
@@ -35,25 +35,25 @@ Stream Map updates must not delete or reinterpret accepted records for other Vie
 ## Current Stream Map snapshot
 
 ```text
-Program mainline                    Stream Map
-Audited runtime baseline            801860483b50bf418d8edfb5295542244e69c138
-Twitch Country                      closed at current product boundary
-Country primary renderer            choropleth / filled regions
-Country marker/region A-B switch    retired
-Country production deploy           33934879891 success
-Country + City production smoke     33934879840 success
-City explicit API/UI                implemented
-City stable-ID coverage states      implemented
-City primary semantic object        City aggregate
-City creator coordinates            not published / not inferred
-City C1 aggregate selection         PR #1222 in review
-City C2 geometry-source contract    PR #1223 in review / accepted on merge
-City geometry runtime API           none authorized
-City missing geometry               list-only / no_geometry
-Current / IRL public placement      separate; fail closed without fresh accepted evidence
-Kick reviewed Country path          advancing separately
-Twitch/Kick aggregation             forbidden
-Top20 weekly review                 maintenance sublane only
+Program mainline                         Stream Map
+Audited runtime baseline                 13af00ce399bcf85d3699815730deda5cd78288f
+Twitch Country                           closed at current product boundary
+Country primary renderer                 choropleth / filled regions
+Country UI issue #1214                   completed / closed
+Twitch City                              C1-C6 complete / public accepted
+City primary semantic object             City aggregate
+City reviewed reference points           8 aggregate references
+City no_geometry                         1 / list-only
+City creator coordinates                 not published / not inferred
+City Current-location evidence filter    disabled
+Current / IRL public activation          false / disabled
+Current fresh accepted placement         0
+Kick Country review                      100/100 complete: 7 accepted / 3 excluded / 90 no evidence
+Kick public adapter                      stable-ID capable / ready in code
+Kick production stable ID                blocked pending collector authorization
+Twitch production stable ID              blocked pending collector authorization
+Twitch/Kick aggregation                  forbidden
+Top20 weekly review                      maintenance sublane only
 ```
 
 ## Stream Map authority roles
@@ -64,7 +64,7 @@ Top20 weekly review                 maintenance sublane only
 
 ### Active implementation sequence
 
-`docs/product/stream-map-implementation-plan-v0.7.md`
+`docs/product/stream-map-implementation-plan-v0.8.md`
 
 ### Current status
 
@@ -106,20 +106,7 @@ filled Country regions
 
 Small-country markers remain aggregate Country fallbacks only, never creator/current-location pins.
 
-Effective runtime order:
-
-```text
-Map
--> selected Country when present
--> mapped countries / mapped streams
--> unmapped diagnostics
-```
-
-Closeout record:
-
-`docs/audits/twitch-stream-map-country-closeout-2026-09-05.md`
-
-Country maintenance does not block City/Kick/Current work.
+Issue #1214 is completed and closed. Country maintenance does not block City/Kick/Current work.
 
 ## Current City summary
 
@@ -142,39 +129,17 @@ aggregate key               countryCode + region-or-__none__ + city
 creator point layer         prohibited
 exact aggregate list        first-class
 map geometry                reviewed static registry only
+reference_point             City aggregate reference only
 missing/ambiguous geometry  no_geometry / list-only
 ```
 
-### C1
+City C1-C6 are complete through #1233. The current registry has 8 reviewed `reference_point` entries and 1 `no_geometry` entry. `Sant Cugat del Valles` remains list-only.
 
-PR #1222 implements deterministic City aggregate selection and selected-City stream drilldown without geometry.
+Public City acceptance includes reviewed marker/list reconciliation, mapped results before unmapped diagnostics, full-width mapped-stream results and a disabled Current-location evidence filter. Current / IRL itself remains disabled.
 
-### C2
+Acceptance audit:
 
-PR #1223 freezes the geometry-source strategy:
-
-```text
-reviewed geoBoundaries gbOpen municipal/City polygon when semantically valid
--> otherwise reviewed Natural Earth Populated Places aggregate reference point
--> otherwise no geometry
-```
-
-Rules:
-
-- no fixed ADM-level=City assumption;
-- no fuzzy/nearest match;
-- no Country/region centroid;
-- no venue or creator-coordinate substitution;
-- no runtime Nominatim/geocoder;
-- Overture Divisions deferred for v0.1;
-- no external geometry API in the public browser;
-- geometry does not decide streamer placement.
-
-Source audit:
-
-`docs/audits/twitch-stream-map-city-reference-geometry-source-audit-2026-09-05.md`
-
-Next after C2: review geometry only for the current accepted City aggregate keys, produce a bounded static registry/artifact, then C3 consumes only those accepted entries.
+`docs/audits/twitch-stream-map-city-public-acceptance-2026-09-05.json`
 
 ## Current / IRL boundary
 
@@ -183,25 +148,48 @@ Home/Base    durable accepted base geography
 Current/IRL  fresh explicitly time-bounded accepted geography
 ```
 
+Ready in code: optional stable-ID consumption, stable-ID coverage reporting, fail-closed Current response core and explicit public-readiness validation.
+
+Current blockers:
+
+```text
+production Twitch snapshot does not retain user_id / twitchUserId
+public Twitch geography route has no Current mode
+fresh reviewed Current evidence = 0 accepted placements
+```
+
 Current never overwrites Base/Home automatically. Expired Current stops placing. Event venue alone does not prove presence. No inferred travel path or residential/GPS precision is published.
 
-Stable-ID plumbing does not itself authorize Current.
+Stale Draft #1107 is not a merge candidate as-is and does not authorize a production collector change.
 
 ## Kick boundary
 
-Kick remains provider-separated. Its stable identity is the accepted official Channels join / `broadcaster_user_id`, not slug/login.
+Kick remains provider-separated. Its stable identity is `broadcaster_user_id`, not slug/login.
 
-Twitch evidence reuse and automatic Kick geography remain prohibited.
+The four reviewed Country batches are complete: 100 identities reviewed, 7 accepted, 3 excluded non-person, 90 with no qualifying evidence.
+
+Ready in code: stable-ID-capable snapshot parser, public adapter, reviewed-evidence bridge, stable-ID live join and Country response core.
+
+Kick blockers:
+
+```text
+production Kick snapshot does not retain broadcaster_user_id
+reviewed Kick Country evidence is not connected to the public runtime
+public Kick Country activation is not authorized
+```
+
+Stale Draft #1083 is not a merge candidate as-is. Twitch evidence reuse and automatic Kick geography remain prohibited.
 
 ## Scheduling rule
 
 The reviewed-evidence Top-20 cadence is maintenance-only and does not block:
 
-- City C1/C2/C3 work;
-- Kick read-only/evidence/API work;
+- Kick read-only/evidence/API preparation;
 - Current/IRL read-only/evidence work;
 - Map UI/accessibility work;
 - docs, fixtures, CI and preview-only verification.
+
+Explicit production collector authorization is required before either blocked stable-ID persistence change is implemented/merged.
 
 ## Global Stream Map invariants
 
@@ -224,18 +212,18 @@ The reviewed-evidence Top-20 cadence is maintenance-only and does not block:
 ## Current mainline order
 
 ```text
-DONE      documentation source-of-truth reconciliation #1219
-DONE      Country closeout #1220
-DONE      City visualization specification #1221
-IN REVIEW City C1 aggregate model/selection #1222
-IN REVIEW City C2 reference-geometry source contract #1223
-NEXT      reviewed current-City geometry registry/artifact
-NEXT      City C3 aggregate renderer
-NEXT      City C4 responsive/detail UI
-THEN      City C5 production proof
+DONE   documentation source-of-truth reconciliation #1219
+DONE   Country closeout + #1214 completion
+DONE   City C1-C6 through #1233
+DONE   Twitch Current current-main readiness gate #1234
+DONE   Kick Country current-main readiness gate #1235
+NOW    safe Kick/Current evidence, validation and non-mutating preparation
+BLOCK  Kick production stable-ID persistence pending explicit collector authorization
+BLOCK  Current production stable-ID persistence pending explicit collector authorization
+BLOCK  Current public path additionally pending fresh accepted temporal evidence
 ```
 
-Kick Country, Current/IRL, shared UI/accessibility and reviewed-evidence maintenance continue in parallel.
+There is no active schedule that sends development back to City C1-C5.
 
 ## Historical records
 
