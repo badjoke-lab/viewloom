@@ -1,0 +1,201 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-current-review-queue-live-result-v0.1",
+  "provider": "twitch",
+  "layer": "current",
+  "mode": "current_location_review_queue_top300_preview",
+  "source": {
+    "workflowRunId": 33961161696,
+    "workflowName": "Twitch Stream Map Current Review Queue Live Probe",
+    "mainSha": "119505fa5742802f6b9bf8df95d95c4bc0ba8b2d",
+    "probePackageMergeSha": "f27fe218951b8acd5b004e16f6f5bb6be1b01dc8",
+    "artifactId": 9967979201,
+    "artifactName": "twitch-stream-map-current-review-queue-live-probe-33961161696",
+    "artifactSha256": "b5617014a6461c08431cb4bc7e03897b1cbbd7e848718628a0e34c4f3944d5f6"
+  },
+  "observedAt": "2026-09-05T10:38:04.069Z",
+  "population": {
+    "requestedSize": 300,
+    "sampleSize": 300,
+    "coveredPages": 3,
+    "hasMore": true,
+    "stableIdentity": "twitchUserId",
+    "stableIdentityUnique": true
+  },
+  "apiRequests": {
+    "token": 1,
+    "streams": 3,
+    "users": 0
+  },
+  "persistence": {
+    "d1Writes": 0,
+    "productionDeployment": false,
+    "rawTitleStored": false,
+    "rawTagsStored": false,
+    "rawLanguageStored": false,
+    "rawTextArtifactAllowed": false,
+    "canonicalMutationApplied": false
+  },
+  "decision": {
+    "status": "review_queue_only",
+    "acceptanceAuthorized": false,
+    "publicCurrentPlacementAuthorized": false,
+    "baseMutationAuthorized": false,
+    "languageUsedForPlacement": false
+  },
+  "summary": {
+    "inputStreams": 300,
+    "reviewableCandidates": 8,
+    "rejectedFutureTravel": 0,
+    "invalidIdentity": 0,
+    "conflictingCandidates": 3
+  },
+  "reviewBoundary": {
+    "titleOrTagCanAutoAccept": false,
+    "publicCurrentPlacementAuthorized": false,
+    "baseMutationAuthorized": false,
+    "rawTextRetained": false,
+    "languageUsedForPlacement": false
+  },
+  "reviewQueue": [
+    {
+      "twitchUserId": "582336589",
+      "userLogin": "cesgod",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/cesgod",
+      "observedAt": "2026-09-05T10:38:04.069Z",
+      "reviewWindowExpiresAt": "2026-09-06T10:38:04.069Z",
+      "reviewState": "candidate_review_required",
+      "candidatePlaces": [{"kind":"country","countryCode":"MX","countryName":"Mexico","city":null,"sourceClasses":["stream_tag"]}],
+      "sourceClasses": ["stream_tag"],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "159498717",
+      "userLogin": "jinnytty",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/jinnytty",
+      "observedAt": "2026-09-05T10:38:04.069Z",
+      "reviewWindowExpiresAt": "2026-09-06T10:38:04.069Z",
+      "reviewState": "candidate_review_required",
+      "candidatePlaces": [{"kind":"country","countryCode":"ES","countryName":"Spain","city":null,"sourceClasses":["stream_tag"]}],
+      "sourceClasses": ["stream_tag"],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "274100066",
+      "userLogin": "plumconch836",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/plumconch836",
+      "observedAt": "2026-09-05T10:38:04.069Z",
+      "reviewWindowExpiresAt": "2026-09-06T10:38:04.069Z",
+      "reviewState": "candidate_review_required",
+      "candidatePlaces": [{"kind":"country","countryCode":"AU","countryName":"Australia","city":null,"sourceClasses":["stream_tag"]}],
+      "sourceClasses": ["stream_tag"],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "139847149",
+      "userLogin": "ryuriia",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/ryuriia",
+      "observedAt": "2026-09-05T10:38:04.069Z",
+      "reviewWindowExpiresAt": "2026-09-06T10:38:04.069Z",
+      "reviewState": "candidate_conflict_review_required",
+      "candidatePlaces": [
+        {"kind":"country","countryCode":"PH","countryName":"Philippines","city":null,"sourceClasses":["stream_tag"]},
+        {"kind":"country","countryCode":"SG","countryName":"Singapore","city":null,"sourceClasses":["stream_tag"]},
+        {"kind":"city","countryCode":"SG","countryName":"Singapore","city":"Singapore","sourceClasses":["stream_tag"]}
+      ],
+      "sourceClasses": ["stream_tag"],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "693883340",
+      "userLogin": "clioaite",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/clioaite",
+      "observedAt": "2026-09-05T10:38:04.069Z",
+      "reviewWindowExpiresAt": "2026-09-06T10:38:04.069Z",
+      "reviewState": "candidate_review_required",
+      "candidatePlaces": [{"kind":"country","countryCode":"AU","countryName":"Australia","city":null,"sourceClasses":["stream_tag"]}],
+      "sourceClasses": ["stream_tag"],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "531019578",
+      "userLogin": "ronnyberger",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/ronnyberger",
+      "observedAt": "2026-09-05T10:38:04.069Z",
+      "reviewWindowExpiresAt": "2026-09-06T10:38:04.069Z",
+      "reviewState": "candidate_review_required",
+      "candidatePlaces": [{"kind":"city","countryCode":"DE","countryName":"Germany","city":"Berlin","sourceClasses":["stream_tag"]}],
+      "sourceClasses": ["stream_tag"],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "76020989",
+      "userLogin": "joeykaotyk",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/joeykaotyk",
+      "observedAt": "2026-09-05T10:38:04.069Z",
+      "reviewWindowExpiresAt": "2026-09-06T10:38:04.069Z",
+      "reviewState": "candidate_conflict_review_required",
+      "candidatePlaces": [
+        {"kind":"country","countryCode":"JP","countryName":"Japan","city":null,"sourceClasses":["stream_tag"]},
+        {"kind":"city","countryCode":"JP","countryName":"Japan","city":"Tokyo","sourceClasses":["stream_tag"]}
+      ],
+      "sourceClasses": ["stream_tag"],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "891810381",
+      "userLogin": "nahyunworld",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/nahyunworld",
+      "observedAt": "2026-09-05T10:38:04.069Z",
+      "reviewWindowExpiresAt": "2026-09-06T10:38:04.069Z",
+      "reviewState": "candidate_conflict_review_required",
+      "candidatePlaces": [
+        {"kind":"country","countryCode":"KR","countryName":"South Korea","city":null,"sourceClasses":["stream_tag"]},
+        {"kind":"country","countryCode":"TW","countryName":"Taiwan","city":null,"sourceClasses":["stream_title"]}
+      ],
+      "sourceClasses": ["stream_tag", "stream_title"],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    }
+  ],
+  "rejected": [],
+  "invalid": []
+}
