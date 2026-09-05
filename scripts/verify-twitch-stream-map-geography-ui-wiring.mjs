@@ -58,6 +58,17 @@ for (const token of [
   if (!cityReferencePointCore.includes(token)) throw new Error(`missing reviewed City reference-point contract token: ${token}`)
 }
 
+for (const token of [
+  "const requestedCity = new URL(window.location.href).searchParams.get('geography') === 'city'",
+  'if (requestedCity) reorderCityResultSections()',
+  "document.querySelector<HTMLElement>('.stream-map-results')",
+  "document.querySelector<HTMLElement>('.stream-map-unmapped')",
+  'host.insertBefore(results, unmapped)',
+  "document.documentElement.dataset.cityResultOrder = 'mapped-before-unmapped'",
+]) {
+  if (!view.includes(token)) throw new Error(`missing City result-order contract token: ${token}`)
+}
+
 if (!view.includes("import './geography-ui-bootstrap'")) throw new Error('geography bootstrap is not loaded by Stream Map UI')
 if (!reasons.includes('country_only_at_city_resolution')) throw new Error('country-only City reason metadata missing')
 if (!reasons.includes('base_city_conflict')) throw new Error('base City conflict reason metadata missing')
@@ -92,4 +103,5 @@ console.log(JSON.stringify({
   reviewedCityReferencePointLayer: true,
   creatorCoordinatePlacement: false,
   countryCentroidCityPlacement: false,
+  cityMappedResultsBeforeUnmapped: true,
 }, null, 2))
