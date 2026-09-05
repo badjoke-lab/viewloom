@@ -176,17 +176,42 @@ jobs:
             } else {
               await page.getByRole('heading', { name: 'City view', exact: true }).waitFor({ timeout: 15000 })
               await page.locator('[data-city-places]').waitFor({ timeout: 15000 })
+              await page.waitForFunction(() => {
+                const rows = [...document.querySelectorAll('[data-city-places] .stream-map-city-place')]
+                const referenceRows = rows.filter((row) => row.getAttribute('data-city-geometry') === 'reference_point').length
+                return document.querySelectorAll('.stream-map-city-reference-marker').length === referenceRows
+              }, null, { timeout: 15000 })
+
               const cityState = await page.evaluate(() => {
                 const countryList = document.getElementById('stream-map-country-list')
                 const countryCard = countryList?.closest('.stream-map-results-card')
                 const cityPlaces = document.querySelector('[data-city-places]')
+                const cityRows = [...(cityPlaces?.querySelectorAll('.stream-map-city-place') || [])]
+                const referencePointRows = cityRows.filter((row) => row.getAttribute('data-city-geometry') === 'reference_point').length
+                const listOnlyRows = cityRows.filter((row) => row.getAttribute('data-city-geometry') === 'list_only').length
+                const invalidGeometryRows = cityRows.length - referencePointRows - listOnlyRows
+                const cityReferenceMarkers = [...document.querySelectorAll('.stream-map-city-reference-marker')]
+                const cityButton = document.querySelector('[data-geography-mode="city"]')
+                const currentButton = [...document.querySelectorAll('.stream-map-geography-options button')]
+                  .find((button) => (button.textContent || '').trim() === 'Current / IRL')
+                const cityPayload = window.__viewloomStreamMapCityPayload
                 return {
                   cityMode: document.documentElement.classList.contains('stream-map-city-mode'),
                   countryCardHidden: Boolean(countryCard?.hidden),
                   cityPlacesPresent: Boolean(cityPlaces),
-                  cityPlaceRows: cityPlaces?.querySelectorAll('.stream-map-city-place').length || 0,
+                  cityPlaceRows: cityRows.length,
                   cityEmptyCount: cityPlaces?.querySelectorAll('.stream-map-empty').length || 0,
                   currentLocationCount: (document.getElementById('stream-map-current-count')?.textContent || '').trim(),
+                  publicCityUiActivated: cityPayload?.publicCityUiActivated,
+                  currentLocationActivated: cityPayload?.currentLocationActivated,
+                  cityButtonPressed: cityButton?.getAttribute('aria-pressed'),
+                  currentButtonDisabled: Boolean(currentButton?.disabled),
+                  currentButtonAriaDisabled: currentButton?.getAttribute('aria-disabled'),
+                  referencePointRows,
+                  listOnlyRows,
+                  invalidGeometryRows,
+                  cityReferenceMarkerCount: cityReferenceMarkers.length,
+                  cityReferenceRoles: cityReferenceMarkers.map((marker) => marker.getAttribute('data-reference-role')),
                 }
               })
               assert.equal(cityState.cityMode, true, 'city: City mode class must be active')
@@ -195,6 +220,15 @@ jobs:
               assert.ok(cityState.cityPlaceRows > 0 || cityState.cityEmptyCount > 0, 'city: accepted City locations panel must show rows or an explicit empty state')
               assert.equal(cityState.currentLocationCount, '0', 'city: current-location placement must remain zero')
               assert.equal(visibleMarkerCount, 0, 'city: Country-centroid markers must stay hidden; City coordinates are not inferred')
+              assert.equal(cityState.publicCityUiActivated, true, 'city: production City API must report public UI activation')
+              assert.equal(cityState.currentLocationActivated, false, 'city: production City API must keep Current / IRL inactive')
+              assert.equal(cityState.cityButtonPressed, 'true', 'city: City geography control must be active')
+              assert.equal(cityState.currentButtonDisabled, true, 'city: Current / IRL control must remain disabled')
+              assert.equal(cityState.currentButtonAriaDisabled, 'true', 'city: Current / IRL control must remain aria-disabled')
+              assert.equal(cityState.invalidGeometryRows, 0, 'city: every City row must be reference_point or list_only')
+              assert.equal(cityState.cityPlaceRows, cityState.referencePointRows + cityState.listOnlyRows, 'city: City geometry states must reconcile to the visible City list')
+              assert.equal(cityState.cityReferenceMarkerCount, cityState.referencePointRows, 'city: map markers must match only reviewed reference_point rows')
+              assert.ok(cityState.cityReferenceRoles.every((role) => role === 'city_aggregate_reference'), 'city: every map point must be a City aggregate reference')
             }
 
             await page.screenshot({ path: `${process.env.GITHUB_WORKSPACE}/${process.env.ARTIFACT_DIR}/${label}.png`, fullPage: true })
@@ -237,6 +271,9 @@ jobs:
                 cityMode: document.documentElement.classList.contains('stream-map-city-mode'),
                 cityPlacesPresent: Boolean(document.querySelector('[data-city-places]')),
                 countryCardHidden: Boolean(countryCard?.hidden),
+                publicCityUiActivated: window.__viewloomStreamMapCityPayload?.publicCityUiActivated,
+                currentLocationActivated: window.__viewloomStreamMapCityPayload?.currentLocationActivated,
+                cityReferenceMarkers: document.querySelectorAll('.stream-map-city-reference-marker').length,
               }
             }).catch(() => ({}))
             console.error(JSON.stringify({ diagnostics, pageErrors, consoleErrors }))
