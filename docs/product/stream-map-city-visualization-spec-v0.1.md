@@ -1,6 +1,6 @@
 # ViewLoom Twitch Stream Map — City visualization / interaction specification v0.1
 
-Status: candidate normative City visualization specification  
+Status: accepted on merge / normative City visualization specification  
 Parent specification: `docs/product/stream-map-spec-v0.7.md`  
 Evidence semantics: `docs/product/stream-map-city-confidence-contract-v0.1.md`  
 Baseline main: `24cd444bfe564588b70c16a335f07d2c41627c0b`  
