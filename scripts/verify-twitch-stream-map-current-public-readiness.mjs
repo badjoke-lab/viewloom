@@ -6,8 +6,11 @@ const streamMapCoreSource = readFileSync('apps/web/functions/api/twitch-stream-m
 const publicRouteSource = readFileSync('apps/web/functions/api/twitch-stream-map.ts', 'utf8')
 const geographyUiSource = readFileSync('apps/web/src/features/twitch-stream-map/geography-ui-bootstrap.ts', 'utf8')
 const responseCoreSource = readFileSync('scripts/twitch-stream-map-current-response-core.mjs', 'utf8')
+const liveResult = JSON.parse(
+  readFileSync('docs/audits/twitch-stream-map-current-review-queue-live-result-2026-09-05.json', 'utf8'),
+)
 const acquisitionResult = JSON.parse(
-  readFileSync('docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-result-2026-08-29.json', 'utf8'),
+  readFileSync('docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-result-2026-09-05.json', 'utf8'),
 )
 
 const collectorRetainsStableId = collectorSource.includes('twitchUserId: string | null') &&
@@ -30,8 +33,17 @@ const publicCurrentRouteWired = /normalized\s*===\s*['"]current['"]/.test(public
 const currentUiRemainsDisabled = geographyUiSource.includes('Current / IRL remains unavailable') &&
   geographyUiSource.includes('disabled aria-disabled="true" title="Current / IRL requires fresh current-location evidence"')
 
+const sourceProbeRun = Number(acquisitionResult?.sourceProbe?.workflowRunId ?? 0)
+const liveProbeRun = Number(liveResult?.source?.workflowRunId ?? 0)
+const liveSampleSize = Number(liveResult?.population?.sampleSize ?? 0)
+const liveReviewableCandidates = Number(liveResult?.summary?.reviewableCandidates ?? 0)
+const liveConflictingCandidates = Number(liveResult?.summary?.conflictingCandidates ?? 0)
+const reviewedCandidates = Number(acquisitionResult?.summary?.identitiesReviewed ?? 0)
+const noFreshQualifyingEvidence = Number(acquisitionResult?.summary?.noFreshQualifyingEvidence ?? 0)
+const conflictUnmapped = Number(acquisitionResult?.summary?.conflictUnmapped ?? 0)
 const freshReviewedEvidence = Number(acquisitionResult?.summary?.freshQualifyingEvidence ?? 0)
 const acceptedCurrentPlacement = Number(acquisitionResult?.summary?.acceptedCurrentPlacement ?? 0)
+const acquisitionEntries = Array.isArray(acquisitionResult?.entries) ? acquisitionResult.entries : []
 
 const blockers = [
   !collectorRetainsStableId ? 'production_twitch_snapshot_does_not_retain_user_id' : null,
@@ -40,7 +52,7 @@ const blockers = [
 ].filter(Boolean)
 
 const readiness = {
-  schemaVersion: 'viewloom-twitch-stream-map-current-public-readiness-v0.2',
+  schemaVersion: 'viewloom-twitch-stream-map-current-public-readiness-v0.3',
   provider: 'twitch',
   layer: 'current',
   publicCurrentActivationReady: blockers.length === 0,
@@ -53,6 +65,14 @@ const readiness = {
     freshReviewedCurrentEvidence: freshReviewedEvidence > 0 ? 'available' : 'blocked',
   },
   evidence: {
+    sourceProbeRun,
+    sourceObservedAt: acquisitionResult?.sourceProbe?.observedAt ?? null,
+    liveSampleSize,
+    liveReviewableCandidates,
+    liveConflictingCandidates,
+    reviewedCandidates,
+    noFreshQualifyingEvidence,
+    conflictUnmapped,
     freshQualifyingEvidence: freshReviewedEvidence,
     acceptedCurrentPlacement,
   },
@@ -70,6 +90,31 @@ const readiness = {
     publicActivationAuthorized: false,
   },
 }
+
+assert.equal(liveResult?.schemaVersion, 'viewloom-twitch-stream-map-current-review-queue-live-result-v0.1')
+assert.equal(acquisitionResult?.schemaVersion, 'viewloom-twitch-stream-map-current-temporal-evidence-acquisition-result-v0.2')
+assert.equal(sourceProbeRun, 33961161696, 'Current evidence review must point at the September 5 live probe')
+assert.equal(liveProbeRun, sourceProbeRun, 'Current live result and evidence review must use the same probe run')
+assert.equal(liveSampleSize, 300)
+assert.equal(liveReviewableCandidates, 8)
+assert.equal(liveConflictingCandidates, 3)
+assert.equal(liveResult?.persistence?.d1Writes, 0)
+assert.equal(liveResult?.persistence?.productionDeployment, false)
+assert.equal(liveResult?.persistence?.rawTextArtifactAllowed, false)
+assert.equal(liveResult?.decision?.acceptanceAuthorized, false)
+assert.equal(liveResult?.decision?.publicCurrentPlacementAuthorized, false)
+assert.equal(reviewedCandidates, 8)
+assert.equal(acquisitionEntries.length, reviewedCandidates)
+assert.equal(noFreshQualifyingEvidence, 6)
+assert.equal(conflictUnmapped, 2)
+assert.equal(acquisitionEntries.filter((entry) => entry?.outcome === 'conflict_unmapped').length, conflictUnmapped)
+assert.equal(acquisitionEntries.filter((entry) => entry?.outcome === 'no_fresh_qualifying_temporal_evidence').length, noFreshQualifyingEvidence)
+assert.equal(acquisitionEntries.some((entry) => Array.isArray(entry?.freshQualifyingEvidence) && entry.freshQualifyingEvidence.length > 0), false)
+assert.equal(acquisitionResult?.boundary?.automaticAcceptanceAuthorized, false)
+assert.equal(acquisitionResult?.boundary?.publicCurrentPlacementAuthorized, false)
+assert.equal(acquisitionResult?.boundary?.baseMutationAuthorized, false)
+assert.equal(acquisitionResult?.boundary?.productionDeployment, false)
+assert.equal(acquisitionResult?.boundary?.d1Writes, 0)
 
 assert.equal(collectorRetainsStableId, false, 'production Twitch collector stable-ID persistence changed; re-audit before Current activation')
 assert.equal(streamMapCoreConsumesStableId, true, 'Stream Map core must remain able to consume stable Twitch IDs when present')
