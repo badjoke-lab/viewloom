@@ -1,8 +1,14 @@
 # ViewLoom Stream Map Current Location / IRL Contract v0.1
 
-Status: contract for Issue #1031  
-Parent: Stream Map specification v0.6 / implementation plan v0.5  
-Last updated: 2026-08-24
+Status: accepted Current / IRL semantic contract; public activation remains separately gated  
+Original issue: #1031  
+Current parent: `stream-map-spec-v0.7.md` / `stream-map-implementation-plan-v0.6.md`  
+Original contract date: 2026-08-24  
+Authority note updated: 2026-09-05
+
+## Current implementation note
+
+The semantics below remain current. Since the original contract was written, candidate/reviewability work and the Twitch current-snapshot stable-ID adapter (#1198) have advanced. Those additions do not themselves authorize public Current placement. Public activation still requires fresh accepted current/temporary evidence and its own API/UI gate.
 
 ## 1. Purpose
 
@@ -368,6 +374,8 @@ History must show observation/expiry boundaries and must not interpolate a route
 
 ## 16. Initial implementation gates after this contract
 
+Historical gate sequence from the original contract:
+
 ```text
 D2 existing retained evidence current/temporary audit
 D3 deterministic freshness/expiry evaluator + fixtures
@@ -376,7 +384,7 @@ D5 separate current-location API layer
 D6 Current / IRL UI mode
 ```
 
-Each gate remains independently reviewable.
+D2-D4 and later candidate/reviewability/stable-ID plumbing have advanced since the original contract. Current execution status and remaining gates are governed by `stream-map-implementation-plan-v0.6.md` and `current-roadmap.md`, not by treating this historical list as unfinished verbatim.
 
 ## 17. Hard invariants
 
