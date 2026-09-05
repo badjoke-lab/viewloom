@@ -14,9 +14,21 @@ Last updated: 2026-09-05
 6. the relevant lane-specific contract
 7. the current implementation/tests on `main`
 
-This is the current authority chain. Older versioned specs/plans remain in the repository as history but do not override the documents above.
+This is the current Stream Map authority chain. Older versioned Stream Map specs/plans remain in the repository as history but do not override the documents above.
 
 `docs/product/stream-map-current-execution-v0.1.md` is now a superseded historical execution snapshot, not an additional current override.
+
+## Permanent product records outside the Stream Map authority chain
+
+The source-of-truth index also retains accepted permanent records for other ViewLoom surfaces. Updating Stream Map authority must not delete these references or reinterpret their accepted contracts.
+
+### Local Watchlist
+
+- `docs/product/local-watchlist-spec.md`
+- `docs/product/watchlist-v1-implementation-plan.md`
+- `docs/operations/watchlist-production-acceptance-2026-06-25.md`
+
+These Watchlist records remain permanent and independent of the Stream Map scheduling changes below.
 
 ## Current Stream Map snapshot
 
@@ -35,7 +47,7 @@ Country -> City inference           forbidden
 Current / IRL public placement      separate; fail closed without fresh accepted evidence
 Kick reviewed Country path          advancing separately
 Twitch/Kick aggregation             forbidden
-Top20 weekly review                  maintenance sublane only
+Top20 weekly review                 maintenance sublane only
 ```
 
 ## Stream Map source-of-truth roles
@@ -184,14 +196,16 @@ Kick Country, Current/IRL, shared UI/accessibility and reviewed-evidence mainten
 
 ## Historical records
 
-Older files such as:
+Older Stream Map files such as:
 
 - `stream-map-spec-v0.6.md` and earlier;
 - `stream-map-implementation-plan-v0.5.md` and earlier;
 - `stream-map-current-execution-v0.1.md`;
-- dated audits/measurement/maintenance closeouts;
+- dated Stream Map audits/measurement/maintenance closeouts;
 
-remain useful for history and auditability. They must not be read as current scheduling authority when they conflict with the current authority chain above.
+remain useful for history and auditability. They must not be read as current Stream Map scheduling authority when they conflict with the current authority chain above.
+
+This historical status does not apply to the permanent non-Stream-Map records explicitly listed earlier in this index.
 
 ## Documentation synchronization rule
 
