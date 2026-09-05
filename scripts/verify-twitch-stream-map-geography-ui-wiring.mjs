@@ -24,6 +24,7 @@ const requiredBootstrap = [
   "current.setAttribute('aria-disabled', 'true')",
   "label.dataset.cityUnavailable = 'true'",
   'Current location is unavailable at City resolution.',
+  '.stream-map-city-mode .stream-map-results-grid{grid-template-columns:minmax(0,1fr)}',
 ]
 
 for (const token of requiredBootstrap) {
@@ -108,6 +109,7 @@ console.log(JSON.stringify({
   listWorksWithoutGeometry: true,
   currentIrlUiActive: false,
   cityCurrentLocationFilterEnabled: false,
+  cityResultGridFullWidth: true,
   preciseLocationFieldsInBootstrap: false,
   reviewedCityReferencePointLayer: true,
   creatorCoordinatePlacement: false,
