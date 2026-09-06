@@ -28,21 +28,24 @@ assert(formatter.providerCoverageLimit({}, 'twitch') === 300, 'Twitch default li
 const uiPath = 'src/kick-coverage-ui.ts'
 const ui = read(uiPath)
 for (const fragment of [
-  "'/api/kick-home'",
-  "'/api/kick-status'",
-  "'/api/kick-day-flow'",
-  "'/api/kick-battle-lines'",
-  "'/api/kick-history'",
+  'window.__viewloomApplyKickCoveragePayload = applyKickCoveragePayload',
+  'export function applyKickCoveragePayload(payload: ProviderCoveragePayload): void',
+  "if (document.body.dataset.provider !== 'kick') return",
+  "if (path === '/kick/')",
+  "if (path === '/kick/status/')",
+  "if (path === '/kick/day-flow/')",
+  "if (path === '/kick/battle-lines/')",
+  "if (path === '/kick/history/')",
   "setTextById('home-strip-coverage', summary)",
   "setLabeledStrong('.status-board .status-cell', 'Coverage', summary)",
   "upsertNote('[data-dayflow-coverage]'",
   "upsertNote('[data-battle-coverage]'",
   "upsertNote('[data-history-notes]'",
-  'response.clone().json()',
-  'new MutationObserver(queueApply)',
 ]) assert(ui.includes(fragment), `${uiPath}: missing ${fragment}`)
-assert(!ui.includes('/api/twitch-'), `${uiPath}: Twitch API interception is forbidden.`)
-assert(ui.includes("document.body.dataset.provider === 'kick'"), `${uiPath}: Kick provider guard is missing.`)
+assert(!ui.includes('/api/twitch-'), `${uiPath}: Twitch API access is forbidden.`)
+assert(!ui.includes('/api/kick-'), `${uiPath}: coverage UI must consume provided payloads instead of owning Kick API requests.`)
+assert(!ui.includes('response.clone().json()'), `${uiPath}: retired response interception must stay absent.`)
+assert(!ui.includes('MutationObserver'), `${uiPath}: retired DOM interception must stay absent.`)
 
 const mockSite = read('src/mock-site.ts')
 assert(mockSite.startsWith("import './dayflow-responsive.css'\nimport './features/heatmap-page/layout-mode.css'\nimport './kick-coverage-ui'"), 'mock-site must install coverage UI before feature requests.')
@@ -71,4 +74,4 @@ if (failures.length) {
   process.exit(1)
 }
 
-console.log('Kick coverage UI verification passed for Home, Status, Heatmap, Day Flow, Battle Lines, and History.')
+console.log('Kick coverage UI verification passed for the current payload-application contract across Home, Status, Heatmap, Day Flow, Battle Lines, and History.')
