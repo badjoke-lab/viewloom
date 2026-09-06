@@ -21,11 +21,11 @@ check(manifest.provider_invariants?.twitch_binding === 'DB_TWITCH_HOT', 'Twitch 
 check(manifest.provider_invariants?.kick_binding === 'DB_KICK_HOT', 'Kick binding mismatch')
 check(manifest.provider_invariants?.combined_totals_allowed === false, 'combined totals must remain forbidden')
 check(manifest.provider_invariants?.combined_rankings_allowed === false, 'combined rankings must remain forbidden')
-check(manifest.counts?.vite_html_inputs === 25, 'expected 25 Vite HTML routes')
-check(manifest.counts?.inventory_entries === 26, 'expected 26 inventory entries')
-check(manifest.counts?.current_browser_scenarios === 100, 'expected 100 current browser scenarios')
-check(manifest.counts?.public_readiness_configured_pages === 25, 'Public Readiness route count mismatch')
-check(manifest.counts?.production_smoke_page_routes === 25, 'Production Smoke route count mismatch')
+check(manifest.counts?.vite_html_inputs === 26, 'expected 26 Vite HTML routes')
+check(manifest.counts?.inventory_entries === 27, 'expected 27 inventory entries')
+check(manifest.counts?.current_browser_scenarios === 104, 'expected 104 current browser scenarios')
+check(manifest.counts?.public_readiness_configured_pages === 26, 'Public Readiness route count mismatch')
+check(manifest.counts?.production_smoke_page_routes === 26, 'Production Smoke route count mismatch')
 
 const gates = {}
 const profiles = {}
@@ -53,12 +53,14 @@ for (const path of manifest.route_files ?? []) {
   routes.push(...(doc.routes ?? []))
 }
 
-check(routes.length === 26, `expected 26 routes, found ${routes.length}`)
-check(routes.filter((route) => route.source !== 'apps/web/public/404.html').length === 25, 'Vite route count mismatch')
+check(routes.length === 27, `expected 27 routes, found ${routes.length}`)
+check(routes.filter((route) => route.source !== 'apps/web/public/404.html').length === 26, 'Vite route count mismatch')
 check(new Set(routes.map((route) => route.id)).size === routes.length, 'duplicate route id')
 check(new Set(routes.map((route) => route.route)).size === routes.length, 'duplicate route path')
 check(routes.filter((route) => route.profile === 'watchlist').length === 2, 'both Watchlist routes must remain inventoried')
 check(routes.filter((route) => route.profile === 'static_legal').length === 5, 'five static legal routes required')
+check(routes.some((route) => route.id === 'twitch-map' && route.route === '/twitch/map/' && route.profile === 'stream_map'), 'public Twitch Stream Map must remain inventoried')
+check(routes.some((route) => route.id === 'kick-map' || route.route === '/kick/map/') === false, 'Kick Stream Map must remain outside the public inventory until K4 authorization')
 
 const vite = readFileSync(join(root, 'apps/web/vite.config.ts'), 'utf8')
 const sitemap = readFileSync(join(root, 'apps/web/public/sitemap.xml'), 'utf8')
@@ -90,7 +92,7 @@ for (const route of routes) {
   }
 }
 
-check(sitemapRoutes.size === 21, `expected 21 sitemap routes, found ${sitemapRoutes.size}`)
+check(sitemapRoutes.size === 22, `expected 22 sitemap routes, found ${sitemapRoutes.size}`)
 check(profiles.history?.assessment === 'known_p1_defects', 'historical History profile changed')
 check(profiles.watchlist?.assessment === 'complete_for_v1_contract', 'Watchlist assessment changed')
 check(profiles.static_legal?.assessment === 'complete_current_contract', 'static_legal must remain accepted')
@@ -106,16 +108,16 @@ check(gaps.cross_route_gaps?.some((item) => item.id === 'policy-surfaces-missing
 const r12a = load('docs/audits/r12a-production-acceptance.json')
 check(r12a.status === 'complete' && r12a.result === 'pass', 'R12A production acceptance must remain complete')
 check(r12a.expected_main_sha === r12a.deployed_sha, 'R12A expected/deployed SHA mismatch')
-check(r12a.counts?.html_routes === 25, 'R12A route count mismatch')
+check(r12a.counts?.html_routes === 25, 'historical R12A route count mismatch')
 check(r12a.counts?.provider_crossing_failures === 0, 'R12A provider crossing failure')
 check(r12a.counts?.blocking_alerts === 0, 'R12A blocking alert')
 
 const phase12 = load('docs/audits/phase12-release-acceptance.json')
 check(phase12.status === 'complete' && phase12.result === 'pass', 'Phase 12 release acceptance must be complete')
 check(phase12.expectedMainSha === phase12.deployedSha, 'Phase 12 expected/deployed SHA mismatch')
-check(phase12.counts?.htmlRoutes === 25, 'Phase 12 route count mismatch')
+check(phase12.counts?.htmlRoutes === 25, 'historical Phase 12 route count mismatch')
 check(phase12.counts?.statusApis === 2, 'Phase 12 status API count mismatch')
-check(phase12.counts?.sitemapRoutes === 21, 'Phase 12 sitemap count mismatch')
+check(phase12.counts?.sitemapRoutes === 21, 'historical Phase 12 sitemap count mismatch')
 check(phase12.counts?.launchAssets === 6, 'Phase 12 launch asset count mismatch')
 check(phase12.counts?.blockingAlerts === 0, 'Phase 12 blocking alert')
 
@@ -127,10 +129,11 @@ if (failures.length) {
 
 console.log(`Public surface inventory verified: ${routes.length} routes, ${Object.keys(profiles).length} profiles, ${Object.keys(gates).length} gate groups.`)
 console.log('- active program is Phase 12A Analytics Capture Foundation')
-console.log('- 25 HTML routes plus explicit 404 remain owned')
-console.log('- Phase 12 exact-SHA production acceptance is complete')
+console.log('- current build: 26 HTML routes plus explicit 404')
+console.log('- historical Phase 12 exact-SHA production acceptance remains preserved at its accepted route counts')
 console.log('- five R12A legal/support routes remain production accepted and resolved')
 console.log('- Twitch and Kick bindings remain separate')
+console.log('- public Twitch Stream Map is inventoried; Kick Stream Map remains pre-activation')
 console.log('- historical P8B evidence remains locked separately')
 console.log(`- primary public origin is ${primaryOrigin}`)
 
