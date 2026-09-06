@@ -1,7 +1,7 @@
 {
   "schema": "viewloom-public-surface-inventory-v1",
-  "version": 6,
-  "updated_at": "2026-07-09",
+  "version": 7,
+  "updated_at": "2026-09-06",
   "source": {
     "branch": "main",
     "accepted_main_sha": "952f0008209363f4fd5b22587975ac247ee8d6f2",
@@ -12,18 +12,18 @@
     "current_browser_audit": "apps/web/scripts/public-current-browser-audit.mjs",
     "production_smoke": ".github/workflows/production-smoke.yml"
   },
-  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. All 25 owned HTML routes are production accepted; historical P8B evidence remains separately preserved.",
+  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. The current build owns 26 HTML routes plus an explicit 404; historical Phase 12/R12A acceptance evidence remains separately preserved.",
   "counts": {
-    "vite_html_inputs": 25,
+    "vite_html_inputs": 26,
     "explicit_not_found_pages": 1,
-    "inventory_entries": 26,
-    "indexable_routes": 21,
+    "inventory_entries": 27,
+    "indexable_routes": 22,
     "noindex_routes": 4,
-    "sitemap_routes": 21,
-    "public_readiness_configured_pages": 25,
-    "production_smoke_page_routes": 25,
+    "sitemap_routes": 22,
+    "public_readiness_configured_pages": 26,
+    "production_smoke_page_routes": 26,
     "current_browser_required_viewports": 4,
-    "current_browser_scenarios": 100
+    "current_browser_scenarios": 104
   },
   "provider_invariants": {
     "separate_routes": true,

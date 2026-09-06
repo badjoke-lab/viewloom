@@ -77,6 +77,7 @@ jobs:
             '/twitch/day-flow/'
             '/twitch/battle-lines/'
             '/twitch/history/'
+            '/twitch/map/'
             '/twitch/channel/'
             '/twitch/watchlist/'
             '/twitch/status/'
@@ -89,7 +90,7 @@ jobs:
             '/kick/watchlist/'
             '/kick/status/'
           )
-          test "${#routes[@]}" = '25'
+          test "${#routes[@]}" = '26'
           for route in "${routes[@]}"; do
             name="$(echo "$route" | tr '/' '-' | sed 's/^-//;s/-$//')"
             [ -n "$name" ] || name='portal'
@@ -98,6 +99,7 @@ jobs:
             grep -qi 'ViewLoom' "$ARTIFACT_DIR/$name.html"
           done
           grep -q '<title>History & Trends for Twitch live streams | ViewLoom</title>' "$ARTIFACT_DIR/twitch-history.html"
+          grep -q '<title>Stream Map — ViewLoom</title>' "$ARTIFACT_DIR/twitch-map.html"
           grep -q '<title>History & Trends for Kick live streams | ViewLoom</title>' "$ARTIFACT_DIR/kick-history.html"
           grep -q '<title>Twitch channel history' "$ARTIFACT_DIR/twitch-channel.html"
           grep -q '<title>Kick channel history' "$ARTIFACT_DIR/kick-channel.html"
@@ -158,8 +160,8 @@ jobs:
             if [ -f "$ARTIFACT_DIR/deployment.json" ]; then
               echo "- Deployed SHA: \`$(jq -r '.commit_sha // "unavailable"' "$ARTIFACT_DIR/deployment.json")\`"
             fi
-            echo '- Repository-owned HTML routes: 25 checked'
-            echo '- About, Support, Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Changelog, Channel, and Watchlist ownership: checked'
+            echo '- Repository-owned HTML routes: 26 checked'
+            echo '- About, Support, Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Changelog, Channel, Watchlist, and Twitch Stream Map ownership: checked'
             echo '- Twitch and Kick status APIs: checked'
             echo '- Separate D1 bindings: checked'
             echo '- Collector freshness: checked'
