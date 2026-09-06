@@ -13,7 +13,13 @@ const responses = [
     data: [
       { user_id: '1', user_login: 'tokyo_live', title: 'IRL live in Tokyo', tags: [], language: 'en' },
       { user_id: '2', user_login: 'japan_tag', title: 'regular stream', tags: ['Japan'], language: 'ja' },
-      { user_id: '3', user_login: 'future_trip', title: 'Japan trip tomorrow', tags: ['Japan'], language: 'en' },
+      { user_id: '3', user_login: 'future_trip', title: 'Japan trip tomorrow', tags: ['Japan'], language: 'en' }
+    ],
+    pagination: { cursor: 'page-2' }
+  }), { status: 200 }),
+  new Response(JSON.stringify({
+    data: [
+      { user_id: '1', user_login: 'tokyo_live', title: 'duplicate row text', tags: ['Duplicate'], language: 'en' },
       { user_id: '4', user_login: 'no_location', title: 'just chatting', tags: [], language: 'en' }
     ],
     pagination: {}
@@ -38,15 +44,17 @@ assert.equal(result.provider, 'twitch')
 assert.equal(result.mode, 'current_location_review_queue_top300_preview')
 assert.equal(result.requestedSize, 300)
 assert.equal(result.sampleSize, 4)
-assert.equal(result.coveredPages, 1)
+assert.equal(result.coveredPages, 2)
 assert.equal(result.stableIdentity, 'twitchUserId')
 assert.equal(result.stableIdentityUnique, true)
+assert.equal(result.duplicateStableIdentityRowsDropped, 1)
 assert.equal(result.apiRequests.token, 1)
-assert.equal(result.apiRequests.streams, 1)
+assert.equal(result.apiRequests.streams, 2)
 assert.equal(result.apiRequests.users, 0)
-assert.equal(calls.length, 2)
+assert.equal(calls.length, 3)
 assert.ok(calls[0].url.startsWith('https://id.twitch.tv/oauth2/token'))
 assert.ok(calls[1].url.startsWith('https://api.twitch.tv/helix/streams'))
+assert.ok(calls[2].url.startsWith('https://api.twitch.tv/helix/streams'))
 assert.equal(calls.some((call) => call.url.includes('/helix/users')), false)
 
 assert.equal(result.persistence.d1Writes, 0)
@@ -71,7 +79,7 @@ assert.equal(result.review.boundary.rawTextRetained, false)
 
 const serializedResult = JSON.stringify(result)
 const serializedReview = JSON.stringify(result.review)
-for (const rawTitle of ['IRL live in Tokyo', 'regular stream', 'Japan trip tomorrow', 'just chatting']) {
+for (const rawTitle of ['IRL live in Tokyo', 'regular stream', 'Japan trip tomorrow', 'duplicate row text', 'just chatting']) {
   assert.equal(serializedResult.includes(rawTitle), false, `raw title leaked: ${rawTitle}`)
 }
 for (const rawField of ['title', 'tags', 'language']) {
@@ -79,6 +87,7 @@ for (const rawField of ['title', 'tags', 'language']) {
 }
 
 assert.ok(workerSource.includes('MAX_PAGES = 3'))
+assert.ok(workerSource.includes('duplicateStableIdentityRowsDropped'))
 assert.ok(workerSource.includes("users: 0"))
 assert.equal(workerSource.includes("https://api.twitch.tv/helix/users"), false)
 assert.ok(wranglerSource.includes('no D1 binding'))
@@ -94,6 +103,7 @@ assert.ok(workflowSource.includes('publicCurrentPlacementAuthorized == false'))
 console.log(JSON.stringify({
   ok: true,
   sampleSize: result.sampleSize,
+  duplicateStableIdentityRowsDropped: result.duplicateStableIdentityRowsDropped,
   reviewableCandidates: result.review.summary.reviewableCandidates,
   rejectedFutureTravel: result.review.summary.rejectedFutureTravel,
   tokenRequests: result.apiRequests.token,
