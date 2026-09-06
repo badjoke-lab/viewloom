@@ -3,7 +3,7 @@
 Status: accepted on merge / active execution plan  
 Specification: `docs/product/stream-map-spec-v0.7.md`  
 Supersedes: `docs/product/stream-map-implementation-plan-v0.9.md`  
-Audited runtime baseline: main `f30a9b26ca8204fb7a8a9e895ad2759984cccf9f`  
+Audited runtime baseline: main `ff220d1d141e2bcd190692a1f1ffbb7ee5f5390a`  
 Date: 2026-09-06
 
 ## 1. Current position
@@ -19,8 +19,8 @@ Kick Country has two distinct tracks that must not be conflated:
 ```text
 runtime/data readiness
   K1 reviewed-evidence runtime staging              COMPLETE #1239
-  K2 production broadcaster_user_id persistence    BLOCKED BY EXPLICIT AUTHORIZATION
-  K3 production reviewed-evidence runtime join     AFTER K2
+  K2 production broadcaster_user_id persistence    COMPLETE #1249
+  K3 production reviewed-evidence runtime join     NEXT / SEPARATE AUTHORIZATION
   K4 public activation                             SEPARATE GATE
 
 pre-public UI readiness
@@ -37,7 +37,7 @@ The public route is still intentionally absent:
 /kick/map/              not public
 ```
 
-The completed KUI1/KUI2/KUI3a work is stored under the non-production preview surface and is deliberately excluded from the production Vite input. UI preparation therefore no longer waits on K2. Actual live reviewed Country rendering still waits on K2/K3, and public activation still waits on separate K4 authorization.
+The completed KUI1/KUI2/KUI3a work is stored under the non-production preview surface and is deliberately excluded from the production Vite input. K2 has now closed the production stable-ID prerequisite. Actual live reviewed Country rendering still waits on separately authorized K3, and public activation still waits on separate K4 authorization.
 
 Accepted KUI3a browser proof on run `33978336854`:
 
@@ -82,7 +82,7 @@ Read Stream Map work in this order:
 
 Older implementation plans remain historical and do not override v0.10.
 
-A blocked production dependency in one lane does not stop safe work in another lane. In particular, K2 did not prevent preview-only Kick UI, validators, contract work, browser-safe fixtures, documentation or shared UI work; those safe KUI3a tasks and the current shared Twitch UI regression batch are now completed.
+A blocked production dependency in one lane does not stop safe work in another lane. In particular, K2 did not prevent preview-only Kick UI, validators, contract work, browser-safe fixtures, documentation or shared UI work; those safe KUI3a tasks and the current shared Twitch UI regression batch are now completed. The K2 authorization was consumed by #1249 and does not authorize K3, K4 or Twitch stable-ID persistence.
 
 ## 3. Twitch Country — CLOSED
 
@@ -170,22 +170,40 @@ K1 does not:
 - automatically promote geography;
 - authorize public activation.
 
-### K2. Production stable identity — BLOCKED UNTIL EXPLICIT AUTHORIZATION
+### K2. Production stable identity — COMPLETE
 
-Required dependency:
+PR #1249 retained `broadcaster_user_id` directly from the existing official `/public/v1/livestreams` response and persisted it through the existing minute-snapshot JSON path.
+
+Accepted implementation boundary:
 
 ```text
-Kick official livestream collection
--> retain official broadcaster_user_id in production minute snapshot
+existing /public/v1/livestreams request
+-> raw broadcaster_user_id
+-> normalized Kick official stream row
+-> existing minute_snapshots.payload_json
 ```
 
-This is a production collector mutation and is not authorized by this plan.
+K2 added zero additional Kick API requests, no Channels lookup for stable identity, no D1 schema/binding change, no cadence change, no retention/backfill change and no Twitch collector change.
 
-Stale Draft #1083 must not be merged as-is. If authorization is later given, create a clean current-main implementation PR and re-run existing readiness gates.
+Provider-scoped production deploy run `34008654160` proved `deployKick=true`, `deployTwitch=false`, Kick deploy success, Twitch deploy skipped and remote schema verification success.
 
-### K3. Production runtime connection — AFTER K2
+Production API proof run `34008795931` observed:
 
-Only after production snapshots carry stable IDs may the already-prepared provider-specific reviewed Country path be connected to production runtime and production reconciliation verified.
+```text
+updatedAt                    2026-09-06T03:21:00.627Z
+observedStreams              100
+stableIdentityStreams        100
+missingStableIdentityStreams   0
+stableIdentityPercent          1
+mappedStreams                  0
+state                         blocked_reviewed_evidence
+```
+
+Draft #1083 is superseded by #1249 and closed.
+
+### K3. Production runtime connection — NEXT / SEPARATE AUTHORIZATION
+
+Production snapshots now carry stable IDs, so the technical K2 prerequisite is satisfied. Connecting the already-prepared provider-specific reviewed Country path to production runtime remains a separate production behavior change and requires separate authorization.
 
 Required properties:
 
@@ -339,7 +357,7 @@ PRs #1245-#1247 close the concrete September 6 shared Twitch Map UI findings wit
 
 #1246  compact Country controls and intensity legend
        geography/Streams/Viewers/World view/mobile targets hardened
-       replaced native intensity select removed from duplicate keyboard interaction
+       replaced native metric select removed from duplicate keyboard interaction
        five-step log legend exposes active Streams/Viewers metric
        keyboard Viewers activation + legend update verified
        visible 390px controls rejected below 44px
@@ -426,9 +444,10 @@ DONE   Kick KUI3a non-mutating browser proof #1244 / run 33978336854
 DONE   Shared Twitch geography control regression #1245
 DONE   Shared Country compact controls/legend regression #1246
 DONE   Shared City mobile target regression #1247
+DONE   Kick K2 production stable-ID persistence #1249
+DONE   Kick K2 production proof #1250 / run 34008795931 / 100 of 100 stable IDs
 PAR    scoped shared Map regression/accessibility work and non-mutating lane maintenance only
-BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
-WAIT   Kick K3 production runtime connection until K2
+NEXT   Kick K3 production runtime connection — separate authorization required
 WAIT   Kick KUI3b real-data browser/API proof until K3
 BLOCK  Kick K4 public /kick/map/ activation pending separate authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
@@ -442,8 +461,8 @@ Twitch Country remains usable/tested/evidence-safe
 AND Twitch City remains useful without inferred creator precision
 AND current shared Twitch Map regression baseline remains green
 AND Kick KUI1/KUI2/KUI3a pre-public UI remains ready without pretending to be public
-AND Kick obtains production broadcaster_user_id only under explicit authorization
-AND Kick staged reviewed evidence is connected to production runtime only after stable identity exists
+AND Kick production broadcaster_user_id remains healthy after the authorized K2 #1249
+AND Kick staged reviewed evidence is connected to production runtime only under separate K3 authorization
 AND Kick KUI3b proves the Country UI against real production-connected reviewed rows
 AND Kick /kick/map/ is created only through a separate explicit public activation gate
 AND Current/IRL obtains production stable identity only under explicit authorization
