@@ -5,7 +5,7 @@ Normative specification: `docs/product/stream-map-spec-v0.7.md`
 Execution plan: `docs/product/stream-map-implementation-plan-v0.10.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `bea33532001989c71dde289e570752985d34f600`  
+Audited runtime baseline: main `9fe01ac2cdff55fb1bc8ebd2fc126d74deec8956`  
 Last updated: 2026-09-06
 
 ## 1. Scheduling principle
@@ -62,9 +62,26 @@ Reviewed Country work is complete across 100 identities: 7 accepted, 3 excluded 
 
 ### Step 5 — Current fresh Top300 temporal-evidence re-audit — COMPLETE / FAIL CLOSED
 
-Fresh bounded run measured 300 streams and produced 8 reviewable identities. Manual accepted-evidence review found zero fresh qualifying evidence and zero accepted Current placements; 6 rows were no qualifying evidence and 2 remained true unresolved conflicts.
+The September 6 bounded refresh supersedes the September 5 evidence window for current readiness. Run `34015266644` requested Top300, measured 299 unique stable Twitch identities after dropping one pagination-overlap duplicate, produced 9 reviewable identities, rejected 6 future/planned-travel rows before review and produced one machine conflict row.
 
-Current remains fail-closed. The same live probe is not scheduled to repeat immediately simply to seek a non-zero result.
+Accepted-class review covered all 9 identities × 4 accepted evidence classes = 36 identity/class pairs. It found zero fresh qualifying temporal evidence and zero accepted Current placements. All 9 reviewed identities remain no-fresh-qualifying outcomes. The one machine conflict (`robcdee`: Japan + Tokyo) is a same-country granularity difference, not a true competing-country conflict.
+
+```text
+requested population                    300
+unique stable identities measured       299
+duplicate stable-ID rows dropped           1
+reviewable identities                      9
+future/planned travel rejected             6
+machine conflict rows                       1
+accepted-class review pairs                36
+fresh qualifying evidence                   0
+accepted Current placement                  0
+no-fresh-qualifying outcomes                9
+true unresolved cross-country conflicts     0
+same-country granularity conflicts closed   1
+```
+
+Current remains fail-closed. This refresh did not authorize production stable-ID persistence, public Current routing/UI or Home/Base mutation.
 
 ### Step 6 — Kick K1 collector-independent reviewed-evidence runtime staging — COMPLETE
 
@@ -127,6 +144,8 @@ public canonical               absent
 Completed by PRs #1245, #1246 and #1247.
 
 Accepted shared UI proof includes 44px geography/action targets, focus-visible keyboard behavior, Country/City URL-state verification, compact Country controls/legend and 390px City action-target verification. No placement semantics changed.
+
+The already-public `/twitch/map/` route is now also included in the permanent public-surface inventory, sitemap, four-viewport browser matrix and production smoke through PR #1259. Current public inventory is 26 HTML routes plus explicit 404 and 104 browser scenarios.
 
 ### Step 11 — Kick K2 production stable identity — COMPLETE
 
@@ -215,11 +234,38 @@ Live reviewed/mapped counts are snapshot-dependent. The fixed review catalog rem
 
 KUI3b does not authorize K4.
 
+### Step 14 — Kick K4 preactivation and exact cutover contract — COMPLETE / ACTIVATION STILL BLOCKED
+
+PR #1255 froze the accepted K2/K3/KUI3b evidence and proved K4 remained the sole public blocker. PR #1265 froze the exact file-level K4 cutover contract without changing the authorization state.
+
+The K4 cutover contract requires an authorized cutover to include, in one reviewed change set:
+
+- explicit route → adapter/runtime authorization with false remaining the default;
+- canonical `apps/web/kick/map/index.html` plus a separate public entry module;
+- production Vite input, Kick home target and sitemap entry;
+- Kick readiness/API/browser proof;
+- public-surface inventory/browser/production-smoke updates so `/kick/map/` cannot be omitted from permanent monitoring.
+
+The contract explicitly excludes collector directories, migrations, the reviewed Country runtime catalog and the four canonical Country review result files from K4 changes.
+
+Expected public inventory only **after an authorized K4 cutover**:
+
+```text
+Vite HTML inputs                 27
+inventory entries incl. 404      28
+indexable routes                 23
+sitemap routes                   23
+browser viewports                 4
+browser scenarios               108
+```
+
+These are frozen target counts, not current public counts.
+
 ## 3. Immediate Kick gate — K4 public activation
 
 ### Step K4 — public Kick Country activation — BLOCKED / SEPARATE EXPLICIT AUTHORIZATION REQUIRED
 
-K1-K3 and KUI1-KUI3b are complete. The remaining Kick public gate is K4 only.
+K1-K3, KUI1-KUI3b, preactivation proof and the exact cutover contract are complete. The remaining Kick public gate is K4 authorization itself.
 
 Current production/public state:
 
@@ -231,23 +277,32 @@ apps/web/kick/map/                   absent
 public Kick Map canonical            absent
 public Kick Map navigation target    absent
 production Kick Map Vite entry       absent
+sitemap /kick/map/ entry             absent
 ```
 
-Only a separate explicit K4 decision may authorize:
+Only a separate explicit K4 decision may authorize the already-frozen cutover contract. The cutover must not expand into collector, D1/schema, cadence, retention/backfill, reviewed-catalog or provider-crossing changes.
 
-- creating/activating canonical `/kick/map/`;
-- adding public navigation;
-- adding a production Vite entry;
-- setting the production public activation contract to authorized;
-- final public API/browser/production acceptance.
-
-Do not reinterpret K3 technical readiness or KUI3b's test-only local activation lift as K4 permission.
+Do not reinterpret K3 technical readiness, KUI3b's test-only local activation lift, #1255 preactivation readiness or #1265 cutover-contract completion as K4 permission.
 
 ## 4. Current Location / IRL lane
 
 ### Step R1 — fresh evidence re-audit — COMPLETE / FAIL CLOSED
 
-The September 5 review established zero fresh accepted Current placements. Do not immediately rerun the same probe absent a justified new signal or later review window.
+The latest September 6 review is canonical for Current readiness:
+
+```text
+run                              34015266644
+artifact                         9983696759
+unique stable identities                299
+reviewable identities                     9
+accepted-class review pairs              36
+fresh qualifying evidence                 0
+accepted Current placement                0
+no-fresh-qualifying outcomes              9
+true cross-country conflicts              0
+```
+
+The one machine conflict was Japan + Tokyo for the same creator and was closed as same-country granularity, not promoted to a Current placement.
 
 ### Step R2 — production stable Twitch identity — BLOCKED UNTIL EXPLICIT AUTHORIZATION
 
@@ -258,7 +313,7 @@ Twitch Helix streams.user_id
 -> retain twitchUserId in production minute snapshot
 ```
 
-This is a production collector mutation. Stale Draft #1107 must not be merged as-is.
+This is a production collector mutation. Draft #1107 is closed unmerged and must not be revived as authorization.
 
 ### Step R3 — fresh accepted Current evidence — BLOCKED BY CURRENT DATA STATE
 
@@ -311,7 +366,6 @@ DONE   Country current boundary + #1214 completion
 DONE   City C1-C6 through #1233
 DONE   Twitch Current readiness re-audit #1234
 DONE   Kick Country readiness re-audit #1235
-DONE   Current fresh Top300 review: 300 -> 8 reviewed -> 0 accepted
 DONE   Kick K1 internal reviewed-evidence runtime staging #1239
 DONE   Kick KUI1 fail-closed pre-public shell #1241
 DONE   Kick KUI2 Country aggregate renderer/results #1242
@@ -321,6 +375,10 @@ DONE   Kick K2 production stable-ID persistence #1249
 DONE   Kick K2 production proof #1250 / run 34008795931 / 100 of 100 stable IDs
 DONE   Kick K3 production reviewed-Country runtime #1252 / run 34010236817
 DONE   Kick KUI3b real production-connected proof #1253 / main run 34010502534
+DONE   Kick K4 preactivation readiness #1255
+DONE   Twitch public-surface inventory now includes /twitch/map/ #1259 / 104 scenarios
+DONE   Current Sep 6 refresh #1264 / run 34015266644 / 299 -> 9 reviewed -> 0 accepted
+DONE   Kick exact K4 cutover contract #1265
 PAR    scoped Map regression/accessibility work + maintenance only
 BLOCK  Kick K4 canonical /kick/map/ activation pending separate explicit authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
