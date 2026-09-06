@@ -348,6 +348,11 @@ function installUnmappedDisclosure(): void {
   section.prepend(compactHead)
 
   const update = () => {
+    if (document.documentElement.dataset.streamMapDataState === 'unavailable') {
+      if (summary.textContent !== 'Unmapped accounting unavailable') summary.textContent = 'Unmapped accounting unavailable'
+      return
+    }
+
     const current = clean(document.getElementById('stream-map-unmapped-current')?.textContent)
     const reasons = [...section.querySelectorAll<HTMLElement>('.stream-map-unmapped-reason-row')]
       .slice(0, 2)

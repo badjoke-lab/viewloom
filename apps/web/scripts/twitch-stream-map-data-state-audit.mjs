@@ -63,18 +63,21 @@ try {
   await changeMinViewers(page, '100')
   await page.waitForFunction(() => (document.querySelector('[data-stream-map-state]')?.textContent || '').trim() === 'Data error', null, { timeout: 15_000 })
   await page.waitForFunction(() => document.documentElement.dataset.streamMapDataState === 'unavailable', null, { timeout: 5_000 })
+  await page.waitForFunction(() => (document.querySelector('[data-unmapped-compact-summary]')?.textContent || '').trim() === 'Unmapped accounting unavailable', null, { timeout: 5_000 })
 
   evidence.failedRefresh = await readState(page)
   for (const [name, value] of Object.entries({
     observed: evidence.failedRefresh.observed,
     mapped: evidence.failedRefresh.mapped,
     unmapped: evidence.failedRefresh.unmapped,
+    populationState: evidence.failedRefresh.populationState,
     mappedCard: evidence.failedRefresh.mappedCard,
     viewersCard: evidence.failedRefresh.viewersCard,
     excludedCard: evidence.failedRefresh.excludedCard,
     countryCount: evidence.failedRefresh.countryCount,
     currentCount: evidence.failedRefresh.currentCount,
   })) expect(value === 'Unavailable', `failed refresh ${name} must be Unavailable, got ${value}`)
+  expect(evidence.failedRefresh.unmappedCompactSummary === 'Unmapped accounting unavailable', `failed refresh compact unmapped summary mismatch: ${evidence.failedRefresh.unmappedCompactSummary}`)
   expect(evidence.failedRefresh.countryRows === 0, `failed refresh retained ${evidence.failedRefresh.countryRows} stale country rows`)
   expect(evidence.failedRefresh.streamRows === 0, `failed refresh retained ${evidence.failedRefresh.streamRows} stale stream rows`)
   expect(evidence.failedRefresh.countryMarkers === 0, `failed refresh retained ${evidence.failedRefresh.countryMarkers} stale country markers`)
@@ -90,11 +93,14 @@ try {
   await changeMinViewers(page, '500')
   await page.locator('.stream-map-country-row[data-country-code="US"]').waitFor({ timeout: 15_000 })
   await page.waitForFunction(() => (document.querySelector('[data-stream-map-state]')?.textContent || '').trim() !== 'Data error', null, { timeout: 5_000 })
+  await page.waitForFunction(() => (document.querySelector('[data-unmapped-compact-summary]')?.textContent || '').trim() !== 'Unmapped accounting unavailable', null, { timeout: 5_000 })
 
   evidence.recovered = await readState(page)
   expect(evidence.recovered.dataStateFlag === null, `recovery retained unavailable data-state flag: ${evidence.recovered.dataStateFlag}`)
   expect(evidence.recovered.observed === '2', `recovery observed mismatch: ${evidence.recovered.observed}`)
   expect(evidence.recovered.mapped === '1', `recovery mapped mismatch: ${evidence.recovered.mapped}`)
+  expect(/^2 streams/.test(evidence.recovered.populationState), `recovery population state mismatch: ${evidence.recovered.populationState}`)
+  expect(evidence.recovered.unmappedCompactSummary !== 'Unmapped accounting unavailable', 'recovery retained unavailable compact unmapped summary')
   expect(evidence.recovered.countryRows === 1, `recovery expected one country row, got ${evidence.recovered.countryRows}`)
   expect(evidence.recovered.streamRows === 1, `recovery expected one stream row, got ${evidence.recovered.streamRows}`)
   expect(evidence.recovered.selectedCountryHidden === false, 'recovery should restore the retained country selection from fresh data')
@@ -237,6 +243,7 @@ async function readState(page) {
       observed: text('stream-map-observed'),
       mapped: text('stream-map-mapped'),
       unmapped: text('stream-map-unmapped'),
+      populationState: text('stream-map-population-state'),
       mappedCard: text('stream-map-card-mapped'),
       viewersCard: text('stream-map-card-viewers'),
       excludedCard: text('stream-map-card-excluded'),
@@ -250,6 +257,7 @@ async function readState(page) {
       countryListText: text('stream-map-country-list'),
       streamListText: text('stream-map-stream-list'),
       filterNote: text('stream-map-filter-note'),
+      unmappedCompactSummary: (document.querySelector('[data-unmapped-compact-summary]')?.textContent || '').trim(),
       overflow: Math.max(0, body.scrollWidth - body.clientWidth),
     }
   })
