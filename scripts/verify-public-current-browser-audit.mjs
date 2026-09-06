@@ -28,6 +28,8 @@ assert.equal(evidence.counts.overflowScenarios, 0)
 assert.equal(evidence.counts.focusFailures, 0)
 assert.equal(evidence.counts.unlabeledControlScenarios, 0)
 assert.equal(evidence.counts.legalMobileTargetFailures, 0)
+assert.equal(evidence.counts.twitchHomeStreamMapLinkScenarios, 4)
+assert.equal(evidence.counts.kickHomeStreamMapLinkScenarios, 0)
 assert.equal(evidence.scenarios.length, 104)
 
 for (const route of expectedRoutes) {
@@ -43,9 +45,30 @@ for (const route of expectedRoutes) {
   }
 }
 
+const twitchHomeScenarios = evidence.scenarios.filter((item) => item.route === '/twitch/')
+assert.equal(twitchHomeScenarios.length, 4)
+for (const scenario of twitchHomeScenarios) {
+  const streamMapLink = scenario.providerHomeStreamMapLinks.find((link) => link.href === '/twitch/map/')
+  assert.ok(streamMapLink, `${scenario.id}: Twitch Home Stream Map link missing`)
+  assert.equal(streamMapLink.visible, true, `${scenario.id}: Twitch Home Stream Map link hidden`)
+  assert.match(streamMapLink.text, /Stream Map/i, `${scenario.id}: Twitch Home Stream Map label`)
+}
+
+const kickHomeScenarios = evidence.scenarios.filter((item) => item.route === '/kick/')
+assert.equal(kickHomeScenarios.length, 4)
+for (const scenario of kickHomeScenarios) {
+  assert.equal(
+    scenario.providerHomeStreamMapLinks.some((link) => link.href === '/kick/map/'),
+    false,
+    `${scenario.id}: Kick Home must not expose /kick/map/ before K4`,
+  )
+}
+
 console.log('Current public browser audit verification passed.')
 console.log(`- routes: ${evidence.counts.routes}`)
 console.log(`- scenarios: ${evidence.counts.scenarios}`)
 console.log('- provider crossing: 0')
 console.log('- provider-neutral API requests: 0')
 console.log('- overflow/focus/unlabeled/legal mobile target failures: 0')
+console.log('- Twitch Home Stream Map link scenarios: 4/4')
+console.log('- Kick Home unauthorized Stream Map link scenarios: 0/4')
