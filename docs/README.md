@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Stream Map audited runtime baseline: main `d024276a9a478e488f15f507ffb736c091b5702c`  
+Stream Map audited runtime baseline: main `ff220d1d141e2bcd190692a1f1ffbb7ee5f5390a`  
 Last updated: 2026-09-06
 
 ## Read first for Stream Map work
@@ -36,7 +36,7 @@ Stream Map updates must not delete or reinterpret accepted records for other Vie
 
 ```text
 Program mainline                         Stream Map
-Audited runtime baseline                 d024276a9a478e488f15f507ffb736c091b5702c
+Audited runtime baseline                 ff220d1d141e2bcd190692a1f1ffbb7ee5f5390a
 Twitch Country                           closed at current product boundary
 Country primary renderer                 choropleth / filled regions
 Country UI issue #1214                   completed / closed
@@ -56,11 +56,11 @@ Kick internal runtime staging            connected / validated on real review ar
 Kick KUI1 preview shell                  complete #1241 / non-public
 Kick KUI2 Country aggregate UI           complete #1242 / non-public
 Kick KUI3a browser proof                 complete #1244 / 10 scenarios / 0 violations
+Kick K2 production stable ID             complete #1249 / 100 of 100 proven
 Kick KUI3b real-data proof               waits K3
 Kick canonical /kick/map/                absent
-Kick public reviewed-evidence runtime    not activated
-Kick production stable ID                blocked pending collector authorization
-Kick public activation                   blocked pending separate authorization/proof
+Kick public reviewed-evidence runtime    not activated / K3 separate authorization
+Kick public activation                   blocked pending separate K4 authorization/proof
 Twitch production stable ID              blocked pending collector authorization
 Twitch/Kick aggregation                  forbidden
 Top20 weekly review                      maintenance sublane only
@@ -204,6 +204,8 @@ Runtime/data ready in code: stable-ID-capable snapshot parser, public adapter, r
 
 K1 completed in PR #1239. The existing reviewed-evidence workflow validates the real four result files through the internal runtime staging path with reconciliation passing. Public activation remains false.
 
+K2 completed in PR #1249 by retaining `broadcaster_user_id` directly from the existing official `/public/v1/livestreams` response. No additional Channels request was added. Provider-scoped production deploy run `34008654160` deployed Kick only and skipped Twitch. Production API smoke run `34008795931` observed 100 live streams, 100 stable identities, zero missing stable identities, zero mapped streams and state `blocked_reviewed_evidence`. Draft #1083 is superseded and closed.
+
 The pre-public UI lane is explicit:
 
 ```text
@@ -222,14 +224,14 @@ KUI3a accepted browser run `33978336854` covers 5 fixture states × 2 viewports 
 
 The current reviewed runtime bridge intentionally drops evidence/source prose beyond terminal reviewed Country. The UI therefore does not invent a source-provenance filter that the runtime contract cannot support.
 
-Kick blockers remain:
+Kick blockers now are:
 
 ```text
-production Kick snapshot does not retain broadcaster_user_id
+reviewed Kick Country evidence is not connected to the public production runtime
 public Kick Country activation is not authorized
 ```
 
-K2 production stable-ID persistence requires explicit collector authorization. Stale Draft #1083 is not a merge candidate as-is. Twitch evidence reuse and automatic Kick geography remain prohibited.
+K3 is technically unblocked by K2 but remains a separate production runtime behavior change requiring separate authorization. K4 remains separately gated. Twitch evidence reuse and automatic Kick geography remain prohibited.
 
 ## Scheduling rule
 
@@ -240,7 +242,7 @@ The reviewed-evidence Top-20 cadence is maintenance-only and does not block:
 - docs, fixtures, CI and preview-only verification;
 - other safe non-mutating lane maintenance.
 
-Explicit production collector authorization is required before either blocked stable-ID persistence change is implemented/merged.
+The completed Kick K2 authorization does not authorize K3, K4 or Twitch stable-ID persistence. Each production-coupled change retains its own gate.
 
 ## Global Stream Map invariants
 
@@ -273,9 +275,10 @@ DONE   Kick K1 internal reviewed-evidence runtime staging #1239
 DONE   Kick KUI1 fail-closed pre-public shell #1241
 DONE   Kick KUI2 Country aggregate renderer/results #1242
 DONE   Kick KUI3a non-mutating browser proof #1244 / run 33978336854
+DONE   Kick K2 production stable-ID persistence #1249
+DONE   Kick K2 production proof #1250 / run 34008795931 / 100 of 100 stable IDs
 PAR    shared Map regression/accessibility work and non-mutating lane maintenance
-BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
-WAIT   Kick K3 production runtime connection until K2
+NEXT   Kick K3 production runtime connection — separate authorization required
 WAIT   Kick KUI3b real production-connected proof until K3
 BLOCK  Kick K4 canonical /kick/map/ activation pending separate authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
