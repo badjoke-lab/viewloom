@@ -12,6 +12,7 @@ const pageBodies = [
   },
   {
     data: [
+      { user_id: '1', title: 'overlap row must be dropped', tags: ['Duplicate'], language: 'en' },
       { user_id: '3', title: 'regular stream', tags: ['Tokyo'], language: 'ja' },
       { user_id: '4', title: 'ranked games', tags: ['Just Chatting'], language: 'en' },
     ],
@@ -46,6 +47,7 @@ assert.equal(result.sampleSize, 4)
 assert.equal(result.coveredPages, 2)
 assert.equal(result.stableIdentity, 'twitchUserId')
 assert.equal(result.stableIdentityUnique, true)
+assert.equal(result.duplicateStableIdentityRowsDropped, 1)
 assert.deepEqual(result.apiRequests, { token: 1, streams: 2, users: 0 })
 assert.equal(result.persistence.d1Writes, 0)
 assert.equal(result.persistence.productionDeployment, false)
@@ -69,7 +71,16 @@ assert.equal(result.measurement.counts.rejectedFutureTravelTitles, 1)
 assert.deepEqual(result.measurement.candidateCountries, { JP: 1, KR: 1 })
 
 const serialized = JSON.stringify(result)
-for (const raw of ['IRL live from Seoul', 'Japan trip tomorrow', 'regular stream', 'ranked games', 'Seoul', 'Tokyo']) {
+for (const raw of [
+  'IRL live from Seoul',
+  'Japan trip tomorrow',
+  'overlap row must be dropped',
+  'regular stream',
+  'ranked games',
+  'Seoul',
+  'Tokyo',
+  'Duplicate',
+]) {
   assert.equal(serialized.includes(raw), false, `raw stream text leaked into result: ${raw}`)
 }
 assert.equal(calls.filter((call) => call.url.includes('/oauth2/token')).length, 1)
@@ -80,6 +91,7 @@ console.log(JSON.stringify({
   ok: true,
   provider: result.provider,
   mode: result.mode,
+  duplicateStableIdentityRowsDropped: result.duplicateStableIdentityRowsDropped,
   apiRequests: result.apiRequests,
   rawTextRetained: false,
   productionDeployment: false,
