@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      ORIGIN: https://vl.badjoke-lab.com
+      ORIGIN: https://www.viewloom.net
       ARTIFACT_DIR: artifacts/production-smoke
     steps:
       - uses: actions/checkout@v4
