@@ -5,12 +5,12 @@ Normative specification: `docs/product/stream-map-spec-v0.7.md`
 Execution plan: `docs/product/stream-map-implementation-plan-v0.10.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `ff220d1d141e2bcd190692a1f1ffbb7ee5f5390a`  
+Audited runtime baseline: main `bea33532001989c71dde289e570752985d34f600`  
 Last updated: 2026-09-06
 
 ## 1. Current milestone
 
-**Twitch Country and Twitch City are closed at their current public product boundaries. The September 6 shared Twitch Map keyboard/mobile/legend regression batch is closed through #1247. Current / IRL remains fail-closed with zero accepted temporal placements. Kick Country K1 runtime staging and the complete non-public KUI1/KUI2/KUI3a UI preparation are done through #1244. Kick K2 production stable-ID persistence is complete through #1249 with production proof run `34008795931` showing 100 observed / 100 stable-ID streams / 0 mapped streams. K3 is now technically unblocked by K2 but remains a separate production runtime change requiring separate authorization; KUI3b waits for K3 real production-connected reviewed Country rows, and `/kick/map/` remains intentionally absent behind the separate K4 gate.**
+**Twitch Country and Twitch City are closed at their current public product boundaries. The September 6 shared Twitch Map keyboard/mobile/legend regression batch is closed through #1247. Current / IRL remains fail-closed with zero accepted temporal placements. Kick Country K1 staging, K2 production stable-ID persistence, K3 production reviewed-Country runtime connection and KUI1/KUI2/KUI3a/KUI3b pre-public UI/proof are complete through #1253. Production K3 is verified on the live API, stable IDs remain internal, and the real-production browser proof passes. `/kick/map/` remains intentionally absent because K4 is a separate explicit public activation gate and has not been authorized.**
 
 The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock.
 
@@ -20,8 +20,8 @@ The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock
 | --- | --- | --- |
 | Twitch Country | closed; choropleth/UI/production proof complete; #1214 completed; compact control/legend regression closeout #1245-#1246 complete | scoped defects/accessibility/evidence maintenance only |
 | Twitch City | C1-C6 complete; public City activation, reviewed aggregate references/list-only fallback and production acceptance complete; mobile action-target regression closeout #1247 complete | scoped quality/coverage only |
-| Kick Country runtime | K1 complete; K2 #1249 complete in production; production proof run `34008795931` observed 100/100 stable identities | K3 production reviewed-evidence runtime connection after separate authorization; K4 remains separate public gate |
-| Kick Country UI | KUI1 #1241 + KUI2 #1242 + KUI3a #1244 complete; 10 fixture-browser scenarios pass with zero violations; production Vite/public route unchanged | KUI3b real-data proof only after K3 |
+| Kick Country runtime | K1 #1239 complete; K2 #1249 complete; K3 #1252 complete in production; production smoke `34010236817` verifies reviewed Country runtime and K4 block | K4 remains separate explicit public gate |
+| Kick Country UI | KUI1 #1241 + KUI2 #1242 + KUI3a #1244 + KUI3b #1253 complete; real-production main browser run `34010502534` passes 4 scenarios with zero violations | K4 only after separate explicit authorization |
 | Current / IRL | 2026-09-05 Top300 review: 300 measured, 8 reviewed, 0 accepted, 2 unresolved true conflicts; public control disabled | fail closed; later work only on justified new evidence window or separately authorized prerequisites |
 | Shared Map UI | #1245 geography controls + #1246 Country compact controls/legend + #1247 City mobile targets complete; desktop/mobile/browser proof retained | scoped regression/accessibility work only |
 | Reviewed-evidence maintenance | bounded maintenance only | never block Map lanes |
@@ -83,20 +83,21 @@ no_geometry      1
 
 Natural Earth points are `city_aggregate_reference` targets only, never creator coordinates or municipal-boundary claims. `Sant Cugat del Valles` remains `no_geometry` and list-only.
 
-## 5. Kick Country — K1/K2 + KUI1/KUI2/KUI3a COMPLETE / K3 NEXT
+## 5. Kick Country — K1/K2/K3 + KUI1/KUI2/KUI3a/KUI3b COMPLETE / K4 BLOCKED
 
 Provider boundary:
 
 ```text
 Kick live population
--> official broadcaster_user_id when retained
--> Kick-only reviewed evidence
--> deterministic Country terminal state
--> Country aggregate UI
--> separate public activation gate
+-> official broadcaster_user_id retained in production
+-> Kick-only reviewed terminal Country catalog
+-> deterministic stable-ID join
+-> public projection strips stable ID
+-> Country aggregate UI proof
+-> separate K4 public activation gate
 ```
 
-Reviewed evidence:
+Reviewed evidence catalog:
 
 ```text
 reviewed identities       100
@@ -108,31 +109,34 @@ conflict unmapped            0
 
 ### Runtime/data track
 
-K1 completed in PR #1239. Current code includes the read-only latest snapshot source, optional `broadcaster_user_id` parsing, stable-ID-aware adapter without slug fallback, reviewed Country bridge, deterministic stable-ID join, Country response core, internal runtime staging and readiness gate.
+K1 completed in PR #1239. The read-only snapshot source, stable-ID-aware join, reviewed Country bridge, Country response core, internal staging and readiness gate were validated against all four manual result files.
 
-The real four review files reconcile in the staged runtime path. Public activation remains false.
+K2 completed in PR #1249 by retaining `broadcaster_user_id` directly from the already-used official `/public/v1/livestreams` response. No additional Channels request, D1 schema/binding change, cadence change, retention/backfill change or Twitch collector change was added. Provider-scoped deploy run `34008654160` deployed Kick only and skipped Twitch. Production proof run `34008795931` observed 100/100 stable identities.
 
-The reviewed runtime bridge deliberately omits slug/viewer/raw prose/source provenance and detail beyond terminal reviewed Country. UI must not reconstruct evidence fields the runtime contract removed.
+K3 completed in PR #1252. The production `/api/kick-stream-map` route now joins live snapshot rows to the reviewed catalog by `broadcaster_user_id` only. Runtime terminal data retains only stable ID, outcome and accepted Country code; public rows strip `broadcaster_user_id` / `stableKickUserId` and expose no City, Current, precise address/coordinate, evidence prose or source provenance.
 
-K2 completed in PR #1249 by retaining `broadcaster_user_id` directly from the already-used official `/public/v1/livestreams` response. No additional Channels request, D1 schema/binding change, cadence change, retention/backfill change or Twitch collector change was added. Provider-scoped production deploy run `34008654160` deployed Kick only and skipped Twitch.
-
-Production proof run `34008795931` observed:
+Accepted production chain:
 
 ```text
-updatedAt                    2026-09-06T03:21:00.627Z
+#1252 production commit       0e7b6b0682df21864551b6d47d9520209f42829f
+Deploy Web Pages             34010236812 success
+Country readiness            34010236815 success
+Production API Smoke         34010236817 success
 observedStreams              100
 stableIdentityStreams        100
-missingStableIdentityStreams   0
-stableIdentityPercent          1
-mappedStreams                  0
-state                         blocked_reviewed_evidence
+state                         blocked_public_activation
+publicActivationAuthorized   false
+reconciliation               pass
+stable identity published    false
 ```
+
+Live reviewed/mapped counts vary with the current live Top100 and are not fixed review-catalog totals.
 
 Draft #1083 is superseded by #1249 and closed.
 
 ### Pre-public UI track
 
-KUI1 PR #1241 added `apps/web/preview/kick-stream-map/` as a `noindex,nofollow` fail-closed preview. It reads real readiness/accounting from `/api/kick-stream-map`, but does not create `/kick/map/`, a public canonical URL, public navigation or a production Vite input.
+KUI1 PR #1241 added `apps/web/preview/kick-stream-map/` as a `noindex,nofollow` fail-closed preview. It does not create `/kick/map/`, a public canonical URL, public navigation or a production Vite input.
 
 KUI2 PR #1242 added:
 
@@ -146,7 +150,7 @@ KUI2 PR #1242 added:
 - no marker-as-creator placement;
 - no Twitch evidence reuse, City inference, Current promotion or creator coordinates.
 
-KUI3a PR #1244 completes the non-mutating proof preparation. Accepted browser workflow run `33978336854` exercises the real non-public Vite preview with intercepted deterministic API fixtures:
+KUI3a PR #1244 completed deterministic pre-public proof. Accepted browser run `33978336854`:
 
 ```text
 fixtures                       5
@@ -161,24 +165,44 @@ public /kick/map/ links         0
 public canonical               absent
 ```
 
-The covered states are blocked stable identity, ready mixed mapped/unmapped/excluded/conflict accounting, ready empty Country, unsafe response contract and API error. The ready case also proves MapLibre canvas creation, metric switching, keyboard Country selection and World view reset. KUI3a uses fixtures only and therefore does not satisfy KUI3b.
+KUI3b PR #1253 completed real production-connected renderer/API proof. Accepted post-merge main run `34010502534`, artifact `9982308317`, digest `a97098e9902b2529fc8999b251858089142533934fc78699d7cc94aeba5f8666`.
 
-Current exact blockers:
+Accepted sample:
 
 ```text
-1. reviewed Kick Country evidence is not connected to the public production runtime
-2. public Kick Country activation is not authorized
+production deployment commit  0e7b6b0682df21864551b6d47d9520209f42829f
+observedStreams               100
+stableIdentityStreams         100
+reviewedIdentityStreams         9
+mappedStreams                   2
+mappedViewers               12848
+mappedCountryCount              2
+mappedCountryCodes          BR, PL
+reconciliation                pass
+stable identity published     false
+viewports                       2
+browser scenarios               4
+violations                      0
 ```
 
-The K2 stable-identity blocker is closed. K3 is a separate production runtime behavior change and is not authorized by the completed K2 gate. K4 remains a separate public activation decision.
+The normal preview consumed the unchanged production payload and remained `country_blocked` with geography hidden because K4 is false. The renderer-proof scenario cloned that same production payload only inside local Chromium and lifted the K4 authorization flag for test purposes; Country rows and accounting were not substituted. This is proof, not production activation.
 
-Next sequence:
+Current exact Kick public blocker:
 
 ```text
-K2     persist official broadcaster_user_id in production snapshot     DONE #1249 / 100 of 100 proven
-K3     connect staged reviewed Country path to production runtime       NEXT / SEPARATE AUTHORIZATION
-KUI3b  real production-connected Country UI/API/browser proof           AFTER K3
-K4     create/activate canonical /kick/map/ + public navigation         SEPARATE GATE
+1. public Kick Country activation is not authorized
+```
+
+K4 remains a separate explicit public decision. `/kick/map/` is still absent and no public canonical/navigation/production Vite entry is authorized.
+
+Current sequence:
+
+```text
+K1     reviewed Country staging/runtime contract                         DONE #1239
+K2     persist official broadcaster_user_id in production snapshot      DONE #1249 / 100 of 100 proven
+K3     connect reviewed Country path to production runtime              DONE #1252 / run 34010236817
+KUI3b  real production-connected Country UI/API/browser proof           DONE #1253 / run 34010502534
+K4     create/activate canonical /kick/map/ + public navigation          BLOCKED / SEPARATE EXPLICIT GATE
 ```
 
 ## 6. Current Location / IRL — FAIL CLOSED
@@ -235,9 +259,7 @@ The September 6 safe regression/accessibility batch is complete through #1247:
 
 Read-only City presentation audit still shows explicit empty state, separate country-only accounting and separate Base City conflict accounting. No creator coordinates, Current placement or new geography semantics were added.
 
-The #1246 post-merge production Twitch Map browser smoke passed exact deployment resolution and real Country/City rendering. The #1247 post-merge production smoke is the current structural confirmation lane.
-
-Shared UI is now scoped maintenance/quality work only, not a serial blocker for Kick or Current prerequisites.
+Shared UI is scoped maintenance/quality work only, not a serial blocker for Kick or Current prerequisites.
 
 ## 8. Reviewed-evidence maintenance — maintenance only
 
@@ -247,7 +269,7 @@ The bounded Top-20 process does not serialize Map development or authorize colle
 
 Unless separately authorized, Stream Map work does not change production collector behavior, collector cadence, D1 schema/bindings, retention, backfill, automatic recurring acquisition or production data outside applicable deployment policy.
 
-Provider data remains separated. No demo geography substitutes for missing real evidence. The K2 authorization completed by #1249 is consumed and does not authorize K3, K4 or Twitch stable-ID persistence.
+Provider data remains separated. No demo geography substitutes for missing real evidence. The completed K2/K3 authorizations are consumed and do not authorize K4 or Twitch stable-ID persistence.
 
 ## 10. Current execution order
 
@@ -267,10 +289,10 @@ DONE   Shared Country compact controls/legend regression #1246
 DONE   Shared City mobile target regression #1247
 DONE   Kick K2 production stable-ID persistence #1249
 DONE   Kick K2 production proof #1250 / run 34008795931 / 100 of 100 stable IDs
+DONE   Kick K3 production reviewed-Country runtime #1252 / run 34010236817
+DONE   Kick KUI3b real production-connected proof #1253 / main run 34010502534
 PAR    scoped shared Map regression/accessibility work and maintenance only
-NEXT   Kick K3 production runtime connection — separate authorization required
-WAIT   Kick KUI3b real production-connected proof until K3
-BLOCK  Kick K4 canonical /kick/map/ activation pending separate authorization/proof
+BLOCK  Kick K4 canonical /kick/map/ activation pending separate explicit authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
 BLOCK  Current public path additionally pending fresh accepted temporal evidence
 ```
