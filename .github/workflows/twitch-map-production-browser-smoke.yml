@@ -144,6 +144,7 @@ jobs:
                   && Boolean(map?.getLayer?.('viewloom-country-regions-fill'))
                   && Boolean(map?.getLayer?.('viewloom-country-regions-outline'))
               }, null, { timeout: 15000 })
+              await page.waitForFunction(() => Boolean(window.__viewloomCountryRegionMap?.loaded?.()), null, { timeout: 15000 })
 
               const regionState = await page.evaluate(() => {
                 const map = window.__viewloomCountryRegionMap
