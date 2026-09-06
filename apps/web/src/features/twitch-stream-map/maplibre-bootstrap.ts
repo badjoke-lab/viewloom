@@ -44,6 +44,11 @@ await import('./country-minimal-basemap')
 // retained only as a fail-safe and for tiny places without a usable 110m polygon.
 await import('./country-regions')
 await import('./stream-map-entry')
+// A failed population/API refresh must never leave the previous successful
+// geography/counts visible as though they were current. Keep renderer-only
+// failure behavior separate so mapped lists remain available when only MapLibre
+// is unavailable.
+await import('./data-error-state-guard')
 // Country selection is a data-selection action, not a camera action. The compact
 // UI layer owns explicit World view reset, density, drilldown placement and the
 // mobile filter presentation without changing the API or City contract.
