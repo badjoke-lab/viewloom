@@ -245,10 +245,11 @@ function injectStyles(): void {
     .stream-map-filter-option[data-city-unavailable="true"]{opacity:.45;cursor:not-allowed}
     .stream-map-filter-option[data-city-unavailable="true"] input{cursor:not-allowed}
     .stream-map-city-mode .stream-map-results-grid{grid-template-columns:minmax(0,1fr)}
+    .stream-map-city-mode .stream-map-filter-option:has(input:focus-visible),.stream-map-city-mode .stream-map-population-control select:focus-visible,.stream-map-city-mode .stream-map-canvas .maplibregl-ctrl-group button:focus-visible{outline:2px solid var(--accent,#905aff);outline-offset:2px}
     .stream-map-geography-state{grid-column:1/-1}
     .stream-map-city-accounting{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;border-top:1px solid var(--line,#30363d);padding-top:12px}
     .stream-map-city-accounting div{display:flex;flex-direction:column;gap:3px}.stream-map-city-accounting small{color:var(--muted,#9ca3af)}.stream-map-city-accounting p{grid-column:1/-1}
-    @media (max-width:720px){.stream-map-geography-panel{grid-template-columns:1fr}.stream-map-geography-options{justify-content:flex-start}.stream-map-city-accounting{grid-template-columns:1fr}}
+    @media (max-width:720px){.stream-map-geography-panel{grid-template-columns:1fr}.stream-map-geography-options{justify-content:flex-start}.stream-map-city-accounting{grid-template-columns:1fr}.stream-map-city-mode .stream-map-filter-clear,.stream-map-city-mode .stream-map-filter-option,.stream-map-city-mode .stream-map-population-control select{min-height:44px}.stream-map-city-mode .stream-map-canvas .maplibregl-ctrl-group button{width:44px;height:44px}}
   `
   document.head.append(style)
 }
