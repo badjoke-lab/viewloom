@@ -22,9 +22,10 @@ function forbidPattern(path, source, label, pattern) {
 
 const statusPages = ['twitch/status/index.html', 'kick/status/index.html']
 const entryPath = 'src/live/status-current-shell-entry.ts'
+const sharedShellStatusPath = 'src/mock-site.ts'
 const contractPath = 'docs/status-qa-contract.md'
 
-for (const path of [...statusPages, entryPath, contractPath]) requireFile(path)
+for (const path of [...statusPages, entryPath, sharedShellStatusPath, contractPath]) requireFile(path)
 
 for (const path of statusPages.filter((path) => existsSync(join(root, path)))) {
   const source = read(path)
@@ -49,6 +50,14 @@ if (existsSync(join(root, entryPath))) {
   requireFragment(entryPath, source, '.status-board .status-cell strong')
   requireFragment(entryPath, source, '.metric-ledger tbody')
   forbidPattern(entryPath, source, 'app-root rewrite renderer', /document\.querySelector<HTMLElement>\('\#app'\)/)
+}
+
+if (existsSync(join(root, sharedShellStatusPath))) {
+  const source = read(sharedShellStatusPath)
+  requireFragment(sharedShellStatusPath, source, "state === 'fresh' || state === 'partial'")
+  requireFragment(sharedShellStatusPath, source, "availableCount > 0 ? 'Collectors partially fresh' : 'Collector status unavailable'")
+  requireFragment(sharedShellStatusPath, source, "availableCount > 0 ? 'partial' : 'unavailable'")
+  forbidPattern(sharedShellStatusPath, source, 'partial state counted as unavailable', /results\.filter\(\(\[, payload\]\) => String\(payload\?\.state \?\? ''\)\.toLowerCase\(\) === 'fresh'\)\.length/)
 }
 
 if (existsSync(join(root, contractPath))) {
