@@ -5,7 +5,7 @@ Normative specification: `docs/product/stream-map-spec-v0.7.md`
 Execution plan: `docs/product/stream-map-implementation-plan-v0.10.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `08d15987f4d804bf4c8f851d5b24c4d0a76e8c12`  
+Audited runtime baseline: main `db37167696aae41c9600822b417ac53724771859`  
 Last updated: 2026-09-06
 
 ## 1. Scheduling principle
@@ -147,6 +147,8 @@ Accepted shared UI proof includes 44px geography/action targets, focus-visible k
 
 The already-public `/twitch/map/` route is now also included in the permanent public-surface inventory, sitemap, four-viewport browser matrix and production smoke through PR #1259. Current public inventory is 26 HTML routes plus explicit 404 and 104 browser scenarios.
 
+Later scoped regression work #1275/#1276 closed the stale-data error path without changing geography semantics: a failed API/population refresh clears the prior Country/stream/count/presentation state, unavailable unmapped accounting is explicit, and a fresh recovery repopulates current state. Candidate Public Browser Audit `34041133229` passed the 104-scenario matrix plus success → 503 → recovery with 3 API calls and 0 violations; artifact `9991741143`. Post-merge main also passed Primary Domain Production Smoke `34041371788` and Twitch Map Production Browser Smoke `34041371752`; artifact `9991785120` records Country/City `basemap-ready` and zero page/console errors.
+
 ### Step 11 — Kick K2 production stable identity — COMPLETE
 
 Completed by PR #1249. Production acceptance recorded by PR #1250 and production API smoke run `34008795931`.
@@ -215,7 +217,7 @@ Accepted sample:
 ```text
 production deployment commit  0e7b6b0682df21864551b6d47d9520209f42829f
 observedStreams               100
-stableIdentityStreams         100
+stableIdentityStreams        100
 reviewedIdentityStreams         9
 mappedStreams                   2
 mappedViewers               12848
@@ -333,7 +335,7 @@ Current never becomes Base City and never survives expiry.
 
 ## 5. Shared UI/accessibility lane — SAFE SCOPED WORK ONLY
 
-The concrete keyboard/focus/mobile-target/legend/URL-state regressions identified in the September 6 audit are closed by #1245-#1247.
+The concrete keyboard/focus/mobile-target/legend/URL-state regressions identified in the September 6 audit are closed by #1245-#1247. The later stale-data/unavailable-presentation regression is closed by #1275/#1276 with deterministic Chromium failure/recovery proof and post-merge production Country/City browser proof.
 
 Further safe scoped work may include newly discovered keyboard/focus defects, overflow regression checks, map/legend label regressions, explicit empty/conflict/unmapped presentation regressions and structural production/browser verification.
 
@@ -382,6 +384,8 @@ DONE   Current Sep 6 refresh #1264 / run 34015266644 / 299 -> 9 reviewed -> 0 ac
 DONE   Kick exact K4 cutover contract #1265
 DONE   Current live candidate probe sequence 4 #1272 / run 34036197901 / 300 -> 10 candidates
 DONE   Current review queue refresh #1273 / run 34036562297 / 300 -> 10 reviewed -> 0 accepted
+DONE   Twitch Map stale-data fail-closed recovery #1275
+DONE   Twitch Map unavailable presentation closeout #1276 / run 34041133229 / artifact 9991741143
 PAR    scoped Map regression/accessibility work + maintenance only
 BLOCK  Kick K4 canonical /kick/map/ activation pending separate explicit authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
