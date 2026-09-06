@@ -95,6 +95,7 @@ console.log(JSON.stringify({
   countryRegionFill: true,
   creatorCoordinates: false,
   twitchEvidenceReuse: false,
-  publicRouteCreated: false,
+  previewPublicRouteLinked: false,
+  publicK4SurfaceSeparate: true,
   dualGateInherited: true,
 }, null, 2))
