@@ -5,7 +5,7 @@ Normative specification: `docs/product/stream-map-spec-v0.7.md`
 Execution plan: `docs/product/stream-map-implementation-plan-v0.10.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `9fe01ac2cdff55fb1bc8ebd2fc126d74deec8956`  
+Audited runtime baseline: main `08d15987f4d804bf4c8f851d5b24c4d0a76e8c12`  
 Last updated: 2026-09-06
 
 ## 1. Scheduling principle
@@ -62,23 +62,23 @@ Reviewed Country work is complete across 100 identities: 7 accepted, 3 excluded 
 
 ### Step 5 — Current fresh Top300 temporal-evidence re-audit — COMPLETE / FAIL CLOSED
 
-The September 6 bounded refresh supersedes the September 5 evidence window for current readiness. Run `34015266644` requested Top300, measured 299 unique stable Twitch identities after dropping one pagination-overlap duplicate, produced 9 reviewable identities, rejected 6 future/planned-travel rows before review and produced one machine conflict row.
+The latest September 6 bounded refresh supersedes the earlier September 6 evidence window for current readiness. Review-queue run `34036562297` measured 300 unique stable Twitch identities, produced 10 reviewable identities, rejected 2 future/planned-travel rows before review and produced two machine conflict rows.
 
-Accepted-class review covered all 9 identities × 4 accepted evidence classes = 36 identity/class pairs. It found zero fresh qualifying temporal evidence and zero accepted Current placements. All 9 reviewed identities remain no-fresh-qualifying outcomes. The one machine conflict (`robcdee`: Japan + Tokyo) is a same-country granularity difference, not a true competing-country conflict.
+Accepted-class review covered all 10 identities × 4 accepted evidence classes = 40 identity/class pairs. It found zero fresh qualifying temporal evidence and zero accepted Current placements. All 10 reviewed identities remain no-fresh-qualifying outcomes. The two machine conflicts (`robcdee` and `joeykaotyk`: Japan + Tokyo) are same-country granularity differences, not true competing-country conflicts.
 
 ```text
 requested population                    300
-unique stable identities measured       299
-duplicate stable-ID rows dropped           1
-reviewable identities                      9
-future/planned travel rejected             6
-machine conflict rows                       1
-accepted-class review pairs                36
+unique stable identities measured       300
+duplicate stable-ID rows dropped           0
+reviewable identities                     10
+future/planned travel rejected             2
+machine conflict rows                       2
+accepted-class review pairs                40
 fresh qualifying evidence                   0
 accepted Current placement                  0
-no-fresh-qualifying outcomes                9
+no-fresh-qualifying outcomes               10
 true unresolved cross-country conflicts     0
-same-country granularity conflicts closed   1
+same-country granularity conflicts closed   2
 ```
 
 Current remains fail-closed. This refresh did not authorize production stable-ID persistence, public Current routing/UI or Home/Base mutation.
@@ -291,18 +291,19 @@ Do not reinterpret K3 technical readiness, KUI3b's test-only local activation li
 The latest September 6 review is canonical for Current readiness:
 
 ```text
-run                              34015266644
-artifact                         9983696759
-unique stable identities                299
-reviewable identities                     9
-accepted-class review pairs              36
+run                              34036562297
+artifact                         9990351519
+unique stable identities                300
+reviewable identities                    10
+accepted-class review pairs              40
 fresh qualifying evidence                 0
 accepted Current placement                0
-no-fresh-qualifying outcomes              9
+no-fresh-qualifying outcomes             10
 true cross-country conflicts              0
+same-country granularity conflicts        2
 ```
 
-The one machine conflict was Japan + Tokyo for the same creator and was closed as same-country granularity, not promoted to a Current placement.
+The two machine conflicts were Japan + Tokyo for `robcdee` and `joeykaotyk`; both are same-country granularity differences and neither was promoted to a Current placement.
 
 ### Step R2 — production stable Twitch identity — BLOCKED UNTIL EXPLICIT AUTHORIZATION
 
@@ -377,8 +378,10 @@ DONE   Kick K3 production reviewed-Country runtime #1252 / run 34010236817
 DONE   Kick KUI3b real production-connected proof #1253 / main run 34010502534
 DONE   Kick K4 preactivation readiness #1255
 DONE   Twitch public-surface inventory now includes /twitch/map/ #1259 / 104 scenarios
-DONE   Current Sep 6 refresh #1264 / run 34015266644 / 299 -> 9 reviewed -> 0 accepted
+DONE   Current Sep 6 refresh #1264 / run 34015266644 / 299 -> 9 reviewed -> 0 accepted (superseded)
 DONE   Kick exact K4 cutover contract #1265
+DONE   Current live candidate probe sequence 4 #1272 / run 34036197901 / 300 -> 10 candidates
+DONE   Current review queue refresh #1273 / run 34036562297 / 300 -> 10 reviewed -> 0 accepted
 PAR    scoped Map regression/accessibility work + maintenance only
 BLOCK  Kick K4 canonical /kick/map/ activation pending separate explicit authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
