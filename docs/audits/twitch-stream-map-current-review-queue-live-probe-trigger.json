@@ -13,6 +13,6 @@
   "automaticAcceptanceAuthorized": false,
   "publicCurrentPlacementAuthorized": false,
   "baseMutationAuthorized": false,
-  "requestId": "fresh-current-review-queue-2026-09-06",
-  "purpose": "Run one bounded preview-only Top300 Current/IRL review-queue refresh after the corrected live candidate-coverage probe identified fresh review candidates."
+  "requestId": "post-current-candidate-probe-sequence-4-2026-09-06",
+  "purpose": "Run one bounded preview-only Top300 Current/IRL review-queue refresh after live candidate-coverage run 34036197901 measured 10 candidate streams while leaving Current acceptance and public placement unauthorized."
 }
