@@ -57,7 +57,10 @@ try {
   expect(evidence.beforeFailure.selectedCountryHidden === false, 'before failure selected-country panel should be visible')
   expect(evidence.beforeFailure.mappedCard === '1 / 2', `before failure mapped card mismatch: ${evidence.beforeFailure.mappedCard}`)
 
-  await page.locator('[data-population-min-viewers]').selectOption('100')
+  // The real 390px UI intentionally collapses the population panel. Dispatch the
+  // same bubbling change event from the retained native select so this audit tests
+  // the application refresh path without making a hidden control artificially visible.
+  await changeMinViewers(page, '100')
   await page.waitForFunction(() => (document.querySelector('[data-stream-map-state]')?.textContent || '').trim() === 'Data error', null, { timeout: 15_000 })
   await page.waitForFunction(() => document.documentElement.dataset.streamMapDataState === 'unavailable', null, { timeout: 5_000 })
 
@@ -84,7 +87,7 @@ try {
 
   await page.screenshot({ path: `${outputRoot}/twitch-stream-map-data-state-failed-refresh.png`, fullPage: true })
 
-  await page.locator('[data-population-min-viewers]').selectOption('500')
+  await changeMinViewers(page, '500')
   await page.locator('.stream-map-country-row[data-country-code="US"]').waitFor({ timeout: 15_000 })
   await page.waitForFunction(() => (document.querySelector('[data-stream-map-state]')?.textContent || '').trim() !== 'Data error', null, { timeout: 5_000 })
 
@@ -116,6 +119,15 @@ assert.equal(evidence.apiCalls, 3, `expected success -> failure -> recovery API 
 assert.equal(evidence.violations.length, 0, JSON.stringify(evidence.violations))
 assert.equal(evidence.result, 'pass')
 console.log(JSON.stringify({ result: evidence.result, apiCalls: evidence.apiCalls, violations: evidence.violations.length }, null, 2))
+
+async function changeMinViewers(page, value) {
+  await page.evaluate((nextValue) => {
+    const select = document.querySelector('[data-population-min-viewers]')
+    if (!(select instanceof HTMLSelectElement)) throw new Error('minimum-viewers select missing')
+    select.value = nextValue
+    select.dispatchEvent(new Event('change', { bubbles: true }))
+  }, value)
+}
 
 function buildPayload(minViewers) {
   const updatedAt = '2026-09-06T14:00:00.000Z'
