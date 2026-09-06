@@ -1,3 +1,5 @@
+import './twitch-stream-map-feature-tab.css'
+
 const TWITCH_STREAM_MAP_HREF = '/twitch/map/'
 
 export function installTwitchStreamMapFeatureTab(): void {
