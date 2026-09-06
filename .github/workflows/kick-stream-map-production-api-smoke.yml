@@ -8,6 +8,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'workers/collector-kick/src/official-livestreams.ts'
       - 'apps/web/functions/api/kick-stream-map.ts'
       - 'apps/web/functions/api/kick-stream-map-public-adapter-core.mjs'
       - 'apps/web/functions/api/kick-stream-map-public-adapter-core.d.mts'
@@ -74,11 +75,27 @@ jobs:
           jq -e '.schema == "viewloom-deployment-v1" and .environment == "production" and .branch == "main" and (.commit_sha | type == "string" and length > 0)' deployment.json >/dev/null
           cat deployment.json
 
-      - name: Verify production Kick Stream Map fail-closed API
+      - name: Verify production Kick K2 stable identity and fail-closed API
         shell: bash
         run: |
           set -euo pipefail
-          curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/kick-stream-map?production-smoke=$GITHUB_RUN_ID" -o kick-stream-map.json
+
+          observed=0
+          stable=0
+          state=unknown
+          for attempt in {1..60}; do
+            curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/kick-stream-map?production-smoke=$GITHUB_RUN_ID&attempt=$attempt" -o kick-stream-map.json
+            observed="$(jq -r '.coverage.observedStreams // 0' kick-stream-map.json)"
+            stable="$(jq -r '.coverage.stableIdentityStreams // 0' kick-stream-map.json)"
+            state="$(jq -r '.state // "unknown"' kick-stream-map.json)"
+            echo "Kick K2 production attempt $attempt/60: state=$state observed=$observed stable_identity=$stable"
+            if [ "$observed" -gt 0 ] && [ "$stable" -gt 0 ] && [ "$state" = 'blocked_reviewed_evidence' ]; then
+              break
+            fi
+            sleep 10
+          done
+
+          jq '{version, platform, provider, sourceMode, updatedAt, state, publicActivationAuthorized, coverage, identity, activation, semantics}' kick-stream-map.json
 
           jq -e '
             .version == "viewloom-kick-stream-map-public-adapter-v0.1" and
@@ -90,6 +107,10 @@ jobs:
             .activation.publicCountryActivationReady == false and
             .identity.stableKey == "broadcaster_user_id" and
             .identity.slugIsStableIdentity == false and
+            .coverage.observedStreams > 0 and
+            .coverage.stableIdentityStreams > 0 and
+            .coverage.stableIdentityStreams <= .coverage.observedStreams and
+            .identity.stableIdentityStreams == .coverage.stableIdentityStreams and
             .semantics.twitchEvidenceReuseAllowed == false and
             .semantics.twitchCreatorKeyReuseAllowed == false and
             .semantics.providerAggregationAllowed == false and
@@ -106,15 +127,13 @@ jobs:
             (.mappedStreams | type == "array" and length == 0) and
             (.unmappedStreams | type == "array") and
             ([.unmappedStreams[] | has("countryCode") or has("stableKickUserId") or has("broadcaster_user_id")] | any | not) and
-            (.state == "empty" or .state == "blocked_stable_identity" or .state == "blocked_reviewed_evidence")
+            .state == "blocked_reviewed_evidence" and
+            (.activation.blockers | index("reviewed_kick_country_evidence_runtime_not_connected")) != null and
+            (.activation.blockers | index("public_country_activation_not_authorized")) != null
           ' kick-stream-map.json >/dev/null
 
-          observed="$(jq -r '.coverage.observedStreams' kick-stream-map.json)"
-          stable="$(jq -r '.coverage.stableIdentityStreams' kick-stream-map.json)"
-          state="$(jq -r '.state' kick-stream-map.json)"
           mapped="$(jq -r '.coverage.mappedStreams' kick-stream-map.json)"
-          echo "Kick Stream Map production: state=$state observed=$observed stable_identity=$stable mapped=$mapped"
-          jq '{version, platform, provider, sourceMode, updatedAt, state, publicActivationAuthorized, coverage, identity, activation, semantics}' kick-stream-map.json
+          echo "Kick Stream Map K2 production proof: state=$state observed=$observed stable_identity=$stable mapped=$mapped"
 
       - name: Upload production smoke evidence
         if: always()
