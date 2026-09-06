@@ -4,6 +4,7 @@ export type KickOfficialStreamItem = {
   title: string
   viewer_count: number
   url: string
+  broadcaster_user_id: string | null
   categoryProviderId?: string | null
   categoryName?: string | null
 }
@@ -63,6 +64,7 @@ export function normalizeOfficialStream(raw: Raw): KickOfficialStreamItem | null
   const category = asRecord(raw.category)
   const categoryProviderId = asIdentifier(category?.id)
   const categoryName = asText(category?.name)
+  const broadcasterUserId = asIdentifier(raw.broadcaster_user_id)
   const displayName = asText(raw.username ?? raw.name ?? channel?.username ?? channel?.name) || slug
   return {
     slug,
@@ -70,6 +72,7 @@ export function normalizeOfficialStream(raw: Raw): KickOfficialStreamItem | null
     title: asText(raw.stream_title ?? raw.session_title ?? raw.title ?? categoryName),
     viewer_count: viewers,
     url: `https://kick.com/${slug}`,
+    broadcaster_user_id: broadcasterUserId || null,
     categoryProviderId: categoryProviderId || null,
     categoryName: categoryName || null,
   }
