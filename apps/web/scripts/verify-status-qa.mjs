@@ -54,7 +54,7 @@ if (existsSync(join(root, entryPath))) {
 
 if (existsSync(join(root, sharedShellStatusPath))) {
   const source = read(sharedShellStatusPath)
-  requireFragment(sharedShellStatusPath, source, "state === 'fresh' || state === 'partial'")
+  requireFragment(sharedShellStatusPath, source, "state === 'fresh' || state === 'partial' || state === 'empty'")
   requireFragment(sharedShellStatusPath, source, "availableCount > 0 ? 'Collectors partially fresh' : 'Collector status unavailable'")
   requireFragment(sharedShellStatusPath, source, "availableCount > 0 ? 'partial' : 'unavailable'")
   forbidPattern(sharedShellStatusPath, source, 'partial state counted as unavailable', /results\.filter\(\(\[, payload\]\) => String\(payload\?\.state \?\? ''\)\.toLowerCase\(\) === 'fresh'\)\.length/)
