@@ -1,6 +1,7 @@
 import type { Env } from '../_db/env'
 import { extractKickStreamMapSnapshotItems } from './kick-stream-map-snapshot-source-core.mjs'
 import { buildKickStreamMapPublicAdapter } from './kick-stream-map-public-adapter-core.mjs'
+import { buildKickStreamMapCountryRuntime } from './kick-stream-map-country-runtime-core.mjs'
 
 type SnapshotRow = {
   bucket_minute: string
@@ -34,7 +35,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     `).bind('kick').first<SnapshotRow>()
 
     if (!latest) {
-      return Response.json(buildKickStreamMapPublicAdapter({
+      return Response.json(buildKickStreamMapCountryRuntime({
         snapshotItems: [],
         updatedAt: null,
         sourceMode: 'missing',
@@ -44,7 +45,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
     }
 
     const snapshotItems = extractKickStreamMapSnapshotItems(latest.payload_json)
-    return Response.json(buildKickStreamMapPublicAdapter({
+    return Response.json(buildKickStreamMapCountryRuntime({
       snapshotItems,
       updatedAt: latest.collected_at || latest.bucket_minute,
       sourceMode: latest.source_mode,
