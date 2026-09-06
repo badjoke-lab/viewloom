@@ -13,6 +13,7 @@ on:
       - 'apps/web/src/features/kick-stream-map/**'
       - 'apps/web/preview/kick-stream-map/**'
       - 'apps/web/scripts/kick-stream-map-preview-browser-audit.mjs'
+      - 'apps/web/scripts/kick-stream-map-kui3b-production-browser-proof.mjs'
       - 'apps/web/vite.config.ts'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
@@ -38,6 +39,7 @@ on:
       - 'apps/web/src/features/kick-stream-map/**'
       - 'apps/web/preview/kick-stream-map/**'
       - 'apps/web/scripts/kick-stream-map-preview-browser-audit.mjs'
+      - 'apps/web/scripts/kick-stream-map-kui3b-production-browser-proof.mjs'
       - 'apps/web/vite.config.ts'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
@@ -83,6 +85,7 @@ jobs:
     timeout-minutes: 15
     env:
       KICK_MAP_PREVIEW_ORIGIN: http://127.0.0.1:4174
+      KICK_MAP_PRODUCTION_ORIGIN: https://www.viewloom.net
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -112,12 +115,16 @@ jobs:
       - name: Run KUI3a desktop/mobile browser proof
         working-directory: apps/web
         run: node scripts/kick-stream-map-preview-browser-audit.mjs
-      - name: Upload KUI3a browser evidence
+      - name: Run KUI3b real production-connected browser proof
+        working-directory: apps/web
+        run: node scripts/kick-stream-map-kui3b-production-browser-proof.mjs
+      - name: Upload Kick Map browser evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: kick-stream-map-kui3a-browser-audit
+          name: kick-stream-map-country-browser-audit
           path: |
             /tmp/kick-stream-map-preview-browser-audit/**
+            /tmp/kick-stream-map-kui3b-production-browser-proof/**
             /tmp/kick-map-preview-vite.log
           if-no-files-found: warn
