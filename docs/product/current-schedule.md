@@ -5,7 +5,7 @@ Normative specification: `docs/product/stream-map-spec-v0.7.md`
 Execution plan: `docs/product/stream-map-implementation-plan-v0.10.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `db37167696aae41c9600822b417ac53724771859`  
+Audited runtime baseline: main `48e8776ddfe24c3d08654deaf7c2d45c8e68cdbb`  
 Last updated: 2026-09-06
 
 ## 1. Scheduling principle
@@ -148,6 +148,8 @@ Accepted shared UI proof includes 44px geography/action targets, focus-visible k
 The already-public `/twitch/map/` route is now also included in the permanent public-surface inventory, sitemap, four-viewport browser matrix and production smoke through PR #1259. Current public inventory is 26 HTML routes plus explicit 404 and 104 browser scenarios.
 
 Later scoped regression work #1275/#1276 closed the stale-data error path without changing geography semantics: a failed API/population refresh clears the prior Country/stream/count/presentation state, unavailable unmapped accounting is explicit, and a fresh recovery repopulates current state. Candidate Public Browser Audit `34041133229` passed the 104-scenario matrix plus success → 503 → recovery with 3 API calls and 0 violations; artifact `9991741143`. Post-merge main also passed Primary Domain Production Smoke `34041371788` and Twitch Map Production Browser Smoke `34041371752`; artifact `9991785120` records Country/City `basemap-ready` and zero page/console errors.
+
+Shared collector-state and production-proof maintenance #1279-#1281 is also complete. #1279 keeps real `partial` status available instead of showing `Collector status unavailable`; its post-merge production checks include Deploy Web Pages `34043914846`, Production Smoke `34043914776`, Primary Domain Production Smoke `34043914876` and Twitch Map Production Browser Smoke `34043914798`. #1280 makes the permanent Twitch Map production smoke wait for the Country MapLibre instance to report `loaded()` before accepted screenshots; post-merge smoke `34044472299` and artifact `9992672074` capture the fully loaded world basemap. #1281 extends the same availability distinction to real `empty` status results; candidate Public Browser Audit `34045610303` passed all 104 scenarios, and post-merge Deploy Web Pages `34045809819`, Production Smoke `34045809904`, Primary Domain Production Smoke `34045809822` and Twitch Map Production Browser Smoke `34045809886` all passed. Artifact `9993068572` points to main `48e8776ddfe24c3d08654deaf7c2d45c8e68cdbb`, records Country 8 mapped streams / 5 Country rows, City 5 mapped streams, both `basemap-ready`, zero page/console errors and a fully rendered Country basemap.
 
 ### Step 11 — Kick K2 production stable identity — COMPLETE
 
@@ -335,7 +337,7 @@ Current never becomes Base City and never survives expiry.
 
 ## 5. Shared UI/accessibility lane — SAFE SCOPED WORK ONLY
 
-The concrete keyboard/focus/mobile-target/legend/URL-state regressions identified in the September 6 audit are closed by #1245-#1247. The later stale-data/unavailable-presentation regression is closed by #1275/#1276 with deterministic Chromium failure/recovery proof and post-merge production Country/City browser proof.
+The concrete keyboard/focus/mobile-target/legend/URL-state regressions identified in the September 6 audit are closed by #1245-#1247. The later stale-data/unavailable-presentation regression is closed by #1275/#1276 with deterministic Chromium failure/recovery proof and post-merge production Country/City browser proof. Shared collector-state presentation and permanent Map screenshot reliability are closed through #1279-#1281: `partial` and real `empty` remain available observations, while accepted Country screenshots wait for loaded MapLibre tiles.
 
 Further safe scoped work may include newly discovered keyboard/focus defects, overflow regression checks, map/legend label regressions, explicit empty/conflict/unmapped presentation regressions and structural production/browser verification.
 
@@ -386,6 +388,9 @@ DONE   Current live candidate probe sequence 4 #1272 / run 34036197901 / 300 -> 
 DONE   Current review queue refresh #1273 / run 34036562297 / 300 -> 10 reviewed -> 0 accepted
 DONE   Twitch Map stale-data fail-closed recovery #1275
 DONE   Twitch Map unavailable presentation closeout #1276 / run 34041133229 / artifact 9991741143
+DONE   Shared collector partial-status presentation #1279 / production smoke 34043914798
+DONE   Twitch Map production screenshot tile-readiness #1280 / run 34044472299 / artifact 9992672074
+DONE   Shared collector empty-status presentation #1281 / production smoke 34045809886 / artifact 9993068572
 PAR    scoped Map regression/accessibility work + maintenance only
 BLOCK  Kick K4 canonical /kick/map/ activation pending separate explicit authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
