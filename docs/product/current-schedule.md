@@ -5,7 +5,7 @@ Normative specification: `docs/product/stream-map-spec-v0.7.md`
 Execution plan: `docs/product/stream-map-implementation-plan-v0.10.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `f30a9b26ca8204fb7a8a9e895ad2759984cccf9f`  
+Audited runtime baseline: main `ff220d1d141e2bcd190692a1f1ffbb7ee5f5390a`  
 Last updated: 2026-09-06
 
 ## 1. Scheduling principle
@@ -214,28 +214,55 @@ Read-only City presentation re-audit also confirms the existing semantics remain
 
 Shared UI returns to scoped regression/quality work only. It does not block Kick K2/K3/KUI3b/K4 or Current prerequisites.
 
+### Step 11 — Kick K2 production stable identity — COMPLETE
+
+Completed by PR #1249. Production acceptance is recorded by PR #1250 and production API smoke run `34008795931`.
+
+Implementation path:
+
+```text
+existing official /public/v1/livestreams request
+-> retain broadcaster_user_id directly
+-> existing minute snapshot JSON path
+```
+
+K2 added zero additional Kick API requests and no Channels lookup for stable identity. It did not change D1 schema/bindings, cadence, retention/backfill or Twitch collection.
+
+Provider-scoped deploy run `34008654160` proved Kick-only deployment and Twitch skip. Production API proof observed:
+
+```text
+updatedAt                    2026-09-06T03:21:00.627Z
+observedStreams              100
+stableIdentityStreams        100
+missingStableIdentityStreams   0
+stableIdentityPercent          1
+mappedStreams                  0
+state                         blocked_reviewed_evidence
+```
+
+Draft #1083 is superseded by #1249 and closed. The K2 authorization is consumed and does not authorize K3 or K4.
+
 ## 3. Immediate lane — Kick Country runtime/data
 
 ### Step K1 — collector-independent reviewed-evidence runtime preparation — COMPLETE
 
 Completion condition is satisfied: the internal runtime path deterministically consumes the real reviewed Kick Country evidence when a stable `broadcaster_user_id` is supplied by the staged snapshot, without slug fallback and without public activation.
 
-### Step K2 — production stable identity — BLOCKED UNTIL EXPLICIT AUTHORIZATION
+### Step K2 — production stable identity — COMPLETE
 
-Required production dependency:
+The production dependency is satisfied by #1249 and production proof run `34008795931`:
 
 ```text
 Kick official livestream collection
 -> retain official broadcaster_user_id in production minute snapshot
+-> 100 observed / 100 stable-ID streams proven
 ```
 
-This is a production collector mutation. It is not authorized by this schedule.
+No additional Channels request was required. Draft #1083 is superseded and closed.
 
-Stale Draft #1083 must not be merged as-is. If authorization is later given, implement/re-audit the minimal change on current main.
+### Step K3 — production runtime connection — NEXT / SEPARATE AUTHORIZATION
 
-### Step K3 — production runtime connection — AFTER K2
-
-Once the production snapshot supplies stable IDs, connect only the already-staged provider-specific reviewed Country path to production runtime and verify production reconciliation.
+The production snapshot now supplies stable IDs, so K3 is technically unblocked. Connecting the already-staged provider-specific reviewed Country path to production runtime remains a separate production behavior change and requires separate authorization.
 
 Do not reuse Twitch evidence or treat slug/login as stable identity. K3 does not authorize public activation.
 
@@ -334,13 +361,14 @@ CI waiting in one lane is not a reason to stop another safe lane.
 
 Nothing in this schedule implies:
 
-- production collector change;
+- production collector change beyond the completed authorized Kick K2 #1249;
 - D1/schema/binding change;
 - cadence/retention change;
 - backfill;
 - production data mutation;
 - Current/IRL activation;
-- Kick activation.
+- Kick public activation;
+- K3 production runtime connection without its separate authorization.
 
 ## 9. Current completion order
 
@@ -358,9 +386,10 @@ DONE   Kick KUI3a non-mutating browser proof #1244 / run 33978336854
 DONE   Shared Twitch geography controls/browser proof #1245
 DONE   Shared compact Country controls/legend/browser proof #1246
 DONE   Shared City mobile targets/reference-point browser proof #1247
+DONE   Kick K2 production stable-ID persistence #1249
+DONE   Kick K2 production proof #1250 / run 34008795931 / 100 of 100 stable IDs
 PAR    scoped Map regression/accessibility work + maintenance only
-BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
-WAIT   Kick K3 production runtime connection until K2
+NEXT   Kick K3 production runtime connection — separate authorization required
 WAIT   Kick KUI3b real production-connected proof until K3
 BLOCK  Kick K4 canonical /kick/map/ activation pending separate authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
