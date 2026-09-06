@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-profiles-v1",
-  "version": 2,
+  "version": 3,
   "group": "analysis",
   "gates": {
     "common_repository": [".github/workflows/web-checks.yml", ".github/workflows/web-verification.yml", ".github/workflows/platform-naming.yml"],
@@ -9,7 +9,7 @@
     "heatmap_contract": ["apps/web/scripts/verify-heatmap-qa.mjs", "apps/web/scripts/verify-heatmap-boundaries.mjs", "apps/web/scripts/verify-heatmap-data-state.mjs", "apps/web/scripts/verify-heatmap-wide-layout.mjs", "apps/web/scripts/verify-heatmap-mobile-accessibility.mjs", "apps/web/scripts/verify-heatmap-final-cutover.mjs"],
     "dayflow_contract": ["apps/web/scripts/verify-dayflow-qa.mjs"],
     "battle_contract": ["apps/web/scripts/verify-battle-lines-qa.mjs"],
-    "stream_map_contract": [".github/workflows/twitch-stream-map-renderer-bundle.yml", ".github/workflows/twitch-map-production-browser-smoke.yml", "apps/web/scripts/twitch-stream-map-geography-accessibility-audit.mjs"],
+    "stream_map_contract": [".github/workflows/twitch-stream-map-renderer-bundle.yml", ".github/workflows/twitch-map-production-browser-smoke.yml", "apps/web/scripts/twitch-stream-map-geography-accessibility-audit.mjs", ".github/workflows/kick-stream-map-country-public-readiness.yml", ".github/workflows/kick-stream-map-production-api-smoke.yml"],
     "status_contract": [".github/workflows/data-status-checks.yml", "apps/web/scripts/verify-status-qa.mjs"],
     "status_browser": [".github/workflows/data-status-checks.yml"]
   },
@@ -42,10 +42,10 @@
       "gaps": ["no complete route state/viewport matrix", "no route-specific Preview gate"]
     },
     "stream_map": {
-      "owner": ["apps/web/src/features/twitch-stream-map/stream-map-entry.ts", "apps/web/src/features/twitch-stream-map/stream-map-runtime.ts", "apps/web/src/features/twitch-stream-map/geography-ui-bootstrap.ts"],
-      "data": ["Twitch Stream Map Pages Function"],
-      "controls": ["Country/City geography", "population filters", "evidence filters", "country selection", "map controls"],
-      "states": ["loading", "live", "partial", "empty", "unmapped", "renderer_error"],
+      "owner": ["apps/web/src/features/twitch-stream-map/stream-map-entry.ts", "apps/web/src/features/twitch-stream-map/stream-map-runtime.ts", "apps/web/src/features/twitch-stream-map/geography-ui-bootstrap.ts", "apps/web/src/features/kick-stream-map/public-entry.ts", "apps/web/src/features/kick-stream-map/country-preview-map.ts"],
+      "data": ["Twitch Stream Map Pages Function", "Kick Stream Map Pages Function"],
+      "controls": ["provider-specific geography controls", "Country selection", "intensity metric", "map controls"],
+      "states": ["loading", "live", "partial", "empty", "unmapped", "unavailable", "renderer_error"],
       "gates": ["common_repository", "public_readiness", "stream_map_contract", "production_smoke"],
       "assessment": "complete_current_contract",
       "gaps": []
