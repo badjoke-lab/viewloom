@@ -25,7 +25,7 @@ try {
   check(await page.title() === 'Twitch Local Watchlist — ViewLoom', 'Twitch Watchlist title is wrong.')
   check(await page.locator('meta[name="robots"]').getAttribute('content') === 'noindex,follow', 'Twitch Watchlist robots metadata is wrong.')
   check(await page.locator('link[rel="canonical"]').getAttribute('href') === 'https://www.viewloom.net/twitch/watchlist/', 'Twitch Watchlist canonical is wrong.')
-  check(await page.locator('.feature-tabs a').allTextContents().then((values) => values.join('|')) === 'Heatmap|Day Flow|Battle Lines|History|Data Status', 'Primary feature tabs changed.')
+  check(await page.locator('.feature-tabs a').allTextContents().then((values) => values.join('|')) === 'Heatmap|Day Flow|Battle Lines|History|Stream Map|Data Status', 'Primary feature tabs changed.')
   check(await page.locator('[data-watchlist-empty]').isVisible(), 'Empty Watchlist state is not visible.')
   check((await page.locator('[data-watchlist-empty]').innerText()).includes('No channels saved in this browser.'), 'Required empty-state wording is missing.')
   check(calls.api.length === 0, `Empty Watchlist issued API requests: ${JSON.stringify(calls.api)}`)
