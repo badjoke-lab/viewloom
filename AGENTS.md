@@ -6,16 +6,19 @@ Canonical project state is indexed in `docs/README.md`.
 
 ```text
 Current program: Stream Map
-Audited runtime baseline: bea33532001989c71dde289e570752985d34f600
+Audited runtime baseline: 9fe01ac2cdff55fb1bc8ebd2fc126d74deec8956
 Twitch Country: closed at current public product boundary
 Twitch City: C1-C6 complete / public accepted
+Twitch Map public inventory: /twitch/map/ included / 26 HTML routes / 104 four-viewport scenarios
 Kick Country runtime: K1 complete / K2 complete #1249 / K3 complete #1252
 Kick K3 production proof: run 34010236817 / 100 observed / 100 stable IDs / reviewed Country runtime connected / K4 blocked
 Kick Map pre-public UI: KUI1 #1241 + KUI2 #1242 + KUI3a #1244 + KUI3b #1253 complete
 Kick KUI3b main browser proof: run 34010502534 / 4 real-production scenarios / 0 violations
+Kick K4 preactivation: complete #1255
+Kick K4 exact cutover contract: complete #1265 / activation still unauthorized
 Kick canonical /kick/map/: absent / not public
-Kick K4: next product gate / separate explicit public activation authorization required
-Current / IRL: fail-closed / 0 accepted fresh placements
+Kick K4: separate explicit public activation authorization still required
+Current / IRL: 2026-09-06 refresh / 299 unique stable IDs / 9 reviewed / 36 accepted-class pairs / 0 accepted fresh placements
 Top20 reviewed-evidence cadence: maintenance sublane only
 Twitch cadence: */5 * * * *
 Kick cadence: */5 * * * *
@@ -26,6 +29,8 @@ The active Stream Map execution plan is `docs/product/stream-map-implementation-
 ## Mandatory authorities
 
 Before every branch and merge, read current-main `docs/README.md`, `docs/product/current-roadmap.md`, `docs/product/current-schedule.md`, `docs/operations/development-and-deployment-policy.md`, the affected current specification/implementation plan, relevant lane contracts and current implementation/tests.
+
+For K4 work, also read `docs/audits/kick-stream-map-k4-preactivation-readiness-2026-09-06.json` and `docs/audits/kick-stream-map-k4-cutover-contract-2026-09-06.json`. For Current / IRL work, read the September 6 live queue and temporal-evidence review records.
 
 Historical category-program evidence remains accepted but does not override the current Stream Map authority chain. Cached chat summaries, old handoffs and branch-local historical copies are not authorization.
 
@@ -44,17 +49,49 @@ Historical category-program evidence remains accepted but does not override the 
 - No inferred travel path.
 - No production collector, D1/schema/binding, cadence, retention or backfill mutation without its separate authorization/gate.
 - Preview-only Kick UI does not authorize or create `/kick/map/`.
-- K3 completion does not authorize K4, create a public Kick Map page, add public navigation or enable a production Vite entry.
+- K3 completion, K4 preactivation proof and the K4 cutover contract do not authorize K4, create a public Kick Map page, add public navigation or enable a production Vite entry.
 - The completed K2/K3 authorizations are consumed and do not authorize K4 or Twitch stable-ID persistence.
+- Stream title/tag and static Home/Base profile context never become accepted Current placement without separately qualifying fresh temporal evidence.
 
 ## Current execution order
 
-1. Preserve the accepted Twitch Country and Twitch City public boundaries.
+1. Preserve the accepted Twitch Country and Twitch City public boundaries and permanent `/twitch/map/` public-surface coverage.
 2. Treat Kick K1/K2/K3 runtime/data as complete through #1252. Preserve the stable-ID-only join and public projection that strips `broadcaster_user_id` / `stableKickUserId` from response rows.
 3. Treat Kick KUI1/KUI2/KUI3a/KUI3b as completed pre-public preparation through #1253. Preserve the fail-closed real-production browser proof and do not promote its test-only activation lift to production behavior.
-4. Do not create or activate canonical `/kick/map/`, public navigation, canonical metadata or a production Vite input without separate explicit K4 authorization.
-5. Keep Current / IRL fail-closed until both separately authorized production identity and fresh accepted temporal evidence exist.
-6. Continue shared Map accessibility/regression work and bounded reviewed-evidence maintenance in parallel.
+4. Treat K4 preactivation #1255 and exact cutover contract #1265 as complete preparation only. Do not create or activate canonical `/kick/map/`, public navigation, canonical metadata or a production Vite input without separate explicit K4 authorization.
+5. Keep Current / IRL fail-closed. The September 6 canonical refresh is 299 unique stable IDs -> 9 reviewed identities -> 36 accepted-class pairs -> 0 fresh qualifying evidence -> 0 accepted Current placements.
+6. Do not authorize Twitch production stable-ID persistence from the existence of a read-only probe or closed Draft #1107.
+7. Continue shared Map accessibility/regression work and bounded reviewed-evidence maintenance in parallel.
+
+## Current / IRL latest accepted audit state
+
+Canonical September 6 evidence:
+
+```text
+source run                               34015266644
+artifact                                 9983696759
+requested population                            300
+unique stable identities measured               299
+duplicate stable-ID overlap dropped               1
+reviewable candidates                              9
+future/planned travel rejected                     6
+accepted-class pairs reviewed                     36
+fresh qualifying evidence                          0
+accepted Current placement                         0
+no-fresh-qualifying outcomes                       9
+true cross-country conflicts                       0
+same-country granularity conflicts closed          1
+```
+
+The one machine conflict was `robcdee` with Japan Country + Tokyo City candidate granularity. It is not a competing-country conflict and was not promoted to a Current placement.
+
+Current still has three public blockers:
+
+```text
+production Twitch snapshot does not retain user_id / twitchUserId
+public Twitch geography route has no Current mode
+fresh reviewed Current evidence = 0 accepted placements
+```
 
 ## Kick K2 accepted production proof
 
@@ -140,6 +177,24 @@ violations                      0
 ```
 
 The normal preview was exercised with the unchanged production payload and remained `country_blocked` with no geography while K4 was false. A separate local-Chromium renderer proof cloned the same production payload and lifted only the K4 authorization flag inside the intercepted test payload; it did not mutate production or change Country rows. Therefore KUI3b proves the renderer against real production-connected reviewed Country rows but does not authorize K4.
+
+## Kick K4 frozen cutover contract
+
+PR #1255 froze preactivation proof. PR #1265 froze the file-level cutover contract while leaving authorization false.
+
+An authorized K4 change must keep authorization explicit from route -> adapter/runtime, keep false as the default, keep stable IDs internal and include the public page, Vite, Kick home, sitemap, public inventory, four-viewport browser matrix and production smoke in the same cutover.
+
+Expected inventory only after authorized cutover:
+
+```text
+Vite HTML inputs                 27
+inventory entries incl. 404      28
+indexable routes                 23
+sitemap routes                   23
+browser scenarios               108
+```
+
+K4 must not mutate collector directories, migrations, the reviewed Country runtime catalog or the four canonical Country review results.
 
 ## Historical accepted category-program state
 
