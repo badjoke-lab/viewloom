@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'apps/web/functions/api/kick-stream-map.ts'
+      - 'apps/web/functions/api/kick-stream-map-public-adapter-core.mjs'
       - 'apps/web/functions/api/kick-stream-map-country-runtime-core.mjs'
       - 'apps/web/functions/api/kick-stream-map-reviewed-country-runtime-data.mjs'
       - '.github/workflows/kick-stream-map-production-api-smoke.yml'
@@ -116,7 +117,7 @@ jobs:
           ' kick-stream-map.json >/dev/null
           jq '{version, implementationState, state, publicActivationAuthorized, coverage, identity, activation, semantics}' kick-stream-map.json
 
-      - name: Verify production Kick K3 runtime connection and K4 block
+      - name: Verify production Kick K4 public Country activation
         if: github.event_name != 'pull_request'
         shell: bash
         run: |
@@ -127,6 +128,7 @@ jobs:
           reviewed=0
           mapped=0
           state=unknown
+          authorized=false
           for attempt in {1..60}; do
             curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/kick-stream-map?production-smoke=$GITHUB_RUN_ID&attempt=$attempt" -o kick-stream-map.json
             observed="$(jq -r '.coverage.observedStreams // 0' kick-stream-map.json)"
@@ -134,8 +136,9 @@ jobs:
             reviewed="$(jq -r '.coverage.reviewedIdentityStreams // 0' kick-stream-map.json)"
             mapped="$(jq -r '.coverage.mappedStreams // 0' kick-stream-map.json)"
             state="$(jq -r '.state // "unknown"' kick-stream-map.json)"
-            echo "Kick K3 production attempt $attempt/60: state=$state observed=$observed stable=$stable reviewed=$reviewed mapped=$mapped"
-            if [ "$observed" -gt 0 ] && [ "$stable" -eq "$observed" ] && [ "$state" = 'blocked_public_activation' ]; then
+            authorized="$(jq -r '.publicActivationAuthorized // false' kick-stream-map.json)"
+            echo "Kick K4 production attempt $attempt/60: state=$state authorized=$authorized observed=$observed stable=$stable reviewed=$reviewed mapped=$mapped"
+            if [ "$observed" -gt 0 ] && [ "$stable" -eq "$observed" ] && [ "$state" = 'ready' ] && [ "$authorized" = 'true' ]; then
               break
             fi
             sleep 10
@@ -150,10 +153,10 @@ jobs:
             .provider == "kick" and
             .source == "real" and
             .geographyMode == "country" and
-            .publicActivationAuthorized == false and
-            .state == "blocked_public_activation" and
+            .publicActivationAuthorized == true and
+            .state == "ready" and
             .activation.publicCountryActivationReady == true and
-            (.activation.blockers | index("public_country_activation_not_authorized")) != null and
+            (.activation.blockers | index("public_country_activation_not_authorized")) == null and
             (.activation.blockers | index("reviewed_kick_country_evidence_runtime_not_connected")) == null and
             .identity.stableKey == "broadcaster_user_id" and
             .identity.slugIsStableIdentity == false and
@@ -182,7 +185,7 @@ jobs:
             ([.mappedStreams[]? | select(.geography.state != "mapped" or (.geography.countryCode | test("^[A-Z]{2}$") | not))] | length) == 0
           ' kick-stream-map.json >/dev/null
 
-          echo "Kick Stream Map K3 production proof: state=$state observed=$observed stable=$stable reviewed=$reviewed mapped=$mapped"
+          echo "Kick Stream Map K4 production proof: state=$state authorized=$authorized observed=$observed stable=$stable reviewed=$reviewed mapped=$mapped"
 
       - name: Upload production smoke evidence
         if: always()
