@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "viewloom-kick-stream-map-k4-cutover-contract-v0.1",
+  "status": "frozen_not_authorized",
+  "provider": "kick",
+  "geography": "country",
+  "auditedMain": "2e169faef9052c3c6e5ec3e768cec01b6de1a878",
+  "authorization": {
+    "k4PublicActivationAuthorized": false,
+    "thisContractAuthorizesActivation": false,
+    "collectorChangeAuthorized": false,
+    "d1MutationAuthorized": false,
+    "schemaBindingChangeAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "retentionBackfillChangeAuthorized": false,
+    "cityCurrentActivationAuthorized": false,
+    "twitchChangeAuthorized": false
+  },
+  "activationDesign": {
+    "sourceOfAuthorization": "explicit_route_to_runtime_boolean",
+    "defaultAuthorized": false,
+    "stableIdentityPublishedAfterCutover": false,
+    "reviewedCatalogChangesRequired": false,
+    "additionalKickProviderRequestsRequired": false,
+    "creatorCoordinatesAllowed": false,
+    "cityInferenceAllowed": false,
+    "currentLocationPromotionAllowed": false
+  },
+  "requiredRuntimeChanges": [
+    {
+      "path": "apps/web/functions/api/kick-stream-map-public-adapter-core.mjs",
+      "purpose": "accept an explicit publicActivationAuthorized boolean with false as the default and reflect it without exposing stable IDs"
+    },
+    {
+      "path": "apps/web/functions/api/kick-stream-map-country-runtime-core.mjs",
+      "purpose": "accept the explicit authorization, remove public_country_activation_not_authorized only when true, and retain fail-closed stable-ID/runtime blockers"
+    },
+    {
+      "path": "apps/web/functions/api/kick-stream-map.ts",
+      "purpose": "pass the K4 authorization explicitly to normal, empty, and error projections so authorization is product state rather than inferred from data"
+    }
+  ],
+  "requiredPublicSurfaceChanges": [
+    {
+      "path": "apps/web/kick/map/index.html",
+      "purpose": "create the canonical public Kick Country Stream Map page"
+    },
+    {
+      "path": "apps/web/src/features/kick-stream-map/public-entry.ts",
+      "purpose": "mount the public Country renderer without reclassifying the pre-public preview route as public"
+    },
+    {
+      "path": "apps/web/vite.config.ts",
+      "purpose": "add the production kickMap HTML input"
+    },
+    {
+      "path": "apps/web/src/provider-home-shell.ts",
+      "purpose": "add a Kick Stream Map public navigation/directory target without changing provider identity boundaries"
+    },
+    {
+      "path": "apps/web/public/sitemap.xml",
+      "purpose": "add the canonical /kick/map/ URL"
+    }
+  ],
+  "requiredAcceptanceAndInventoryChanges": [
+    {
+      "path": "scripts/verify-kick-stream-map-country-public-readiness.mjs",
+      "purpose": "change the K4 gate expectation only in the authorized cutover PR and continue asserting stable identity non-publication"
+    },
+    {
+      "path": "scripts/verify-kick-stream-map-k4-preactivation-readiness.mjs",
+      "purpose": "retire or transition the preactivation-only absence assertions in the authorized cutover PR"
+    },
+    {
+      "path": ".github/workflows/kick-stream-map-country-public-readiness.yml",
+      "purpose": "run K4 public page/API/browser acceptance while preserving provider boundaries"
+    },
+    {
+      "path": ".github/workflows/kick-stream-map-production-api-smoke.yml",
+      "purpose": "change production API smoke from K4-blocked expectations to authorized Country expectations after deployment"
+    },
+    {
+      "path": "docs/audits/public-surface-routes-kick.json",
+      "purpose": "inventory /kick/map/ as an owned Kick Stream Map route"
+    },
+    {
+      "path": "docs/audits/public-surface-inventory.json",
+      "purpose": "increase current public HTML/inventory/indexable/browser counts for the new route"
+    },
+    {
+      "path": "docs/audits/public-surface-profiles-analysis.json",
+      "purpose": "assign the Stream Map public-surface profile to Kick"
+    },
+    {
+      "path": "scripts/verify-public-surface-inventory.mjs",
+      "purpose": "require Kick Map inventory, sitemap and provider ownership"
+    },
+    {
+      "path": "scripts/verify-public-browser-audit-current.mjs",
+      "purpose": "advance current route/scenario counts while preserving historical accepted counts"
+    },
+    {
+      "path": "scripts/verify-public-current-browser-audit.mjs",
+      "purpose": "include /kick/map/ in the four-viewport browser matrix"
+    },
+    {
+      "path": ".github/workflows/production-smoke.yml",
+      "purpose": "include /kick/map/ in permanent primary-domain production smoke"
+    }
+  ],
+  "expectedPublicInventoryAfterCutover": {
+    "viteHtmlInputs": 27,
+    "inventoryEntriesIncluding404": 28,
+    "indexableRoutes": 23,
+    "sitemapRoutes": 23,
+    "browserViewports": 4,
+    "browserScenarios": 108
+  },
+  "forbiddenMutationPrefixes": [
+    "workers/collector-kick/",
+    "workers/collector-twitch/",
+    "migrations/"
+  ],
+  "forbiddenMutationExactPaths": [
+    "apps/web/functions/api/kick-stream-map-reviewed-country-runtime-data.mjs",
+    "docs/audits/kick-stream-map-country-review-result-2026-09-02-01.json",
+    "docs/audits/kick-stream-map-country-review-result-2026-09-02-02.json",
+    "docs/audits/kick-stream-map-country-review-result-2026-09-02-03.json",
+    "docs/audits/kick-stream-map-country-review-result-2026-09-02-04.json"
+  ],
+  "postCutoverRequiredInvariants": {
+    "provider": "kick",
+    "stableIdentity": "broadcaster_user_id",
+    "slugIsStableIdentity": false,
+    "stableIdentityPublished": false,
+    "twitchEvidenceReuseAllowed": false,
+    "providerAggregationAllowed": false,
+    "cityInferenceAllowed": false,
+    "currentLocationPromotionAllowed": false,
+    "creatorCoordinatesAllowed": false,
+    "demoGeographyAllowed": false,
+    "reconciliationRequired": true
+  },
+  "currentPreactivationState": {
+    "publicActivationAuthorized": false,
+    "publicKickMapPage": "absent",
+    "productionViteInput": "absent",
+    "publicKickMapSitemapEntry": "absent",
+    "publicKickMapProviderHomeTarget": "absent",
+    "blocker": "public_country_activation_not_authorized"
+  }
+}
