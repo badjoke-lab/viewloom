@@ -3,16 +3,16 @@
 Status: accepted on merge / active execution plan  
 Specification: `docs/product/stream-map-spec-v0.7.md`  
 Supersedes: `docs/product/stream-map-implementation-plan-v0.9.md`  
-Audited runtime baseline: main `bea33532001989c71dde289e570752985d34f600`  
+Audited runtime baseline: main `4068b41f0ec7e686f915915022c05a7c88ae60e5`  
 Date: 2026-09-06
 
 ## 1. Current position
 
 Twitch Country and Twitch City are closed at their current public product boundaries.
 
-The September 6 shared Twitch Map keyboard/mobile/legend regression batch is complete through #1247. Shared UI is scoped maintenance/quality work only rather than an unfinished serial phase.
+The September 6 shared Twitch Map keyboard/mobile/legend regression batch is complete through #1247. The already-public `/twitch/map/` route is permanently covered by sitemap/public-surface/browser/production-smoke inventory through #1259, and the later stale-data/unavailable-presentation closeout is complete through #1275/#1276. Shared UI is scoped maintenance/quality work only rather than an unfinished serial phase.
 
-Current / IRL remains fail-closed after the September 5 Top300 review produced zero accepted temporal placements.
+Current / IRL remains fail-closed after the latest September 6 Top300 sequence measured 300 unique stable identities, reviewed 10 candidates across 40 accepted-class identity pairs, and produced zero fresh qualifying evidence and zero accepted Current placements.
 
 Kick Country has two distinct tracks that must not be conflated:
 
@@ -29,6 +29,8 @@ pre-public UI readiness
   KUI3a non-mutating browser proof                  COMPLETE #1244
   KUI3b real production-connected browser/API proof COMPLETE #1253
 ```
+
+K4 preactivation proof #1255 and the exact cutover contract #1265 are complete, but they do not authorize K4 activation.
 
 The public route is still intentionally absent:
 
@@ -208,7 +210,7 @@ The production route reports technical Country readiness while remaining `blocke
 
 ### K4. Public Kick Country activation — SEPARATE GATE / NOT AUTHORIZED
 
-K4 requires a new explicit authorization after the accepted K3/KUI3b proof.
+K4 requires a new explicit authorization after the accepted K3/KUI3b proof. Preactivation proof #1255 and the exact file-level cutover contract #1265 are complete, but neither changes the authorization state.
 
 Only K4 may:
 
@@ -218,7 +220,7 @@ Only K4 may:
 - change `publicActivationAuthorized` to true in the production public contract;
 - perform the final public browser/API/production acceptance for that activation.
 
-K1-K3 and KUI1-KUI3b do not implicitly authorize K4.
+K1-K3, KUI1-KUI3b, #1255 and #1265 do not implicitly authorize K4.
 
 ## 6. Kick Country — PRE-PUBLIC UI TRACK
 
@@ -296,17 +298,25 @@ Ready in code:
 - Current public-readiness validator;
 - disabled Current / IRL public control.
 
-Fresh September 5 bounded review:
+Latest September 6 bounded review:
 
 ```text
-population measured          300
-reviewable candidates          8
-identities reviewed             8
-fresh qualifying evidence       0
-accepted Current placement      0
-no qualifying evidence          6
-true unresolved conflicts       2
+source run                               34036562297
+artifact                                 9990351519
+requested population                            300
+unique stable identities measured               300
+duplicate stable-ID page overlap dropped          0
+reviewable candidates                             10
+future/planned travel rejected                     2
+accepted-class identity pairs reviewed            40
+fresh qualifying evidence                          0
+accepted Current placement                         0
+no-fresh-qualifying outcomes                      10
+true unresolved cross-country conflicts            0
+same-country granularity conflicts closed          2
 ```
+
+The two machine conflict rows were Japan + Tokyo same-country granularity differences, not unresolved competing-country evidence, and neither was promoted to a Current placement.
 
 Current exact blockers remain:
 
@@ -346,6 +356,10 @@ PRs #1245-#1247 close the concrete September 6 shared Twitch Map UI findings wit
        390px City reference-point browser proof enumerates visible enabled controls
        all measured City mobile targets >= 44px
 ```
+
+PR #1259 adds the already-public `/twitch/map/` route to the permanent public-surface inventory, sitemap, four-viewport browser matrix and production smoke.
+
+PR #1275 closes the stale-data fail-closed defect where a later API/population refresh failure could leave the prior successful Country/stream/count payload visible. PR #1276 completes the unavailable presentation contract: population state becomes `Unavailable`, compact accounting shows `Unmapped accounting unavailable`, and a fresh recovery restores current state. Candidate Public Browser Audit `34041133229` passed the 104-scenario matrix plus success → 503 → recovery with 3 API calls and 0 violations; artifact `9991741143`. Post-merge Primary Domain Production Smoke `34041371788` and Twitch Map Production Browser Smoke `34041371752` also passed; production artifact `9991785120` records Country/City `basemap-ready`, one canvas each, and zero page/console errors.
 
 Further shared UI work is scoped regression/quality only. Shared mechanics may be reused, but evidence and geometry semantics remain provider/geography specific.
 
@@ -401,7 +415,6 @@ DONE   Twitch Country current product boundary + #1214 closeout
 DONE   Twitch City C1-C6 + production/browser/public acceptance
 DONE   Twitch Current current-main readiness re-audit #1234
 DONE   Kick Country current-main readiness re-audit #1235
-DONE   Current fresh Top300 review: 300 -> 8 reviewed -> 0 accepted
 DONE   Kick K1 reviewed-evidence runtime staging #1239
 DONE   Kick KUI1 fail-closed preview shell #1241
 DONE   Kick KUI2 Country aggregate renderer/results #1242
@@ -411,6 +424,13 @@ DONE   Kick K2 production stable-ID persistence #1249
 DONE   Kick K2 production proof #1250 / run 34008795931 / 100 of 100 stable IDs
 DONE   Kick K3 production reviewed-Country runtime connection #1252 / run 34010236817
 DONE   Kick KUI3b real production-connected browser/API proof #1253 / main run 34010502534
+DONE   Kick K4 preactivation proof #1255
+DONE   Twitch Map permanent public-surface inventory #1259 / 104 scenarios
+DONE   Kick exact K4 cutover contract #1265
+DONE   Current live candidate probe sequence 4 #1272 / run 34036197901 / 300 -> 10 candidates
+DONE   Current review queue refresh #1273 / run 34036562297 / 300 -> 10 reviewed -> 0 accepted
+DONE   Twitch Map stale-data fail-closed recovery #1275
+DONE   Twitch Map unavailable presentation closeout #1276 / run 34041133229 / artifact 9991741143
 PAR    scoped shared Map regression/accessibility + reviewed-evidence maintenance
 BLOCK  Kick K4 public /kick/map/ activation pending separate explicit authorization
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
