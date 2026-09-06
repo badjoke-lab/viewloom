@@ -5,12 +5,12 @@ Normative specification: `docs/product/stream-map-spec-v0.7.md`
 Execution plan: `docs/product/stream-map-implementation-plan-v0.10.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `f30a9b26ca8204fb7a8a9e895ad2759984cccf9f`  
+Audited runtime baseline: main `ff220d1d141e2bcd190692a1f1ffbb7ee5f5390a`  
 Last updated: 2026-09-06
 
 ## 1. Current milestone
 
-**Twitch Country and Twitch City are closed at their current public product boundaries. The September 6 shared Twitch Map keyboard/mobile/legend regression batch is closed through #1247. Current / IRL remains fail-closed with zero accepted temporal placements. Kick Country K1 runtime staging and the complete non-public KUI1/KUI2/KUI3a UI preparation are done through #1244. Kick production stable-ID persistence remains blocked pending explicit collector authorization, KUI3b waits for K3 real production-connected reviewed Country rows, and `/kick/map/` remains intentionally absent.**
+**Twitch Country and Twitch City are closed at their current public product boundaries. The September 6 shared Twitch Map keyboard/mobile/legend regression batch is closed through #1247. Current / IRL remains fail-closed with zero accepted temporal placements. Kick Country K1 runtime staging and the complete non-public KUI1/KUI2/KUI3a UI preparation are done through #1244. Kick K2 production stable-ID persistence is complete through #1249 with production proof run `34008795931` showing 100 observed / 100 stable-ID streams / 0 mapped streams. K3 is now technically unblocked by K2 but remains a separate production runtime change requiring separate authorization; KUI3b waits for K3 real production-connected reviewed Country rows, and `/kick/map/` remains intentionally absent behind the separate K4 gate.**
 
 The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock.
 
@@ -20,7 +20,7 @@ The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock
 | --- | --- | --- |
 | Twitch Country | closed; choropleth/UI/production proof complete; #1214 completed; compact control/legend regression closeout #1245-#1246 complete | scoped defects/accessibility/evidence maintenance only |
 | Twitch City | C1-C6 complete; public City activation, reviewed aggregate references/list-only fallback and production acceptance complete; mobile action-target regression closeout #1247 complete | scoped quality/coverage only |
-| Kick Country runtime | K1 complete: 100/100 reviewed evidence passes the internal stable-ID staging path | K2 production `broadcaster_user_id` persistence after explicit collector authorization; K3 after K2; K4 separate public gate |
+| Kick Country runtime | K1 complete; K2 #1249 complete in production; production proof run `34008795931` observed 100/100 stable identities | K3 production reviewed-evidence runtime connection after separate authorization; K4 remains separate public gate |
 | Kick Country UI | KUI1 #1241 + KUI2 #1242 + KUI3a #1244 complete; 10 fixture-browser scenarios pass with zero violations; production Vite/public route unchanged | KUI3b real-data proof only after K3 |
 | Current / IRL | 2026-09-05 Top300 review: 300 measured, 8 reviewed, 0 accepted, 2 unresolved true conflicts; public control disabled | fail closed; later work only on justified new evidence window or separately authorized prerequisites |
 | Shared Map UI | #1245 geography controls + #1246 Country compact controls/legend + #1247 City mobile targets complete; desktop/mobile/browser proof retained | scoped regression/accessibility work only |
@@ -83,7 +83,7 @@ no_geometry      1
 
 Natural Earth points are `city_aggregate_reference` targets only, never creator coordinates or municipal-boundary claims. `Sant Cugat del Valles` remains `no_geometry` and list-only.
 
-## 5. Kick Country — K1 + KUI1/KUI2/KUI3a COMPLETE / PRODUCTION DEPENDENCY BLOCKED
+## 5. Kick Country — K1/K2 + KUI1/KUI2/KUI3a COMPLETE / K3 NEXT
 
 Provider boundary:
 
@@ -113,6 +113,22 @@ K1 completed in PR #1239. Current code includes the read-only latest snapshot so
 The real four review files reconcile in the staged runtime path. Public activation remains false.
 
 The reviewed runtime bridge deliberately omits slug/viewer/raw prose/source provenance and detail beyond terminal reviewed Country. UI must not reconstruct evidence fields the runtime contract removed.
+
+K2 completed in PR #1249 by retaining `broadcaster_user_id` directly from the already-used official `/public/v1/livestreams` response. No additional Channels request, D1 schema/binding change, cadence change, retention/backfill change or Twitch collector change was added. Provider-scoped production deploy run `34008654160` deployed Kick only and skipped Twitch.
+
+Production proof run `34008795931` observed:
+
+```text
+updatedAt                    2026-09-06T03:21:00.627Z
+observedStreams              100
+stableIdentityStreams        100
+missingStableIdentityStreams   0
+stableIdentityPercent          1
+mappedStreams                  0
+state                         blocked_reviewed_evidence
+```
+
+Draft #1083 is superseded by #1249 and closed.
 
 ### Pre-public UI track
 
@@ -150,17 +166,17 @@ The covered states are blocked stable identity, ready mixed mapped/unmapped/excl
 Current exact blockers:
 
 ```text
-1. production livestream snapshot does not retain broadcaster_user_id
+1. reviewed Kick Country evidence is not connected to the public production runtime
 2. public Kick Country activation is not authorized
 ```
 
-Blocker 1 is a production collector mutation and requires explicit authorization. Stale Draft #1083 is not a merge candidate as-is.
+The K2 stable-identity blocker is closed. K3 is a separate production runtime behavior change and is not authorized by the completed K2 gate. K4 remains a separate public activation decision.
 
 Next sequence:
 
 ```text
-K2     persist official broadcaster_user_id in production snapshot     BLOCKED AUTH
-K3     connect staged reviewed Country path to production runtime       AFTER K2
+K2     persist official broadcaster_user_id in production snapshot     DONE #1249 / 100 of 100 proven
+K3     connect staged reviewed Country path to production runtime       NEXT / SEPARATE AUTHORIZATION
 KUI3b  real production-connected Country UI/API/browser proof           AFTER K3
 K4     create/activate canonical /kick/map/ + public navigation         SEPARATE GATE
 ```
@@ -231,7 +247,7 @@ The bounded Top-20 process does not serialize Map development or authorize colle
 
 Unless separately authorized, Stream Map work does not change production collector behavior, collector cadence, D1 schema/bindings, retention, backfill, automatic recurring acquisition or production data outside applicable deployment policy.
 
-Provider data remains separated. No demo geography substitutes for missing real evidence.
+Provider data remains separated. No demo geography substitutes for missing real evidence. The K2 authorization completed by #1249 is consumed and does not authorize K3, K4 or Twitch stable-ID persistence.
 
 ## 10. Current execution order
 
@@ -249,9 +265,10 @@ DONE   Kick KUI3a non-mutating browser proof #1244 / run 33978336854
 DONE   Shared Twitch geography control regression #1245
 DONE   Shared Country compact controls/legend regression #1246
 DONE   Shared City mobile target regression #1247
+DONE   Kick K2 production stable-ID persistence #1249
+DONE   Kick K2 production proof #1250 / run 34008795931 / 100 of 100 stable IDs
 PAR    scoped shared Map regression/accessibility work and maintenance only
-BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
-WAIT   Kick K3 production runtime connection until K2
+NEXT   Kick K3 production runtime connection — separate authorization required
 WAIT   Kick KUI3b real production-connected proof until K3
 BLOCK  Kick K4 canonical /kick/map/ activation pending separate authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
