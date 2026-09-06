@@ -15,6 +15,7 @@ on:
       - 'apps/web/scripts/kick-stream-map-preview-browser-audit.mjs'
       - 'apps/web/scripts/kick-stream-map-kui3b-production-browser-proof.mjs'
       - 'apps/web/vite.config.ts'
+      - 'docs/audits/kick-stream-map-k4-preactivation-readiness-2026-09-06.json'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/kick-stream-map-country-response-core.mjs'
@@ -23,6 +24,7 @@ on:
       - 'scripts/verify-kick-stream-map-stable-id-direct-persistence.mjs'
       - 'scripts/verify-kick-stream-map-k3-runtime-connection.mjs'
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
+      - 'scripts/verify-kick-stream-map-k4-preactivation-readiness.mjs'
       - 'scripts/verify-kick-stream-map-ui-preview.mjs'
       - 'scripts/verify-kick-stream-map-ui-country-preview.mjs'
       - 'scripts/verify-kick-stream-map-ui-kui3a-fixtures.mjs'
@@ -41,6 +43,7 @@ on:
       - 'apps/web/scripts/kick-stream-map-preview-browser-audit.mjs'
       - 'apps/web/scripts/kick-stream-map-kui3b-production-browser-proof.mjs'
       - 'apps/web/vite.config.ts'
+      - 'docs/audits/kick-stream-map-k4-preactivation-readiness-2026-09-06.json'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/kick-stream-map-country-response-core.mjs'
@@ -49,6 +52,7 @@ on:
       - 'scripts/verify-kick-stream-map-stable-id-direct-persistence.mjs'
       - 'scripts/verify-kick-stream-map-k3-runtime-connection.mjs'
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
+      - 'scripts/verify-kick-stream-map-k4-preactivation-readiness.mjs'
       - 'scripts/verify-kick-stream-map-ui-preview.mjs'
       - 'scripts/verify-kick-stream-map-ui-country-preview.mjs'
       - 'scripts/verify-kick-stream-map-ui-kui3a-fixtures.mjs'
@@ -72,6 +76,8 @@ jobs:
         run: node scripts/verify-kick-stream-map-k3-runtime-connection.mjs
       - name: Verify Kick Country public activation gate
         run: node scripts/verify-kick-stream-map-country-public-readiness.mjs
+      - name: Verify Kick K4 pre-activation readiness
+        run: node scripts/verify-kick-stream-map-k4-preactivation-readiness.mjs
       - name: Verify Kick Map UI preview remains non-public and fail closed
         run: node scripts/verify-kick-stream-map-ui-preview.mjs
       - name: Verify Kick Country aggregate preview renderer
