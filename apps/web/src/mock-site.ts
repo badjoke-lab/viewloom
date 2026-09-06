@@ -48,7 +48,7 @@ async function hydrateLiveStatus(): Promise<void> {
   for (const [key, payload] of results) updateProviderCopy(key, payload)
   const states = results.map(([, payload]) => String(payload?.state ?? '').toLowerCase())
   const freshCount = states.filter((state) => state === 'fresh').length
-  const availableCount = states.filter((state) => state === 'fresh' || state === 'partial').length
+  const availableCount = states.filter((state) => state === 'fresh' || state === 'partial' || state === 'empty').length
   const allFresh = freshCount === results.length
   const text = allFresh ? 'Collectors healthy' : availableCount > 0 ? 'Collectors partially fresh' : 'Collector status unavailable'
   const state = allFresh ? 'fresh' : availableCount > 0 ? 'partial' : 'unavailable'
