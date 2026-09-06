@@ -46,9 +46,12 @@ async function hydrateLiveStatus(): Promise<void> {
   const providers: Array<'twitch' | 'kick'> = activeProvider ? [activeProvider] : ['twitch', 'kick']
   const results = await Promise.all(providers.map(async (key) => [key, await fetchStatus(key)] as const))
   for (const [key, payload] of results) updateProviderCopy(key, payload)
-  const freshCount = results.filter(([, payload]) => String(payload?.state ?? '').toLowerCase() === 'fresh').length
-  const text = freshCount === results.length ? 'Collectors healthy' : freshCount > 0 ? 'Collectors partially fresh' : 'Collector status unavailable'
-  const state = freshCount === results.length ? 'fresh' : freshCount > 0 ? 'partial' : 'unavailable'
+  const states = results.map(([, payload]) => String(payload?.state ?? '').toLowerCase())
+  const freshCount = states.filter((state) => state === 'fresh').length
+  const availableCount = states.filter((state) => state === 'fresh' || state === 'partial').length
+  const allFresh = freshCount === results.length
+  const text = allFresh ? 'Collectors healthy' : availableCount > 0 ? 'Collectors partially fresh' : 'Collector status unavailable'
+  const state = allFresh ? 'fresh' : availableCount > 0 ? 'partial' : 'unavailable'
   document.querySelectorAll<HTMLElement>('.status-inline').forEach((node) => {
     setSharedShellStatus(node, `${text} · 5m cadence`, state)
   })
