@@ -7,6 +7,7 @@ const unavailableTextIds = [
   'stream-map-strip-updated',
   'stream-map-strip-coverage',
   'stream-map-population-summary',
+  'stream-map-population-state',
   'stream-map-card-mapped',
   'stream-map-card-viewers',
   'stream-map-card-excluded',
@@ -66,6 +67,15 @@ function clearStaleDataState(): void {
 
   for (const marker of document.querySelectorAll<HTMLElement>('.stream-map-country-marker')) marker.remove()
   document.documentElement.dataset.streamMapDataState = 'unavailable'
+
+  // The compact unmapped summary is maintained by a separate presentation
+  // observer. Run after its mutation pass so the data-error state never renders
+  // awkward stale-derived copy such as "Unavailable unmapped".
+  queueMicrotask(() => {
+    if (document.documentElement.dataset.streamMapDataState !== 'unavailable') return
+    const compactSummary = document.querySelector<HTMLElement>('[data-unmapped-compact-summary]')
+    if (compactSummary) compactSummary.textContent = 'Unmapped accounting unavailable'
+  })
 }
 
 function syncDataState(): void {
