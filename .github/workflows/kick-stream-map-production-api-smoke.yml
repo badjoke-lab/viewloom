@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - 'apps/web/functions/api/kick-stream-map.ts'
+      - 'apps/web/functions/api/kick-stream-map-country-runtime-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-reviewed-country-runtime-data.mjs'
       - '.github/workflows/kick-stream-map-production-api-smoke.yml'
   push:
     branches: [main]
@@ -14,6 +17,8 @@ on:
       - 'apps/web/functions/api/kick-stream-map-public-adapter-core.d.mts'
       - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.mjs'
       - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.d.mts'
+      - 'apps/web/functions/api/kick-stream-map-country-runtime-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-reviewed-country-runtime-data.mjs'
       - '.github/workflows/deploy-web-pages.yml'
       - '.github/workflows/kick-stream-map-production-api-smoke.yml'
   workflow_dispatch:
@@ -30,7 +35,7 @@ concurrency:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
     env:
       ORIGIN: https://www.viewloom.net
     steps:
@@ -75,42 +80,95 @@ jobs:
           jq -e '.schema == "viewloom-deployment-v1" and .environment == "production" and .branch == "main" and (.commit_sha | type == "string" and length > 0)' deployment.json >/dev/null
           cat deployment.json
 
-      - name: Verify production Kick K2 stable identity and fail-closed API
+      - name: Verify currently deployed Kick API remains safely gated during PR
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for attempt in {1..30}; do
+            curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/kick-stream-map?production-smoke=$GITHUB_RUN_ID&attempt=$attempt" -o kick-stream-map.json
+            if jq -e '
+              .platform == "kick" and
+              .provider == "kick" and
+              .source == "real" and
+              .geographyMode == "country" and
+              .publicActivationAuthorized == false and
+              .identity.stableKey == "broadcaster_user_id" and
+              .identity.slugIsStableIdentity == false and
+              .semantics.twitchEvidenceReuseAllowed == false and
+              .semantics.providerAggregationAllowed == false and
+              .semantics.cityInferenceAllowed == false and
+              .semantics.currentLocationPromotionAllowed == false and
+              (
+                (.version == "viewloom-kick-stream-map-public-adapter-v0.1" and .state == "blocked_reviewed_evidence") or
+                (.version == "viewloom-kick-stream-map-country-runtime-v0.1" and (.state == "blocked_public_activation" or .state == "blocked_stable_identity"))
+              )
+            ' kick-stream-map.json >/dev/null; then
+              break
+            fi
+            sleep 10
+          done
+
+          jq -e '
+            .publicActivationAuthorized == false and
+            ([paths | .[-1] | tostring | select(. == "stableKickUserId" or . == "broadcaster_user_id")] | length) == 0
+          ' kick-stream-map.json >/dev/null
+          jq '{version, implementationState, state, publicActivationAuthorized, coverage, identity, activation, semantics}' kick-stream-map.json
+
+      - name: Verify production Kick K3 runtime connection and K4 block
+        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
 
           observed=0
           stable=0
+          reviewed=0
+          mapped=0
           state=unknown
           for attempt in {1..60}; do
             curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/kick-stream-map?production-smoke=$GITHUB_RUN_ID&attempt=$attempt" -o kick-stream-map.json
             observed="$(jq -r '.coverage.observedStreams // 0' kick-stream-map.json)"
             stable="$(jq -r '.coverage.stableIdentityStreams // 0' kick-stream-map.json)"
+            reviewed="$(jq -r '.coverage.reviewedIdentityStreams // 0' kick-stream-map.json)"
+            mapped="$(jq -r '.coverage.mappedStreams // 0' kick-stream-map.json)"
             state="$(jq -r '.state // "unknown"' kick-stream-map.json)"
-            echo "Kick K2 production attempt $attempt/60: state=$state observed=$observed stable_identity=$stable"
-            if [ "$observed" -gt 0 ] && [ "$stable" -gt 0 ] && [ "$state" = 'blocked_reviewed_evidence' ]; then
+            echo "Kick K3 production attempt $attempt/60: state=$state observed=$observed stable=$stable reviewed=$reviewed mapped=$mapped"
+            if [ "$observed" -gt 0 ] && [ "$stable" -eq "$observed" ] && [ "$state" = 'blocked_public_activation' ]; then
               break
             fi
             sleep 10
           done
 
-          jq '{version, platform, provider, sourceMode, updatedAt, state, publicActivationAuthorized, coverage, identity, activation, semantics}' kick-stream-map.json
+          jq '{version, implementationState, platform, provider, sourceMode, updatedAt, state, publicActivationAuthorized, coverage, identity, activation, semantics}' kick-stream-map.json
 
           jq -e '
-            .version == "viewloom-kick-stream-map-public-adapter-v0.1" and
+            .version == "viewloom-kick-stream-map-country-runtime-v0.1" and
+            .implementationState == "reviewed_country_runtime_connected" and
             .platform == "kick" and
             .provider == "kick" and
             .source == "real" and
             .geographyMode == "country" and
             .publicActivationAuthorized == false and
-            .activation.publicCountryActivationReady == false and
+            .state == "blocked_public_activation" and
+            .activation.publicCountryActivationReady == true and
+            (.activation.blockers | index("public_country_activation_not_authorized")) != null and
+            (.activation.blockers | index("reviewed_kick_country_evidence_runtime_not_connected")) == null and
             .identity.stableKey == "broadcaster_user_id" and
             .identity.slugIsStableIdentity == false and
             .coverage.observedStreams > 0 and
-            .coverage.stableIdentityStreams > 0 and
-            .coverage.stableIdentityStreams <= .coverage.observedStreams and
-            .identity.stableIdentityStreams == .coverage.stableIdentityStreams and
+            .coverage.stableIdentityStreams == .coverage.observedStreams and
+            .coverage.reviewedEvidenceCatalogSize == 100 and
+            .coverage.reviewedIdentityStreams >= 0 and
+            .coverage.unreviewedStableIdentityStreams >= 0 and
+            .coverage.reconciliation.passes == true and
+            .coverage.reconciliation.selectedPopulation == .coverage.observedStreams and
+            .coverage.reconciliation.reconciledPopulation == .coverage.observedStreams and
+            .semantics.stableIdentity == "broadcaster_user_id" and
+            .semantics.slugIsStableIdentity == false and
+            .semantics.stableIdentityPublished == false and
+            .semantics.reviewedEvidenceRuntimeConnected == true and
             .semantics.twitchEvidenceReuseAllowed == false and
             .semantics.twitchCreatorKeyReuseAllowed == false and
             .semantics.providerAggregationAllowed == false and
@@ -119,21 +177,12 @@ jobs:
             .semantics.currentLocationPromotionAllowed == false and
             .semantics.preciseAddressAllowed == false and
             .semantics.preciseCoordinatesAllowed == false and
-            .semantics.geographyPublishedWhileActivationBlocked == false and
-            .coverage.mappedStreams == 0 and
-            .coverage.mappedViewers == 0 and
-            .coverage.mappedCountryCount == 0 and
-            .coverage.unmappedStreams == .coverage.observedStreams and
-            (.mappedStreams | type == "array" and length == 0) and
-            (.unmappedStreams | type == "array") and
-            ([.unmappedStreams[] | has("countryCode") or has("stableKickUserId") or has("broadcaster_user_id")] | any | not) and
-            .state == "blocked_reviewed_evidence" and
-            (.activation.blockers | index("reviewed_kick_country_evidence_runtime_not_connected")) != null and
-            (.activation.blockers | index("public_country_activation_not_authorized")) != null
+            ([paths | .[-1] | tostring | select(. == "stableKickUserId" or . == "broadcaster_user_id")] | length) == 0 and
+            ([paths | .[-1] | tostring | select(. == "city" or . == "latitude" or . == "longitude" or . == "coordinates" or . == "currentLocation")] | length) == 0 and
+            ([.mappedStreams[]? | select(.geography.state != "mapped" or (.geography.countryCode | test("^[A-Z]{2}$") | not))] | length) == 0
           ' kick-stream-map.json >/dev/null
 
-          mapped="$(jq -r '.coverage.mappedStreams' kick-stream-map.json)"
-          echo "Kick Stream Map K2 production proof: state=$state observed=$observed stable_identity=$stable mapped=$mapped"
+          echo "Kick Stream Map K3 production proof: state=$state observed=$observed stable=$stable reviewed=$reviewed mapped=$mapped"
 
       - name: Upload production smoke evidence
         if: always()
