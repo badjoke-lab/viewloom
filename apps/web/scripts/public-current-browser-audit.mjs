@@ -52,6 +52,8 @@ try {
     focusFailures: evidence.scenarios.filter((item) => !item.focus.moved).length,
     unlabeledControlScenarios: evidence.scenarios.filter((item) => item.unlabeledControls.length > 0).length,
     legalMobileTargetFailures: evidence.scenarios.filter((item) => item.profile === 'static_legal' && item.viewport.width <= 390 && item.smallActionTargets.length > 0).length,
+    twitchHomeStreamMapLinkScenarios: evidence.scenarios.filter((item) => item.route === '/twitch/' && item.providerHomeStreamMapLinks.some((link) => link.href === '/twitch/map/' && link.visible)).length,
+    kickHomeStreamMapLinkScenarios: evidence.scenarios.filter((item) => item.route === '/kick/' && item.providerHomeStreamMapLinks.some((link) => link.href === '/kick/map/')).length,
   }
   evidence.result = evidence.violations.length === 0 ? 'pass' : 'fail'
   await writeFile(`${outputRoot}/evidence.json`, `${JSON.stringify(evidence, null, 2)}\n`)
@@ -117,6 +119,13 @@ async function auditRoute(browser, route, viewport) {
           || ''
         return { tag: node.tagName.toLowerCase(), name, width: Math.round(rect.width), height: Math.round(rect.height) }
       })
+    const providerHomeStreamMapLinks = Array.from(document.querySelectorAll('a[href]'))
+      .map((node) => ({
+        href: node.getAttribute('href') ?? '',
+        text: node.textContent?.trim() ?? '',
+        visible: isVisible(node),
+      }))
+      .filter((item) => item.href === '/twitch/map/' || item.href === '/kick/map/')
     return {
       title: document.title,
       canonical: document.querySelector('link[rel="canonical"]')?.getAttribute('href') ?? null,
@@ -124,6 +133,7 @@ async function auditRoute(browser, route, viewport) {
       overflow: Math.max(0, body.scrollWidth - body.clientWidth),
       unlabeledControls: interactive.filter((item) => !item.name).slice(0, 20),
       smallActionTargets: interactive.filter((item) => item.height > 0 && item.height < 44).slice(0, 20),
+      providerHomeStreamMapLinks,
     }
 
     function isVisible(node) {
@@ -167,6 +177,18 @@ async function auditRoute(browser, route, viewport) {
   if (route.provider === 'portal' && expectedApis.length === 0 && apiRequests.length > 0) violations.push(`provider-neutral route issued API requests: ${apiRequests.join(', ')}`)
   if (route.profile === 'static_legal' && viewport.width <= 390 && facts.smallActionTargets.length > 0) violations.push(`legal mobile action targets below 44px: ${JSON.stringify(facts.smallActionTargets)}`)
 
+  if (route.route === '/twitch/') {
+    const streamMapLink = facts.providerHomeStreamMapLinks.find((link) => link.href === '/twitch/map/')
+    if (!streamMapLink) violations.push('Twitch Home missing /twitch/map/ entry')
+    else {
+      if (!streamMapLink.visible) violations.push('Twitch Home /twitch/map/ entry is not visible')
+      if (!/Stream Map/i.test(streamMapLink.text)) violations.push(`Twitch Home /twitch/map/ label mismatch: ${streamMapLink.text}`)
+    }
+  }
+  if (route.route === '/kick/' && facts.providerHomeStreamMapLinks.some((link) => link.href === '/kick/map/')) {
+    violations.push('Kick Home exposes /kick/map/ before K4 authorization')
+  }
+
   const filename = `${safe(route.id)}--${viewport.id}.png`
   await page.screenshot({ path: `${outputRoot}/${filename}`, fullPage: true })
   await context.close()
@@ -186,6 +208,7 @@ async function auditRoute(browser, route, viewport) {
     focus,
     unlabeledControls: facts.unlabeledControls,
     smallActionTargets: facts.smallActionTargets,
+    providerHomeStreamMapLinks: facts.providerHomeStreamMapLinks,
     expectedApis,
     apiRequests,
     providerCrossing,
