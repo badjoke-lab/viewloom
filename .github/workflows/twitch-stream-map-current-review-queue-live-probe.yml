@@ -56,6 +56,7 @@ jobs:
             echo '- /helix/users requests: 0'
             echo '- Raw title/tag/language artifact: no'
             echo '- Returned identity: public Twitch stable user ID + login only for review candidates'
+            echo '- Duplicate stable IDs across paginated live pages: first-observed row only; later overlap rows dropped'
             echo '- Automatic Current acceptance: no'
             echo '- Public Current / IRL placement: no'
             echo '- Home/Base mutation: no'
@@ -179,6 +180,7 @@ jobs:
             (.result.sampleSize > 0 and .result.sampleSize <= 300) and
             .result.stableIdentity == "twitchUserId" and
             .result.stableIdentityUnique == true and
+            (.result.duplicateStableIdentityRowsDropped >= 0) and
             .result.apiRequests.token == 1 and
             (.result.apiRequests.streams > 0 and .result.apiRequests.streams <= 3) and
             .result.apiRequests.users == 0 and
@@ -209,8 +211,8 @@ jobs:
             if [[ -f "$ARTIFACT_DIR/post-diagnostic.json" ]]; then
               jq -r '"- POST HTTP: \(.httpCode)\n- curl exit: \(.curlExit)\n- response ok: \(.response.ok)\n- error class: \(.response.errorClass // "none")\n- error: \(.response.error // "none")"' "$ARTIFACT_DIR/post-diagnostic.json"
             fi
-            if [[ -f "$ARTIFACT_DIR/review-queue.json" ]]; then
-              jq -r '"- Population measured: \(.result.sampleSize)\n- Reviewable candidates: \(.result.review.summary.reviewableCandidates)\n- Future/planned travel rejected: \(.result.review.summary.rejectedFutureTravel)\n- Candidate conflicts: \(.result.review.summary.conflictingCandidates)\n- Invalid identity rows: \(.result.review.summary.invalidIdentity)\n- Automatic acceptance authorized: \(.result.decision.acceptanceAuthorized)\n- Public Current placement authorized: \(.result.decision.publicCurrentPlacementAuthorized)"' "$ARTIFACT_DIR/review-queue.json"
+            if [[ -f "$ARTIFACT_DIR/review-queue.json" ]] && jq -e '.ok == true and ((.result.review // null) | type == "object")' "$ARTIFACT_DIR/review-queue.json" >/dev/null 2>&1; then
+              jq -r '"- Population measured: \(.result.sampleSize)\n- Unique stable identities: \(.result.sampleSize)\n- Duplicate stable-ID rows dropped: \(.result.duplicateStableIdentityRowsDropped)\n- Reviewable candidates: \(.result.review.summary.reviewableCandidates)\n- Future/planned travel rejected: \(.result.review.summary.rejectedFutureTravel)\n- Candidate conflicts: \(.result.review.summary.conflictingCandidates)\n- Invalid identity rows: \(.result.review.summary.invalidIdentity)\n- Automatic acceptance authorized: \(.result.decision.acceptanceAuthorized)\n- Public Current placement authorized: \(.result.decision.publicCurrentPlacementAuthorized)"' "$ARTIFACT_DIR/review-queue.json"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
