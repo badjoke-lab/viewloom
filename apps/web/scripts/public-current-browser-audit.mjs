@@ -54,6 +54,8 @@ try {
     legalMobileTargetFailures: evidence.scenarios.filter((item) => item.profile === 'static_legal' && item.viewport.width <= 390 && item.smallActionTargets.length > 0).length,
     twitchHomeStreamMapLinkScenarios: evidence.scenarios.filter((item) => item.route === '/twitch/' && item.providerHomeStreamMapLinks.some((link) => link.href === '/twitch/map/' && link.visible)).length,
     kickHomeStreamMapLinkScenarios: evidence.scenarios.filter((item) => item.route === '/kick/' && item.providerHomeStreamMapLinks.some((link) => link.href === '/kick/map/')).length,
+    twitchFeatureTabStreamMapLinkScenarios: evidence.scenarios.filter((item) => item.provider === 'twitch' && item.profile !== 'provider_home' && item.featureTabStreamMapLinks.some((link) => link.href === '/twitch/map/' && link.visible)).length,
+    kickFeatureTabStreamMapLinkScenarios: evidence.scenarios.filter((item) => item.provider === 'kick' && item.profile !== 'provider_home' && item.featureTabStreamMapLinks.some((link) => link.href === '/kick/map/')).length,
   }
   evidence.result = evidence.violations.length === 0 ? 'pass' : 'fail'
   await writeFile(`${outputRoot}/evidence.json`, `${JSON.stringify(evidence, null, 2)}\n`)
@@ -126,6 +128,15 @@ async function auditRoute(browser, route, viewport) {
         visible: isVisible(node),
       }))
       .filter((item) => item.href === '/twitch/map/' || item.href === '/kick/map/')
+    const featureTabStreamMapLinks = Array.from(document.querySelectorAll('.feature-tabs a[href]'))
+      .map((node) => ({
+        href: node.getAttribute('href') ?? '',
+        text: node.textContent?.trim() ?? '',
+        visible: isVisible(node),
+        active: node.classList.contains('active'),
+        current: node.getAttribute('aria-current'),
+      }))
+      .filter((item) => item.href === '/twitch/map/' || item.href === '/kick/map/')
     return {
       title: document.title,
       canonical: document.querySelector('link[rel="canonical"]')?.getAttribute('href') ?? null,
@@ -134,6 +145,7 @@ async function auditRoute(browser, route, viewport) {
       unlabeledControls: interactive.filter((item) => !item.name).slice(0, 20),
       smallActionTargets: interactive.filter((item) => item.height > 0 && item.height < 44).slice(0, 20),
       providerHomeStreamMapLinks,
+      featureTabStreamMapLinks,
     }
 
     function isVisible(node) {
@@ -189,6 +201,22 @@ async function auditRoute(browser, route, viewport) {
     violations.push('Kick Home exposes /kick/map/ before K4 authorization')
   }
 
+  if (route.provider === 'twitch' && route.profile !== 'provider_home') {
+    const streamMapLinks = facts.featureTabStreamMapLinks.filter((link) => link.href === '/twitch/map/')
+    if (streamMapLinks.length !== 1) violations.push(`Twitch feature tabs expected one /twitch/map/ link, found ${streamMapLinks.length}`)
+    else {
+      const streamMapLink = streamMapLinks[0]
+      if (!streamMapLink.visible) violations.push('Twitch feature-tab /twitch/map/ link is not visible')
+      if (!/Stream Map/i.test(streamMapLink.text)) violations.push(`Twitch feature-tab /twitch/map/ label mismatch: ${streamMapLink.text}`)
+      if (route.route === '/twitch/map/' && (!streamMapLink.active || streamMapLink.current !== 'page')) {
+        violations.push('Twitch Stream Map feature tab is not active/current on /twitch/map/')
+      }
+    }
+  }
+  if (route.provider === 'kick' && facts.featureTabStreamMapLinks.some((link) => link.href === '/kick/map/')) {
+    violations.push('Kick feature tabs expose /kick/map/ before K4 authorization')
+  }
+
   const filename = `${safe(route.id)}--${viewport.id}.png`
   await page.screenshot({ path: `${outputRoot}/${filename}`, fullPage: true })
   await context.close()
@@ -209,6 +237,7 @@ async function auditRoute(browser, route, viewport) {
     unlabeledControls: facts.unlabeledControls,
     smallActionTargets: facts.smallActionTargets,
     providerHomeStreamMapLinks: facts.providerHomeStreamMapLinks,
+    featureTabStreamMapLinks: facts.featureTabStreamMapLinks,
     expectedApis,
     apiRequests,
     providerCrossing,

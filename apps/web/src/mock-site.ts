@@ -3,9 +3,11 @@ import './features/heatmap-page/layout-mode.css'
 import './kick-coverage-ui'
 import './visualization-grammar-entry'
 import { installSharedShell, setSharedShellStatus } from './shared-shell'
+import { installTwitchStreamMapFeatureTab } from './twitch-stream-map-feature-tab'
 
 (() => {
   installSharedShell()
+  installTwitchStreamMapFeatureTab()
 
   document.querySelectorAll('[data-toggle-group]').forEach(group => {
     group.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {

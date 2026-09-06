@@ -39,6 +39,7 @@ function verifyRoute(source, provider, name) {
     `/${provider}/day-flow/`,
     `/${provider}/battle-lines/`,
     `/${provider}/history/`,
+    ...(provider === 'twitch' ? ['/twitch/map/'] : []),
     `/${provider}/status/`,
   ]
 
