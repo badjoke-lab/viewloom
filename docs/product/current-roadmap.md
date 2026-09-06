@@ -5,12 +5,12 @@ Normative specification: `docs/product/stream-map-spec-v0.7.md`
 Execution plan: `docs/product/stream-map-implementation-plan-v0.10.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `d024276a9a478e488f15f507ffb736c091b5702c`  
+Audited runtime baseline: main `f30a9b26ca8204fb7a8a9e895ad2759984cccf9f`  
 Last updated: 2026-09-06
 
 ## 1. Current milestone
 
-**Twitch Country and Twitch City are closed at their current public product boundaries. Current / IRL remains fail-closed with zero accepted temporal placements. Kick Country K1 runtime staging and the complete non-public KUI1/KUI2/KUI3a UI preparation are done through #1244. Kick production stable-ID persistence remains blocked pending explicit collector authorization, KUI3b waits for K3 real production-connected reviewed Country rows, and `/kick/map/` remains intentionally absent.**
+**Twitch Country and Twitch City are closed at their current public product boundaries. The September 6 shared Twitch Map keyboard/mobile/legend regression batch is closed through #1247. Current / IRL remains fail-closed with zero accepted temporal placements. Kick Country K1 runtime staging and the complete non-public KUI1/KUI2/KUI3a UI preparation are done through #1244. Kick production stable-ID persistence remains blocked pending explicit collector authorization, KUI3b waits for K3 real production-connected reviewed Country rows, and `/kick/map/` remains intentionally absent.**
 
 The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock.
 
@@ -18,12 +18,12 @@ The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock
 
 | Lane | Current state | Next product gate |
 | --- | --- | --- |
-| Twitch Country | closed; choropleth/UI/production proof complete; #1214 completed | scoped defects/accessibility/evidence maintenance only |
-| Twitch City | C1-C6 complete; public City activation, reviewed aggregate references/list-only fallback and production acceptance complete | scoped quality/coverage only |
+| Twitch Country | closed; choropleth/UI/production proof complete; #1214 completed; compact control/legend regression closeout #1245-#1246 complete | scoped defects/accessibility/evidence maintenance only |
+| Twitch City | C1-C6 complete; public City activation, reviewed aggregate references/list-only fallback and production acceptance complete; mobile action-target regression closeout #1247 complete | scoped quality/coverage only |
 | Kick Country runtime | K1 complete: 100/100 reviewed evidence passes the internal stable-ID staging path | K2 production `broadcaster_user_id` persistence after explicit collector authorization; K3 after K2; K4 separate public gate |
 | Kick Country UI | KUI1 #1241 + KUI2 #1242 + KUI3a #1244 complete; 10 fixture-browser scenarios pass with zero violations; production Vite/public route unchanged | KUI3b real-data proof only after K3 |
 | Current / IRL | 2026-09-05 Top300 review: 300 measured, 8 reviewed, 0 accepted, 2 unresolved true conflicts; public control disabled | fail closed; later work only on justified new evidence window or separately authorized prerequisites |
-| Shared Map UI | Twitch Country/City accepted on desktop/mobile/browser production checks; Kick pre-public browser proof now includes 390px overflow, keyboard/focus and 44px target checks | scoped regression/accessibility work |
+| Shared Map UI | #1245 geography controls + #1246 Country compact controls/legend + #1247 City mobile targets complete; desktop/mobile/browser proof retained | scoped regression/accessibility work only |
 | Reviewed-evidence maintenance | bounded maintenance only | never block Map lanes |
 
 ## 3. Twitch Country — CLOSED
@@ -196,17 +196,44 @@ Stable identity alone never clears the evidence gate. Do not repeatedly rerun th
 
 Hard boundaries: no Base/Home mutation from Current, no expired/future-early placement, no venue-as-presence by itself, no inferred travel path, no residential/GPS precision.
 
-## 7. Reviewed-evidence maintenance — maintenance only
+## 7. Shared Map UI — CURRENT REGRESSION BATCH COMPLETE
+
+The September 6 safe regression/accessibility batch is complete through #1247:
+
+```text
+#1245  geography resolution controls
+       44px targets + focus-visible
+       keyboard Country/City switching
+       URL-state / aria-pressed / Current-disabled browser proof
+
+#1246  compact Country controls + legend
+       44px geography/metric/World view/mobile controls
+       duplicate native metric select removed from keyboard path
+       active Streams/Viewers five-step log legend exposed accessibly
+       390px/1440px Chromium proof + renderer regression alignment
+
+#1247  City mobile controls
+       selected-City actions/evidence filters/population selects/MapLibre controls >=44px
+       390px City reference-point proof enumerates visible enabled targets
+```
+
+Read-only City presentation audit still shows explicit empty state, separate country-only accounting and separate Base City conflict accounting. No creator coordinates, Current placement or new geography semantics were added.
+
+The #1246 post-merge production Twitch Map browser smoke passed exact deployment resolution and real Country/City rendering. The #1247 post-merge production smoke is the current structural confirmation lane.
+
+Shared UI is now scoped maintenance/quality work only, not a serial blocker for Kick or Current prerequisites.
+
+## 8. Reviewed-evidence maintenance — maintenance only
 
 The bounded Top-20 process does not serialize Map development or authorize collector/schema/cadence/retention changes. Its wait periods never pause safe shared UI work, docs, fixtures, CI or other non-mutating preparation.
 
-## 8. Shared operational boundaries
+## 9. Shared operational boundaries
 
 Unless separately authorized, Stream Map work does not change production collector behavior, collector cadence, D1 schema/bindings, retention, backfill, automatic recurring acquisition or production data outside applicable deployment policy.
 
 Provider data remains separated. No demo geography substitutes for missing real evidence.
 
-## 9. Current execution order
+## 10. Current execution order
 
 ```text
 DONE   documentation reconciliation #1219
@@ -219,7 +246,10 @@ DONE   Kick K1 collector-independent reviewed-evidence runtime staging #1239
 DONE   Kick KUI1 fail-closed preview shell #1241
 DONE   Kick KUI2 Country aggregate preview renderer #1242
 DONE   Kick KUI3a non-mutating browser proof #1244 / run 33978336854
-PAR    safe shared Map regression/accessibility work and maintenance
+DONE   Shared Twitch geography control regression #1245
+DONE   Shared Country compact controls/legend regression #1246
+DONE   Shared City mobile target regression #1247
+PAR    scoped shared Map regression/accessibility work and maintenance only
 BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
 WAIT   Kick K3 production runtime connection until K2
 WAIT   Kick KUI3b real production-connected proof until K3
@@ -230,7 +260,7 @@ BLOCK  Current public path additionally pending fresh accepted temporal evidence
 
 CI waiting or a blocked production dependency in one lane does not pause safe work in another lane.
 
-## 10. Authoritative current records
+## 11. Authoritative current records
 
 1. `docs/operations/development-and-deployment-policy.md`
 2. `docs/product/stream-map-spec-v0.7.md`
@@ -242,7 +272,7 @@ CI waiting or a blocked production dependency in one lane does not pause safe wo
 
 Older Stream Map specs/plans and execution snapshots remain historical and cannot override this chain.
 
-## 11. Documentation synchronization rule
+## 12. Documentation synchronization rule
 
 A normative behavior change is incomplete if a known contradictory active source-of-truth document remains. Every Stream Map PR must consider spec, active plan, roadmap, schedule, lane boundaries, collector/D1/cadence/retention impact and production impact.
 

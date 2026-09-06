@@ -5,7 +5,7 @@ Normative specification: `docs/product/stream-map-spec-v0.7.md`
 Execution plan: `docs/product/stream-map-implementation-plan-v0.10.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `d024276a9a478e488f15f507ffb736c091b5702c`  
+Audited runtime baseline: main `f30a9b26ca8204fb7a8a9e895ad2759984cccf9f`  
 Last updated: 2026-09-06
 
 ## 1. Scheduling principle
@@ -179,6 +179,41 @@ Covered states: blocked stable identity, ready mixed terminal-state accounting, 
 
 KUI3a remains fixture-based non-public proof. It does not satisfy KUI3b and does not authorize K2/K3/K4.
 
+### Step 10 — Shared Twitch Map accessibility/regression closeout — COMPLETE AT CURRENT BOUNDARY
+
+Completed by PRs #1245, #1246 and #1247.
+
+Current accepted shared UI proof now includes:
+
+```text
+#1245  Country/City geography controls
+       44px minimum targets
+       explicit focus-visible state
+       keyboard geography switching
+       geography URL-state + aria-pressed verification
+       Current / IRL remains disabled
+       1440px + 390px Chromium coverage
+
+#1246  compact Country UI
+       Country geography / Streams / Viewers / World view targets hardened
+       replaced native intensity select removed from duplicate keyboard interaction
+       five-step log intensity legend exposed with active metric semantics
+       keyboard Viewers activation + legend update verified
+       mobile visible controls rejected below 44px
+       bundled/real-basemap Country renderer tests aligned to visible metric controls
+
+#1247  City mobile UI
+       selected-City actions, evidence filters, population selects and MapLibre controls hardened
+       390px City reference-point browser proof enumerates visible enabled controls
+       all measured City mobile action targets >= 44px
+```
+
+The #1246 main production Twitch Map smoke passed matching-deployment resolution and real Country/City rendering. The #1247 production smoke is the post-merge structural confirmation for the current audited baseline.
+
+Read-only City presentation re-audit also confirms the existing semantics remain explicit: no accepted City placement produces an empty state; country-only evidence remains accounted and is not promoted; Base City conflicts remain separate accounting. No new placement semantics were introduced by #1245-#1247.
+
+Shared UI returns to scoped regression/quality work only. It does not block Kick K2/K3/KUI3b/K4 or Current prerequisites.
+
 ## 3. Immediate lane — Kick Country runtime/data
 
 ### Step K1 — collector-independent reviewed-evidence runtime preparation — COMPLETE
@@ -272,19 +307,20 @@ If a later justified review produces fresh accepted temporal evidence and stable
 
 Current never becomes Base City and never survives expiry.
 
-## 6. Shared UI/accessibility lane — SAFE INDEPENDENT WORK
+## 6. Shared UI/accessibility lane — CURRENT BOUNDARY CLOSED / SAFE SCOPED WORK ONLY
 
-Safe immediate work includes:
+The concrete keyboard/focus/mobile target/legend/URL-state regressions identified in the September 6 audit are closed by #1245-#1247.
 
-- keyboard/focus verification;
-- mobile tap targets;
+Further safe scoped work may still include:
+
+- newly discovered keyboard/focus defects;
 - overflow/regression checks;
-- map/legend labels;
-- explicit empty/conflict/unmapped presentation;
-- geography URL-state verification;
+- map/legend label regressions;
+- explicit empty/conflict/unmapped presentation regressions;
+- geography URL-state regressions;
 - production/browser structural verification.
 
-Shared mechanics may be reused but provider/geography evidence models remain separate.
+These are maintenance/quality tasks, not a new serial product phase. Shared mechanics may be reused but provider/geography evidence models remain separate.
 
 ## 7. Reviewed-evidence maintenance lane
 
@@ -319,7 +355,10 @@ DONE   Kick K1 internal reviewed-evidence runtime staging #1239
 DONE   Kick KUI1 fail-closed pre-public shell #1241
 DONE   Kick KUI2 Country aggregate renderer/results #1242
 DONE   Kick KUI3a non-mutating browser proof #1244 / run 33978336854
-PAR    shared Map regression/accessibility work + maintenance
+DONE   Shared Twitch geography controls/browser proof #1245
+DONE   Shared compact Country controls/legend/browser proof #1246
+DONE   Shared City mobile targets/reference-point browser proof #1247
+PAR    scoped Map regression/accessibility work + maintenance only
 BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
 WAIT   Kick K3 production runtime connection until K2
 WAIT   Kick KUI3b real production-connected proof until K3
