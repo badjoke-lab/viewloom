@@ -72,18 +72,25 @@ function buildReviewedEvidenceIndex() {
 const REVIEWED_EVIDENCE_BY_STABLE_ID = buildReviewedEvidenceIndex()
 
 /**
- * Production K3 Country join.
+ * Production K3/K4 Country join.
  *
  * Stable Kick user IDs exist only inside this function's join. Returned rows
  * deliberately omit stable IDs and expose at most reviewed Country terminal
- * state. K4 remains a separate public activation decision.
+ * state. K4 authorization is passed explicitly and defaults to false.
  */
 export function buildKickStreamMapCountryRuntime({
   snapshotItems = [],
   updatedAt = null,
   sourceMode = 'unknown',
+  publicActivationAuthorized = false,
 } = {}) {
-  const base = buildKickStreamMapPublicAdapter({ snapshotItems, updatedAt, sourceMode })
+  const activationAuthorized = publicActivationAuthorized === true
+  const base = buildKickStreamMapPublicAdapter({
+    snapshotItems,
+    updatedAt,
+    sourceMode,
+    publicActivationAuthorized: activationAuthorized,
+  })
   const rows = Array.isArray(snapshotItems) ? snapshotItems : []
   const mappedStreams = []
   const unmappedStreams = []
@@ -180,9 +187,11 @@ export function buildKickStreamMapCountryRuntime({
     implementationState: 'reviewed_country_runtime_connected',
     state: observedStreams === 0
       ? 'empty'
-      : stableIdentityComplete
-        ? 'blocked_public_activation'
-        : 'blocked_stable_identity',
+      : !stableIdentityComplete
+        ? 'blocked_stable_identity'
+        : activationAuthorized
+          ? 'ready'
+          : 'blocked_public_activation',
     coverage: {
       ...base.coverage,
       reviewedEvidenceCatalogSize: KICK_REVIEWED_COUNTRY_RUNTIME_DATA.length,
@@ -208,7 +217,7 @@ export function buildKickStreamMapCountryRuntime({
       publicCountryActivationReady: runtimeReady,
       blockers: [
         ...(!stableIdentityComplete ? ['production_livestream_snapshot_missing_broadcaster_user_id'] : []),
-        'public_country_activation_not_authorized',
+        ...(!activationAuthorized ? ['public_country_activation_not_authorized'] : []),
       ],
     },
     mappedStreams,

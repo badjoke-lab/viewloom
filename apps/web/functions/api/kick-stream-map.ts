@@ -10,10 +10,12 @@ type SnapshotRow = {
   source_mode: string
 }
 
+const K4_PUBLIC_ACTIVATION_AUTHORIZED = true
+
 export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   if (!env.DB_KICK_HOT) {
     return Response.json({
-      ...buildKickStreamMapPublicAdapter(),
+      ...buildKickStreamMapPublicAdapter({ publicActivationAuthorized: K4_PUBLIC_ACTIVATION_AUTHORIZED }),
       state: 'not_ready',
       error: {
         code: 'kick_hot_binding_unavailable',
@@ -39,6 +41,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
         snapshotItems: [],
         updatedAt: null,
         sourceMode: 'missing',
+        publicActivationAuthorized: K4_PUBLIC_ACTIVATION_AUTHORIZED,
       }), {
         headers: { 'cache-control': 'no-store' },
       })
@@ -49,12 +52,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       snapshotItems,
       updatedAt: latest.collected_at || latest.bucket_minute,
       sourceMode: latest.source_mode,
+      publicActivationAuthorized: K4_PUBLIC_ACTIVATION_AUTHORIZED,
     }), {
       headers: { 'cache-control': 'no-store' },
     })
   } catch (error) {
     return Response.json({
-      ...buildKickStreamMapPublicAdapter(),
+      ...buildKickStreamMapPublicAdapter({ publicActivationAuthorized: K4_PUBLIC_ACTIVATION_AUTHORIZED }),
       state: 'error',
       error: {
         code: 'kick_stream_map_unavailable',

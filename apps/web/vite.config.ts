@@ -90,6 +90,7 @@ export default defineConfig(({ mode }) => ({
         kickDayFlow: 'kick/day-flow/index.html',
         kickBattleLines: 'kick/battle-lines/index.html',
         kickHistory: 'kick/history/index.html',
+        kickMap: 'kick/map/index.html',
         kickChannel: 'kick/channel/index.html',
         kickStatus: 'kick/status/index.html',
         kickWatchlist: 'kick/watchlist/index.html',

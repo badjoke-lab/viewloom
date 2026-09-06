@@ -8,9 +8,13 @@ const auditPath = 'docs/audits/kick-stream-map-k4-preactivation-readiness-2026-0
 const audit = json(auditPath)
 const adapterSource = read('apps/web/functions/api/kick-stream-map-public-adapter-core.mjs')
 const runtimeSource = read('apps/web/functions/api/kick-stream-map-country-runtime-core.mjs')
+const routeSource = read('apps/web/functions/api/kick-stream-map.ts')
 const readinessSource = read('scripts/verify-kick-stream-map-country-public-readiness.mjs')
 const viteSource = read('apps/web/vite.config.ts')
 
+// Preserve the accepted preactivation artifact as historical evidence. The
+// repository itself is now allowed to move beyond these old absence facts
+// because K4 received a separate explicit authorization after this audit.
 assert.equal(audit.schemaVersion, 'viewloom-kick-stream-map-k4-preactivation-readiness-v0.1')
 assert.equal(audit.status, 'prerequisites_complete_activation_not_authorized')
 assert.equal(audit.provider, 'kick')
@@ -61,27 +65,28 @@ assert.deepEqual(audit.currentGate.blockers, ['public_country_activation_not_aut
 assert.equal(audit.currentGate.publicKickMapPage, 'absent')
 assert.equal(audit.currentGate.productionViteInput, 'absent')
 
-assert.equal(existsSync('apps/web/kick/map/index.html'), false, 'K4 pre-activation state must not contain a public Kick Map page')
-assert.equal(existsSync('apps/web/kick/map'), false, 'K4 pre-activation state must not contain a public Kick Map directory')
-assert.equal(viteSource.includes("kickMap: 'kick/map/index.html'"), false, 'K4 pre-activation state must not add a production Kick Map Vite input')
-assert.equal(adapterSource.includes('publicActivationAuthorized: false'), true, 'Kick adapter must remain publicly blocked before K4 authorization')
-assert.equal(runtimeSource.includes("'public_country_activation_not_authorized'"), true, 'production Country runtime must retain the K4 blocker')
+assert.equal(existsSync('apps/web/kick/map/index.html'), true, 'authorized K4 cutover must contain the public Kick Map page')
+assert.equal(existsSync('apps/web/src/features/kick-stream-map/public-entry.ts'), true, 'authorized K4 cutover must contain a separate public entry')
+assert.equal(viteSource.includes("kickMap: 'kick/map/index.html'"), true, 'authorized K4 cutover must add the production Kick Map Vite input')
+assert.equal(adapterSource.includes('publicActivationAuthorized = false'), true, 'Kick adapter must remain fail-closed by default')
+assert.equal(runtimeSource.includes("...(!activationAuthorized ? ['public_country_activation_not_authorized'] : [])"), true, 'runtime must remove the K4 blocker only under explicit authorization')
 assert.equal(runtimeSource.includes('stableIdentityPublished: false'), true, 'stable Kick identity must remain internal-only')
-assert.equal(readinessSource.includes("assert.deepEqual(readiness.blockers, ['public_country_activation_not_authorized'])"), true, 'public-readiness gate must still identify K4 authorization as the only blocker')
+assert.equal(routeSource.includes('const K4_PUBLIC_ACTIVATION_AUTHORIZED = true'), true, 'public route must contain the explicit K4 authorization')
+assert.equal(readinessSource.includes('assert.equal(readiness.publicCountryActivationReady, true)'), true, 'public-readiness verifier must transition to authorized K4 state')
 
 for (const [key, value] of Object.entries(audit.invariants)) {
   if (key === 'stableIdentity') assert.equal(value, 'broadcaster_user_id')
-  else assert.equal(value, false, `${key} must remain false before K4`)
+  else assert.equal(value, false, `${key} historical invariant changed`)
 }
-for (const value of Object.values(audit.authorization)) assert.equal(value, false)
+for (const value of Object.values(audit.authorization)) assert.equal(value, false, 'historical preactivation authorization artifact changed')
 
 console.log(JSON.stringify({
   ok: true,
   schemaVersion: audit.schemaVersion,
-  prerequisites: ['K2', 'K3', 'KUI3b'],
-  productionSample: audit.prerequisites.kui3b.productionSample,
-  blocker: audit.currentGate.blockers[0],
-  publicKickMapPage: audit.currentGate.publicKickMapPage,
-  productionViteInput: audit.currentGate.productionViteInput,
-  k4Authorized: audit.currentGate.k4Authorized,
+  historicalPrerequisites: ['K2', 'K3', 'KUI3b'],
+  historicalBlocker: audit.currentGate.blockers[0],
+  currentPublicKickMapPage: 'present',
+  currentProductionViteInput: 'present',
+  currentK4Authorized: true,
+  stableIdentityPublished: false,
 }, null, 2))

@@ -72,7 +72,7 @@ const response = buildKickStreamMapCountryRuntime({
 assert.equal(response.version, KICK_STREAM_MAP_COUNTRY_RUNTIME_VERSION)
 assert.equal(response.provider, 'kick')
 assert.equal(response.platform, 'kick')
-assert.equal(response.publicActivationAuthorized, false)
+assert.equal(response.publicActivationAuthorized, false, 'K3 runtime must remain fail-closed by default')
 assert.equal(response.state, 'blocked_public_activation')
 assert.equal(response.implementationState, 'reviewed_country_runtime_connected')
 assert.equal(response.activation.publicCountryActivationReady, true)
@@ -98,43 +98,57 @@ assert.equal(response.unmappedStreams.some((row) => row.geography.reason === 'no
 assert.equal(response.unmappedStreams.some((row) => row.geography.reason === 'no_reviewed_kick_evidence'), true)
 assert.equal(response.excludedStreams[0].geography.reason, 'reviewed_nonperson_exclusion')
 
-const publicKeys = collectKeys(response)
-for (const forbiddenKey of ['stableKickUserId', 'broadcaster_user_id']) {
-  assert.equal(publicKeys.has(forbiddenKey), false, `public response must omit key ${forbiddenKey}`)
-}
-for (const forbiddenKey of ['city', 'latitude', 'longitude', 'coordinates', 'currentLocation', 'evidence', 'sourceUrl']) {
-  assert.equal(publicKeys.has(forbiddenKey), false, `public response must omit key ${forbiddenKey}`)
-}
+const authorized = buildKickStreamMapCountryRuntime({
+  snapshotItems,
+  updatedAt: '2026-09-06T00:00:00.000Z',
+  sourceMode: 'official',
+  publicActivationAuthorized: true,
+})
+assert.equal(authorized.publicActivationAuthorized, true)
+assert.equal(authorized.state, 'ready')
+assert.equal(authorized.activation.publicCountryActivationReady, true)
+assert.deepEqual(authorized.activation.blockers, [])
+assert.deepEqual(authorized.coverage, response.coverage, 'K4 authorization must not alter reviewed accounting')
+assert.deepEqual(authorized.mappedStreams, response.mappedStreams, 'K4 authorization must not alter reviewed geography rows')
 
-assert.equal(response.semantics.stableIdentity, 'broadcaster_user_id')
-assert.equal(response.semantics.slugIsStableIdentity, false)
-assert.equal(response.semantics.twitchEvidenceReuseAllowed, false)
-assert.equal(response.semantics.providerAggregationAllowed, false)
-assert.equal(response.semantics.automaticGeographyPromotionAllowed, false)
-assert.equal(response.semantics.reviewedEvidenceRuntimeConnected, true)
-assert.equal(response.semantics.stableIdentityPublished, false)
-assert.equal(response.semantics.cityInferenceAllowed, false)
-assert.equal(response.semantics.currentLocationPromotionAllowed, false)
-assert.equal(response.semantics.preciseAddressAllowed, false)
-assert.equal(response.semantics.preciseCoordinatesAllowed, false)
+for (const candidate of [response, authorized]) {
+  const publicKeys = collectKeys(candidate)
+  for (const forbiddenKey of ['stableKickUserId', 'broadcaster_user_id']) {
+    assert.equal(publicKeys.has(forbiddenKey), false, `public response must omit key ${forbiddenKey}`)
+  }
+  for (const forbiddenKey of ['city', 'latitude', 'longitude', 'coordinates', 'currentLocation', 'evidence', 'sourceUrl']) {
+    assert.equal(publicKeys.has(forbiddenKey), false, `public response must omit key ${forbiddenKey}`)
+  }
+
+  assert.equal(candidate.semantics.stableIdentity, 'broadcaster_user_id')
+  assert.equal(candidate.semantics.slugIsStableIdentity, false)
+  assert.equal(candidate.semantics.twitchEvidenceReuseAllowed, false)
+  assert.equal(candidate.semantics.providerAggregationAllowed, false)
+  assert.equal(candidate.semantics.automaticGeographyPromotionAllowed, false)
+  assert.equal(candidate.semantics.reviewedEvidenceRuntimeConnected, true)
+  assert.equal(candidate.semantics.stableIdentityPublished, false)
+  assert.equal(candidate.semantics.cityInferenceAllowed, false)
+  assert.equal(candidate.semantics.currentLocationPromotionAllowed, false)
+  assert.equal(candidate.semantics.preciseAddressAllowed, false)
+  assert.equal(candidate.semantics.preciseCoordinatesAllowed, false)
+}
 
 const missingStable = buildKickStreamMapCountryRuntime({
   snapshotItems: [{ slug: 'missing', displayName: 'Missing', viewer_count: 1, broadcaster_user_id: null }],
+  publicActivationAuthorized: true,
 })
-assert.equal(missingStable.state, 'blocked_stable_identity')
+assert.equal(missingStable.state, 'blocked_stable_identity', 'K4 must not override incomplete stable identity')
 assert.equal(missingStable.activation.publicCountryActivationReady, false)
 assert.deepEqual(missingStable.activation.blockers, [
   'production_livestream_snapshot_missing_broadcaster_user_id',
-  'public_country_activation_not_authorized',
 ])
 assert.equal(missingStable.coverage.reconciliation.passes, true)
 
 const routeSource = fs.readFileSync('apps/web/functions/api/kick-stream-map.ts', 'utf8')
 assert.ok(routeSource.includes("from './kick-stream-map-country-runtime-core.mjs'"))
 assert.ok(routeSource.includes('buildKickStreamMapCountryRuntime({'))
-
-assert.equal(fs.existsSync('apps/web/kick/map/index.html'), false)
-assert.equal(fs.existsSync('apps/web/kick/map'), false)
+assert.ok(routeSource.includes('const K4_PUBLIC_ACTIVATION_AUTHORIZED = true'))
+assert.equal(fs.existsSync('apps/web/kick/map/index.html'), true)
 
 console.log(JSON.stringify({
   ok: true,
@@ -146,7 +160,8 @@ console.log(JSON.stringify({
   conflictUnmapped: 0,
   routeConnected: true,
   stableIdentityPublished: false,
-  publicActivationAuthorized: response.publicActivationAuthorized,
-  publicCountryActivationReady: response.activation.publicCountryActivationReady,
-  publicPagePresent: false,
+  defaultPublicActivationAuthorized: response.publicActivationAuthorized,
+  authorizedPublicActivationAuthorized: authorized.publicActivationAuthorized,
+  authorizedState: authorized.state,
+  publicPagePresent: true,
 }, null, 2))

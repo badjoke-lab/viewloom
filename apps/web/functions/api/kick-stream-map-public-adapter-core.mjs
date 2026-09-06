@@ -26,12 +26,19 @@ function ratio(numerator, denominator) {
 /**
  * Public, fail-closed projection for the current Kick Stream Map runtime path.
  *
- * The adapter deliberately does not map geography yet. A retained
+ * The adapter deliberately does not map geography by itself. A retained
  * broadcaster_user_id is only identity readiness; it is never treated as
  * reviewed location evidence. Slug/display metadata is never promoted to a
- * stable identity or geography signal.
+ * stable identity or geography signal. K4 authorization is supplied
+ * explicitly by the route and defaults to false.
  */
-export function buildKickStreamMapPublicAdapter({ snapshotItems = [], updatedAt = null, sourceMode = 'unknown' } = {}) {
+export function buildKickStreamMapPublicAdapter({
+  snapshotItems = [],
+  updatedAt = null,
+  sourceMode = 'unknown',
+  publicActivationAuthorized = false,
+} = {}) {
+  const activationAuthorized = publicActivationAuthorized === true
   const rows = Array.isArray(snapshotItems) ? snapshotItems : []
   const normalized = rows.map((row) => {
     const slug = text(row?.slug).toLowerCase()
@@ -81,7 +88,7 @@ export function buildKickStreamMapPublicAdapter({ snapshotItems = [], updatedAt 
     sourceMode: text(sourceMode) || 'unknown',
     geographyMode: 'country',
     implementationState: 'public_adapter_staged',
-    publicActivationAuthorized: false,
+    publicActivationAuthorized: activationAuthorized,
     state,
     updatedAt: text(updatedAt) || null,
     coverage: {
@@ -110,7 +117,7 @@ export function buildKickStreamMapPublicAdapter({ snapshotItems = [], updatedAt 
       blockers: [
         ...(missingStableIdentityStreams > 0 ? ['production_livestream_snapshot_missing_broadcaster_user_id'] : []),
         'reviewed_kick_country_evidence_runtime_not_connected',
-        'public_country_activation_not_authorized',
+        ...(!activationAuthorized ? ['public_country_activation_not_authorized'] : []),
       ],
     },
     mappedStreams: [],

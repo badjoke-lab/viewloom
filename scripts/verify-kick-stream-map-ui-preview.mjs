@@ -82,21 +82,23 @@ assert.throws(() => buildKickStreamMapPreviewModel({ provider: 'twitch', geograp
 assert.throws(() => buildKickStreamMapPreviewModel({ provider: 'kick', geographyMode: 'city' }), /Country only/)
 
 const viteConfig = readFileSync('apps/web/vite.config.ts', 'utf8')
-assert.equal(viteConfig.includes("kick/map/index.html"), false, 'Kick Map must not enter the production Vite input in UI-P1')
-assert.equal(existsSync('apps/web/kick/map/index.html'), false, 'UI-P1 must not create the public /kick/map/ page')
+assert.equal(viteConfig.includes("kickMap: 'kick/map/index.html'"), true, 'K4 must keep the public Kick Map in production Vite inputs')
+assert.equal(existsSync('apps/web/kick/map/index.html'), true, 'K4 must keep the public /kick/map/ page')
+assert.equal(existsSync('apps/web/src/features/kick-stream-map/public-entry.ts'), true, 'K4 public page must use a separate public entry')
 
 const previewHtml = readFileSync('apps/web/preview/kick-stream-map/index.html', 'utf8')
 assert.ok(previewHtml.includes('PREVIEW ONLY'))
 assert.ok(previewHtml.includes('noindex,nofollow'))
-assert.equal(previewHtml.includes('rel="canonical"'), false, 'preview must not claim a public canonical route')
-assert.equal(previewHtml.includes('href="/kick/map/"'), false, 'preview must not add a public Kick Map navigation target')
+assert.equal(previewHtml.includes('rel="canonical"'), false, 'preview must not claim the public canonical route')
+assert.equal(previewHtml.includes('href="/kick/map/"'), false, 'preview must not turn into public navigation after K4')
 assert.ok(previewHtml.includes('/api/kick-stream-map'), 'copy must name the real staged API contract')
 
 console.log(JSON.stringify({
   ok: true,
   previewOnly: true,
-  publicRouteCreated: false,
-  productionViteInputChanged: false,
+  publicRouteCreated: true,
+  productionViteInputPresent: true,
+  previewPublicNavigationTarget: false,
   blockedGeographySuppressed: true,
   dualGateRequired: true,
   stableIdentity: 'broadcaster_user_id',

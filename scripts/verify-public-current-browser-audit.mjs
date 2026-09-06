@@ -13,16 +13,17 @@ const expectedRoutes = routeFiles
   .filter((route) => route.route !== '*')
 const twitchFeatureRoutes = expectedRoutes.filter((route) => route.provider === 'twitch' && route.profile !== 'provider_home')
 const kickFeatureRoutes = expectedRoutes.filter((route) => route.provider === 'kick' && route.profile !== 'provider_home')
+const kickNonMapFeatureRoutes = kickFeatureRoutes.filter((route) => route.route !== '/kick/map/')
 
 assert.equal(evidence.schema, 'viewloom-public-current-browser-audit-v1')
 assert.equal(evidence.phase, 'Phase 12')
 assert.equal(evidence.workstream, 'R12A')
 assert.equal(evidence.result, 'pass')
 assert.equal(evidence.counts.routes, expectedRoutes.length)
-assert.equal(evidence.counts.routes, 26)
+assert.equal(evidence.counts.routes, 27)
 assert.equal(evidence.counts.viewports, 4)
 assert.equal(evidence.counts.scenarios, expectedRoutes.length * 4)
-assert.equal(evidence.counts.scenarios, 104)
+assert.equal(evidence.counts.scenarios, 108)
 assert.equal(evidence.counts.violations, 0)
 assert.equal(evidence.counts.providerCrossingScenarios, 0)
 assert.equal(evidence.counts.providerNeutralApiRequestScenarios, 0)
@@ -31,10 +32,10 @@ assert.equal(evidence.counts.focusFailures, 0)
 assert.equal(evidence.counts.unlabeledControlScenarios, 0)
 assert.equal(evidence.counts.legalMobileTargetFailures, 0)
 assert.equal(evidence.counts.twitchHomeStreamMapLinkScenarios, 4)
-assert.equal(evidence.counts.kickHomeStreamMapLinkScenarios, 0)
+assert.equal(evidence.counts.kickHomeStreamMapLinkScenarios, 4)
 assert.equal(evidence.counts.twitchFeatureTabStreamMapLinkScenarios, twitchFeatureRoutes.length * 4)
-assert.equal(evidence.counts.kickFeatureTabStreamMapLinkScenarios, 0)
-assert.equal(evidence.scenarios.length, 104)
+assert.equal(evidence.counts.kickFeatureTabStreamMapLinkScenarios, 4)
+assert.equal(evidence.scenarios.length, 108)
 
 for (const route of expectedRoutes) {
   const scenarios = evidence.scenarios.filter((item) => item.route === route.route)
@@ -61,11 +62,10 @@ for (const scenario of twitchHomeScenarios) {
 const kickHomeScenarios = evidence.scenarios.filter((item) => item.route === '/kick/')
 assert.equal(kickHomeScenarios.length, 4)
 for (const scenario of kickHomeScenarios) {
-  assert.equal(
-    scenario.providerHomeStreamMapLinks.some((link) => link.href === '/kick/map/'),
-    false,
-    `${scenario.id}: Kick Home must not expose /kick/map/ before K4`,
-  )
+  const streamMapLink = scenario.providerHomeStreamMapLinks.find((link) => link.href === '/kick/map/')
+  assert.ok(streamMapLink, `${scenario.id}: Kick Home Stream Map link missing after K4`)
+  assert.equal(streamMapLink.visible, true, `${scenario.id}: Kick Home Stream Map link hidden after K4`)
+  assert.match(streamMapLink.text, /Stream Map/i, `${scenario.id}: Kick Home Stream Map label`)
 }
 
 for (const route of twitchFeatureRoutes) {
@@ -83,14 +83,24 @@ for (const route of twitchFeatureRoutes) {
   }
 }
 
-for (const route of kickFeatureRoutes) {
+const kickMapScenarios = evidence.scenarios.filter((item) => item.route === '/kick/map/')
+assert.equal(kickMapScenarios.length, 4)
+for (const scenario of kickMapScenarios) {
+  const links = scenario.featureTabStreamMapLinks.filter((link) => link.href === '/kick/map/')
+  assert.equal(links.length, 1, `${scenario.id}: expected one Kick Stream Map feature-tab link`)
+  assert.equal(links[0].visible, true, `${scenario.id}: Kick Stream Map feature-tab link hidden`)
+  assert.match(links[0].text, /Stream Map/i, `${scenario.id}: Kick Stream Map feature-tab label`)
+  assert.equal(links[0].current, 'page', `${scenario.id}: Kick Stream Map tab aria-current`)
+}
+
+for (const route of kickNonMapFeatureRoutes) {
   const scenarios = evidence.scenarios.filter((item) => item.route === route.route)
   assert.equal(scenarios.length, 4, `${route.route}: expected four Kick feature scenarios`)
   for (const scenario of scenarios) {
     assert.equal(
       scenario.featureTabStreamMapLinks.some((link) => link.href === '/kick/map/'),
       false,
-      `${scenario.id}: Kick feature tabs must not expose /kick/map/ before K4`,
+      `${scenario.id}: non-Map Kick feature tab unexpectedly exposes /kick/map/`,
     )
   }
 }
@@ -102,6 +112,7 @@ console.log('- provider crossing: 0')
 console.log('- provider-neutral API requests: 0')
 console.log('- overflow/focus/unlabeled/legal mobile target failures: 0')
 console.log('- Twitch Home Stream Map link scenarios: 4/4')
+console.log('- Kick Home Stream Map link scenarios: 4/4')
 console.log(`- Twitch feature-tab Stream Map link scenarios: ${twitchFeatureRoutes.length * 4}/${twitchFeatureRoutes.length * 4}`)
-console.log('- Kick Home unauthorized Stream Map link scenarios: 0/4')
-console.log(`- Kick feature-tab unauthorized Stream Map link scenarios: 0/${kickFeatureRoutes.length * 4}`)
+console.log('- Kick Stream Map self-tab scenarios: 4/4')
+console.log(`- other Kick feature-tab Stream Map links remain absent: 0/${kickNonMapFeatureRoutes.length * 4}`)

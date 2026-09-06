@@ -20,13 +20,13 @@ function countryCode(value) {
 }
 
 /**
- * Build the Country-only visualization model from the staged Kick Country
- * response contract. This function has no coordinate semantics: it aggregates
- * only reviewed `geography.countryCode` terminal states.
+ * Build the Country-only visualization model from the Kick Country response
+ * contract. This function has no coordinate semantics: it aggregates only
+ * reviewed `geography.countryCode` terminal states.
  *
  * `allowGeography` must come from the outer readiness + explicit activation
- * gate. When false, mapped rows are deliberately discarded even if a staged
- * response contains them.
+ * gate. When false, mapped rows are deliberately discarded even if a response
+ * contains them.
  */
 export function buildKickCountryPreviewModel(response, { allowGeography = false } = {}) {
   const source = object(response)
@@ -40,11 +40,18 @@ export function buildKickCountryPreviewModel(response, { allowGeography = false 
   const reconciliation = object(coverage.reconciliation)
   const contractSafe = semantics.stableIdentity === 'broadcaster_user_id'
     && semantics.slugIsStableIdentity !== true
+    && semantics.stableIdentityPublished !== true
     && semantics.twitchEvidenceReuseAllowed !== true
+    && semantics.twitchCreatorKeyReuseAllowed !== true
     && semantics.providerAggregationAllowed !== true
     && semantics.automaticGeographyPromotionAllowed !== true
+    && semantics.cityInferenceAllowed !== true
     && semantics.cityInferenceFromCountryAllowed !== true
+    && semantics.currentLocationPromotionAllowed !== true
+    && semantics.currentLocationUsedForBasePlacement !== true
+    && semantics.preciseAddressAllowed !== true
     && semantics.preciseAddressPublished !== true
+    && semantics.preciseCoordinatesAllowed !== true
     && semantics.coordinatesPublished !== true
 
   const mapped = allowGeography && contractSafe ? rows(source.mappedStreams) : []

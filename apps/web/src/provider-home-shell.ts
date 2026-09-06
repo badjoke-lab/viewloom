@@ -16,6 +16,14 @@ export function mountProviderHome(platform: Platform): void {
     ['02 · TODAY', 'Day Flow', 'Read the day as audience terrain across observed streams.', 'day-flow', 'home-feature-dayflow', 'Loading today summary…'],
     ['03 · RIVALRY', 'Battle Lines', 'Compare observed live-stream gaps, reversals, and rivalries.', 'battle-lines', 'home-feature-battle', 'Loading current pair…'],
     ['04 · TRENDS', 'History', 'Review retained rollups, top streamers, peaks, and trends.', 'history', 'home-feature-history', 'Loading completed history…'],
+    ...(platform === 'kick' ? [[
+      '05 · WHERE',
+      'Stream Map',
+      'Explore reviewed Country geography for the current observed Kick population.',
+      'map',
+      'home-feature-map',
+      'Reviewed Country · stable-ID join',
+    ]] : []),
   ]
 
   const liveRows = Array.from({ length: 5 }, (_, index) => `

@@ -12,11 +12,18 @@ on:
       - 'apps/web/functions/api/kick-stream-map-reviewed-country-runtime-data.mjs'
       - 'apps/web/src/features/kick-stream-map/**'
       - 'apps/web/preview/kick-stream-map/**'
+      - 'apps/web/kick/map/index.html'
+      - 'apps/web/src/provider-home-shell.ts'
+      - 'apps/web/public/sitemap.xml'
       - 'apps/web/scripts/kick-stream-map-preview-browser-audit.mjs'
       - 'apps/web/scripts/kick-stream-map-kui3b-production-browser-proof.mjs'
+      - 'apps/web/scripts/public-current-browser-audit.mjs'
       - 'apps/web/vite.config.ts'
       - 'docs/audits/kick-stream-map-k4-preactivation-readiness-2026-09-06.json'
       - 'docs/audits/kick-stream-map-k4-cutover-contract-2026-09-06.json'
+      - 'docs/audits/public-surface-routes-kick.json'
+      - 'docs/audits/public-surface-inventory.json'
+      - 'docs/audits/public-surface-profiles-analysis.json'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/kick-stream-map-country-response-core.mjs'
@@ -30,6 +37,9 @@ on:
       - 'scripts/verify-kick-stream-map-ui-preview.mjs'
       - 'scripts/verify-kick-stream-map-ui-country-preview.mjs'
       - 'scripts/verify-kick-stream-map-ui-kui3a-fixtures.mjs'
+      - 'scripts/verify-public-surface-inventory.mjs'
+      - 'scripts/verify-public-browser-audit-current.mjs'
+      - 'scripts/verify-public-current-browser-audit.mjs'
       - '.github/workflows/kick-stream-map-country-public-readiness.yml'
   push:
     branches: [main]
@@ -42,11 +52,18 @@ on:
       - 'apps/web/functions/api/kick-stream-map-reviewed-country-runtime-data.mjs'
       - 'apps/web/src/features/kick-stream-map/**'
       - 'apps/web/preview/kick-stream-map/**'
+      - 'apps/web/kick/map/index.html'
+      - 'apps/web/src/provider-home-shell.ts'
+      - 'apps/web/public/sitemap.xml'
       - 'apps/web/scripts/kick-stream-map-preview-browser-audit.mjs'
       - 'apps/web/scripts/kick-stream-map-kui3b-production-browser-proof.mjs'
+      - 'apps/web/scripts/public-current-browser-audit.mjs'
       - 'apps/web/vite.config.ts'
       - 'docs/audits/kick-stream-map-k4-preactivation-readiness-2026-09-06.json'
       - 'docs/audits/kick-stream-map-k4-cutover-contract-2026-09-06.json'
+      - 'docs/audits/public-surface-routes-kick.json'
+      - 'docs/audits/public-surface-inventory.json'
+      - 'docs/audits/public-surface-profiles-analysis.json'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-reviewed-country-evidence-core.mjs'
       - 'scripts/kick-stream-map-country-response-core.mjs'
@@ -60,6 +77,9 @@ on:
       - 'scripts/verify-kick-stream-map-ui-preview.mjs'
       - 'scripts/verify-kick-stream-map-ui-country-preview.mjs'
       - 'scripts/verify-kick-stream-map-ui-kui3a-fixtures.mjs'
+      - 'scripts/verify-public-surface-inventory.mjs'
+      - 'scripts/verify-public-browser-audit-current.mjs'
+      - 'scripts/verify-public-current-browser-audit.mjs'
       - '.github/workflows/kick-stream-map-country-public-readiness.yml'
 
 permissions:
@@ -78,18 +98,20 @@ jobs:
         run: node scripts/verify-kick-stream-map-stable-id-direct-persistence.mjs
       - name: Verify Kick K3 reviewed Country runtime connection
         run: node scripts/verify-kick-stream-map-k3-runtime-connection.mjs
-      - name: Verify Kick Country public activation gate
+      - name: Verify authorized Kick Country public activation
         run: node scripts/verify-kick-stream-map-country-public-readiness.mjs
-      - name: Verify Kick K4 pre-activation readiness
+      - name: Verify historical pre-activation evidence and current K4 transition
         run: node scripts/verify-kick-stream-map-k4-preactivation-readiness.mjs
-      - name: Verify exact Kick K4 cutover contract
+      - name: Verify completed K4 cutover against frozen contract
         run: node scripts/verify-kick-stream-map-k4-cutover-contract.mjs
-      - name: Verify Kick Map UI preview remains non-public and fail closed
+      - name: Verify Kick Map preview remains separately non-public and fail closed
         run: node scripts/verify-kick-stream-map-ui-preview.mjs
-      - name: Verify Kick Country aggregate preview renderer
+      - name: Verify Kick Country aggregate renderer
         run: node scripts/verify-kick-stream-map-ui-country-preview.mjs
       - name: Verify KUI3a browser fixtures and explicit states
         run: node scripts/verify-kick-stream-map-ui-kui3a-fixtures.mjs
+      - name: Verify public surface inventory includes Kick Map
+        run: node scripts/verify-public-surface-inventory.mjs
 
   preview-browser:
     needs: verify
@@ -113,13 +135,16 @@ jobs:
         run: node scripts/install-ci-playwright.mjs
       - name: Install Chromium
         run: /tmp/viewloom-playwright/node_modules/.bin/playwright install --with-deps chromium
-      - name: Start non-public Kick Map preview
+      - name: Start Kick Map candidate server
         working-directory: apps/web
         shell: bash
         run: |
           pnpm exec vite --host 127.0.0.1 --port 4174 > /tmp/kick-map-preview-vite.log 2>&1 &
           for attempt in {1..50}; do
-            curl --silent --fail http://127.0.0.1:4174/preview/kick-stream-map/ > /dev/null && exit 0
+            curl --silent --fail http://127.0.0.1:4174/preview/kick-stream-map/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4174/kick/map/ > /tmp/kick-map-public.html \
+              && grep -q 'https://www.viewloom.net/kick/map/' /tmp/kick-map-public.html \
+              && exit 0
             sleep 1
           done
           cat /tmp/kick-map-preview-vite.log
@@ -127,7 +152,8 @@ jobs:
       - name: Run KUI3a desktop/mobile browser proof
         working-directory: apps/web
         run: node scripts/kick-stream-map-preview-browser-audit.mjs
-      - name: Run KUI3b real production-connected browser proof
+      - name: Run KUI3b against still-gated production before merge
+        if: github.event_name == 'pull_request'
         working-directory: apps/web
         run: node scripts/kick-stream-map-kui3b-production-browser-proof.mjs
       - name: Upload Kick Map browser evidence
@@ -139,4 +165,5 @@ jobs:
             /tmp/kick-stream-map-preview-browser-audit/**
             /tmp/kick-stream-map-kui3b-production-browser-proof/**
             /tmp/kick-map-preview-vite.log
+            /tmp/kick-map-public.html
           if-no-files-found: warn
