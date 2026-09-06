@@ -55,6 +55,7 @@ export async function runCurrentLocationLiveProbe({ env, fetchImpl = fetch, now 
 
   const inMemoryRows = []
   const stableIds = new Set()
+  let duplicateStableIdentityRowsDropped = 0
   let cursor = ''
   let coveredPages = 0
   let hasMore = false
@@ -82,7 +83,10 @@ export async function runCurrentLocationLiveProbe({ env, fetchImpl = fetch, now 
       if (inMemoryRows.length >= REQUESTED_SIZE) break
       const twitchUserId = String(row?.user_id ?? '').trim()
       if (!twitchUserId) throw new Error(`missing_twitch_user_id_page_${page + 1}`)
-      if (stableIds.has(twitchUserId)) throw new Error(`duplicate_twitch_user_id:${twitchUserId}`)
+      if (stableIds.has(twitchUserId)) {
+        duplicateStableIdentityRowsDropped += 1
+        continue
+      }
       stableIds.add(twitchUserId)
 
       inMemoryRows.push({
@@ -113,6 +117,7 @@ export async function runCurrentLocationLiveProbe({ env, fetchImpl = fetch, now 
     hasMore,
     stableIdentity: 'twitchUserId',
     stableIdentityUnique: stableIds.size === inMemoryRows.length,
+    duplicateStableIdentityRowsDropped,
     apiRequests: {
       token: tokenRequests,
       streams: streamsRequests,
@@ -158,7 +163,7 @@ function classifyError(message) {
   if (message === 'missing_twitch_credentials') return 'credentials'
   if (message.startsWith('twitch_token_http_') || message === 'missing_twitch_access_token') return 'token'
   if (message.startsWith('twitch_streams_http_') || message.startsWith('invalid_twitch_streams_payload_')) return 'streams'
-  if (message.startsWith('missing_twitch_user_id_') || message.startsWith('duplicate_twitch_user_id:')) return 'identity'
+  if (message.startsWith('missing_twitch_user_id_')) return 'identity'
   if (message === 'empty_current_candidate_sample') return 'empty_sample'
   if (message === 'streams_request_budget_exceeded') return 'budget'
   return 'unknown'
