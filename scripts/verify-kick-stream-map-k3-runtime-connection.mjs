@@ -11,6 +11,19 @@ import {
   KICK_STREAM_MAP_COUNTRY_RUNTIME_VERSION,
 } from '../apps/web/functions/api/kick-stream-map-country-runtime-core.mjs'
 
+function collectKeys(value, target = new Set()) {
+  if (Array.isArray(value)) {
+    for (const item of value) collectKeys(item, target)
+    return target
+  }
+  if (!value || typeof value !== 'object') return target
+  for (const [key, child] of Object.entries(value)) {
+    target.add(key)
+    collectKeys(child, target)
+  }
+  return target
+}
+
 const auditDir = 'docs/audits'
 const resultFiles = fs.readdirSync(auditDir)
   .filter((name) => /^kick-stream-map-country-review-result-2026-09-02-\d{2}\.json$/.test(name))
@@ -85,12 +98,12 @@ assert.equal(response.unmappedStreams.some((row) => row.geography.reason === 'no
 assert.equal(response.unmappedStreams.some((row) => row.geography.reason === 'no_reviewed_kick_evidence'), true)
 assert.equal(response.excludedStreams[0].geography.reason, 'reviewed_nonperson_exclusion')
 
-const serialized = JSON.stringify(response)
+const publicKeys = collectKeys(response)
 for (const forbiddenKey of ['stableKickUserId', 'broadcaster_user_id']) {
-  assert.equal(serialized.includes(`"${forbiddenKey}"`), false, `public response must omit ${forbiddenKey}`)
+  assert.equal(publicKeys.has(forbiddenKey), false, `public response must omit key ${forbiddenKey}`)
 }
 for (const forbiddenKey of ['city', 'latitude', 'longitude', 'coordinates', 'currentLocation', 'evidence', 'sourceUrl']) {
-  assert.equal(serialized.includes(`"${forbiddenKey}"`), false, `public response must omit ${forbiddenKey}`)
+  assert.equal(publicKeys.has(forbiddenKey), false, `public response must omit key ${forbiddenKey}`)
 }
 
 assert.equal(response.semantics.stableIdentity, 'broadcaster_user_id')
