@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "viewloom-twitch-current-r2-preauthorization-readiness-v0.1",
+  "status": "blocked_pending_explicit_production_collector_authorization",
+  "provider": "twitch",
+  "layer": "current",
+  "auditedMain": "418a2472468258c844d0a5b6e9173d98d4bf2b12",
+  "currentState": {
+    "collectorStableIdentityPersistence": "blocked",
+    "streamMapStableIdentityConsumption": "ready_in_code",
+    "currentResponseCore": "ready_in_code",
+    "publicCurrentGeographyMode": "blocked",
+    "freshReviewedCurrentEvidence": "blocked",
+    "publicCurrentActivationReady": false,
+    "publicCurrentControl": "disabled"
+  },
+  "evidence": {
+    "sourceProbeRun": 33961161696,
+    "liveSampleSize": 300,
+    "reviewableCandidates": 8,
+    "identitiesReviewed": 8,
+    "freshQualifyingEvidence": 0,
+    "acceptedCurrentPlacement": 0,
+    "noFreshQualifyingEvidence": 6,
+    "conflictUnmapped": 2
+  },
+  "blockers": [
+    "production_twitch_snapshot_does_not_retain_user_id",
+    "public_current_geography_mode_not_wired",
+    "no_fresh_reviewed_current_evidence"
+  ],
+  "r2CandidateBoundary": {
+    "sourceField": "helix_streams.user_id",
+    "storedField": "twitchUserId",
+    "requiredFutureCollectorChanges": [
+      "add twitchUserId nullable field to the existing stored snapshot item",
+      "read user_id from the existing Helix streams response",
+      "normalize stream.user_id without login fallback",
+      "persist normalized user_id as twitchUserId in the existing minute snapshot payload"
+    ],
+    "additionalTwitchApiRequests": 0,
+    "helixUsersRequestAllowed": false,
+    "loginFallbackAllowed": false,
+    "d1SchemaChangeRequired": false,
+    "bindingChangeRequired": false,
+    "cadenceChangeRequired": false,
+    "retentionChangeRequired": false,
+    "backfillRequired": false
+  },
+  "staleDraft": {
+    "pullRequest": 1107,
+    "headSha": "77990aca065bfbc20aae3ddfac3b22841253bba2",
+    "mergeAsIsAllowed": false,
+    "reason": "collector concept remains relevant but the Draft packages obsolete Current readiness workflow/verifier state that has since advanced on main"
+  },
+  "invariants": {
+    "stableIdentity": "twitchUserId",
+    "loginIsStableIdentity": false,
+    "candidateOnlyPlacementAllowed": false,
+    "titleOrTagCanPlaceCurrent": false,
+    "currentFromBaseInferenceAllowed": false,
+    "baseMutationAuthorized": false,
+    "providerAggregationAllowed": false,
+    "preciseAddressPublished": false,
+    "coordinatesPublished": false
+  },
+  "authorization": {
+    "r2ProductionCollectorChangeAuthorized": false,
+    "productionDeploymentAuthorized": false,
+    "publicCurrentActivationAuthorized": false,
+    "d1MutationAuthorized": false,
+    "schemaBindingChangeAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "retentionBackfillChangeAuthorized": false
+  }
+}
