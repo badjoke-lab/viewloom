@@ -26,12 +26,18 @@ const response = {
   semantics: {
     stableIdentity: 'broadcaster_user_id',
     slugIsStableIdentity: false,
+    stableIdentityPublished: false,
     twitchEvidenceReuseAllowed: false,
+    twitchCreatorKeyReuseAllowed: false,
     providerAggregationAllowed: false,
     automaticGeographyPromotionAllowed: false,
+    cityInferenceAllowed: false,
     cityInferenceFromCountryAllowed: false,
+    currentLocationPromotionAllowed: false,
     currentLocationUsedForBasePlacement: false,
+    preciseAddressAllowed: false,
     preciseAddressPublished: false,
+    preciseCoordinatesAllowed: false,
     coordinatesPublished: false,
   },
 }
@@ -58,13 +64,22 @@ assert.equal(allowed.accounting.reconciliationPasses, true)
 assert.equal(metricBucket(0, 100), 0)
 assert.equal(metricBucket(100, 100), 5)
 
-const unsafe = buildKickCountryPreviewModel({
-  ...response,
-  semantics: { ...response.semantics, twitchEvidenceReuseAllowed: true },
-}, { allowGeography: true })
-assert.equal(unsafe.contractSafe, false)
-assert.equal(unsafe.countryRows.length, 0)
-assert.equal(unsafe.mappedStreams.length, 0)
+for (const unsafeSemantics of [
+  { twitchEvidenceReuseAllowed: true },
+  { stableIdentityPublished: true },
+  { cityInferenceAllowed: true },
+  { currentLocationPromotionAllowed: true },
+  { preciseAddressAllowed: true },
+  { preciseCoordinatesAllowed: true },
+]) {
+  const unsafe = buildKickCountryPreviewModel({
+    ...response,
+    semantics: { ...response.semantics, ...unsafeSemantics },
+  }, { allowGeography: true })
+  assert.equal(unsafe.contractSafe, false, `unsafe semantics must fail closed: ${JSON.stringify(unsafeSemantics)}`)
+  assert.equal(unsafe.countryRows.length, 0)
+  assert.equal(unsafe.mappedStreams.length, 0)
+}
 
 const serialized = JSON.stringify(allowed)
 for (const forbidden of ['"lat"', '"lng"', '"latitude"', '"longitude"', '"coordinates"']) {
@@ -95,6 +110,8 @@ console.log(JSON.stringify({
   countryRegionFill: true,
   creatorCoordinates: false,
   twitchEvidenceReuse: false,
+  stableIdentityPublished: false,
+  currentRuntimeSemanticGuards: true,
   previewPublicRouteLinked: false,
   publicK4SurfaceSeparate: true,
   dualGateInherited: true,
