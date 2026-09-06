@@ -1,5 +1,5 @@
 name: Public Browser Audit
-# Current candidate contract: 25 routes x 4 required widths = 100 scenarios.
+# Current candidate contract: 26 routes x 4 required widths = 104 scenarios.
 
 on:
   workflow_dispatch:
