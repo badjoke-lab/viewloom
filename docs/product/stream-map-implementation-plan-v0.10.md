@@ -351,7 +351,7 @@ PRs #1245-#1247 close the concrete September 6 shared Twitch Map UI findings wit
        all measured City mobile targets >= 44px
 ```
 
-The existing City empty/conflict/unmapped presentation was re-audited read-only: no accepted City placement has an explicit empty state, country-only evidence stays accounted rather than promoted, and Base City conflicts remain separate accounting. No creator-coordinate, Current-placement or new evidence semantics were introduced.
+The existing City empty/conflict/unmapped presentation was re-audited read-only: when no accepted City placement exists, the UI shows an explicit empty state; country-only evidence stays accounted rather than promoted; Base City conflicts remain separate accounting. No creator-coordinate, Current-placement or new evidence semantics were introduced.
 
 The #1246 post-merge production Twitch Map browser smoke passed exact deployment resolution and real Country/City rendering. The #1247 post-merge production smoke is the current structural confirmation lane.
 
