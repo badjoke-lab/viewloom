@@ -17,6 +17,7 @@ on:
       - 'scripts/kick-stream-map-country-response-core.mjs'
       - 'scripts/kick-stream-map-country-runtime-staging-core.mjs'
       - 'scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs'
+      - 'scripts/verify-kick-stream-map-stable-id-direct-persistence.mjs'
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
       - 'scripts/verify-kick-stream-map-ui-preview.mjs'
       - 'scripts/verify-kick-stream-map-ui-country-preview.mjs'
@@ -38,6 +39,7 @@ on:
       - 'scripts/kick-stream-map-country-response-core.mjs'
       - 'scripts/kick-stream-map-country-runtime-staging-core.mjs'
       - 'scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs'
+      - 'scripts/verify-kick-stream-map-stable-id-direct-persistence.mjs'
       - 'scripts/verify-kick-stream-map-country-public-readiness.mjs'
       - 'scripts/verify-kick-stream-map-ui-preview.mjs'
       - 'scripts/verify-kick-stream-map-ui-country-preview.mjs'
@@ -56,6 +58,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify direct Kick stable identity persistence
+        run: node scripts/verify-kick-stream-map-stable-id-direct-persistence.mjs
       - name: Verify Kick Country public activation gate
         run: node scripts/verify-kick-stream-map-country-public-readiness.mjs
       - name: Verify Kick Map UI preview remains non-public and fail closed
