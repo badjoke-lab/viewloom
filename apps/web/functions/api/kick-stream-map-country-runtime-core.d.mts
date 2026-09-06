@@ -8,4 +8,5 @@ export function buildKickStreamMapCountryRuntime(input?: {
   snapshotItems?: KickStreamMapSnapshotItem[]
   updatedAt?: string | null
   sourceMode?: string
+  publicActivationAuthorized?: boolean
 }): KickStreamMapCountryRuntimeResponse
