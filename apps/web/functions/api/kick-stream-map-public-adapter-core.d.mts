@@ -10,7 +10,7 @@ export type KickStreamMapPublicAdapter = {
   sourceMode: string
   geographyMode: 'country'
   implementationState: 'public_adapter_staged'
-  publicActivationAuthorized: false
+  publicActivationAuthorized: boolean
   state: 'empty' | 'blocked_stable_identity' | 'blocked_reviewed_evidence'
   updatedAt: string | null
   coverage: {
@@ -65,4 +65,5 @@ export function buildKickStreamMapPublicAdapter(input?: {
   snapshotItems?: KickStreamMapSnapshotItem[]
   updatedAt?: string | null
   sourceMode?: string
+  publicActivationAuthorized?: boolean
 }): KickStreamMapPublicAdapter
