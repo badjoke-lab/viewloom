@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "viewloom-kick-stream-map-k4-preactivation-readiness-v0.1",
+  "status": "prerequisites_complete_activation_not_authorized",
+  "provider": "kick",
+  "geography": "country",
+  "auditedMain": "a1e37d6aff3e6929b4d30d0d525061d71f038ff4",
+  "prerequisites": {
+    "k2": {
+      "status": "complete",
+      "pullRequest": 1249,
+      "productionProofRun": 34008795931,
+      "observedStreams": 100,
+      "stableIdentityStreams": 100,
+      "missingStableIdentityStreams": 0
+    },
+    "k3": {
+      "status": "complete",
+      "pullRequest": 1252,
+      "mergeSha": "0e7b6b0682df21864551b6d47d9520209f42829f",
+      "deployWebPagesRun": 34010236812,
+      "countryReadinessRun": 34010236815,
+      "productionApiSmokeRun": 34010236817
+    },
+    "kui3b": {
+      "status": "complete",
+      "pullRequest": 1253,
+      "mergeSha": "bea33532001989c71dde289e570752985d34f600",
+      "acceptedMainRun": 34010502534,
+      "artifactId": 9982308317,
+      "artifactSha256": "a97098e9902b2529fc8999b251858089142533934fc78699d7cc94aeba5f8666",
+      "productionDeploymentCommit": "0e7b6b0682df21864551b6d47d9520209f42829f",
+      "productionState": "blocked_public_activation",
+      "viewports": 2,
+      "scenarios": 4,
+      "violations": 0,
+      "productionSample": {
+        "observedStreams": 100,
+        "stableIdentityStreams": 100,
+        "reviewedIdentityStreams": 9,
+        "mappedStreams": 2,
+        "mappedViewers": 12848,
+        "mappedCountryCount": 2,
+        "mappedCountryCodes": ["BR", "PL"],
+        "unmappedStreams": 98,
+        "excludedStreams": 0,
+        "conflictStreams": 0,
+        "reconciliationPasses": true,
+        "stableIdentityPublished": false
+      }
+    }
+  },
+  "currentGate": {
+    "k4Authorized": false,
+    "publicActivationAuthorized": false,
+    "publicCountryActivationReady": false,
+    "blockers": ["public_country_activation_not_authorized"],
+    "publicKickMapPage": "absent",
+    "productionViteInput": "absent"
+  },
+  "invariants": {
+    "stableIdentity": "broadcaster_user_id",
+    "slugIsStableIdentity": false,
+    "stableIdentityPublished": false,
+    "twitchEvidenceReuseAllowed": false,
+    "providerAggregationAllowed": false,
+    "cityInferenceAllowed": false,
+    "currentLocationPromotionAllowed": false,
+    "creatorCoordinatesAllowed": false,
+    "demoGeographyAllowed": false
+  },
+  "authorization": {
+    "k4PublicActivationAuthorized": false,
+    "collectorChangeAuthorized": false,
+    "d1MutationAuthorized": false,
+    "schemaBindingChangeAuthorized": false,
+    "cadenceChangeAuthorized": false,
+    "retentionBackfillChangeAuthorized": false,
+    "currentIrlActivationAuthorized": false,
+    "twitchStableIdentityPersistenceAuthorized": false
+  }
+}
