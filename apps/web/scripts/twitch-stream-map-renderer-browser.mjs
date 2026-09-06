@@ -212,6 +212,7 @@ try {
 
   await page.locator('.stream-map-country-row').first().waitFor({ timeout: 10000 })
   await page.locator('.stream-map-region-controls__status').filter({ hasText: 'Country regions ready' }).waitFor({ timeout: useRealBasemap ? 30000 : 10000 })
+  await page.locator('[data-country-metric="viewers"]').waitFor({ timeout: 10000 })
 
   const rendererState = await page.locator('#stream-map-root').getAttribute('data-map-state')
   const canvasCount = await page.locator('#stream-map-root canvas.maplibregl-canvas').count()
@@ -250,8 +251,15 @@ try {
   assert.equal(regionState.metricVisible, true)
   assert.equal(regionState.regionsActive, true)
 
-  await page.locator('.stream-map-region-controls__metric select').selectOption('viewers')
+  const viewersButton = page.locator('[data-country-metric="viewers"]')
+  await viewersButton.click()
+  assert.equal(await viewersButton.getAttribute('aria-pressed'), 'true')
+  assert.equal(await page.locator('[data-country-metric="streams"]').getAttribute('aria-pressed'), 'false')
   assert.equal(await page.locator('.stream-map-region-controls__metric select').inputValue(), 'viewers')
+  assert.equal(
+    await page.locator('.stream-map-country-legend').getAttribute('aria-label'),
+    'Viewers intensity legend: five log-scaled steps from Low to High',
+  )
 
   assert.equal(pageErrors.length, 0, `page errors: ${pageErrors.join(' | ')}`)
   assert.equal(consoleErrors.length, 0, `console errors: ${consoleErrors.join(' | ')}`)

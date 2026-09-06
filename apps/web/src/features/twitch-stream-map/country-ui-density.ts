@@ -1,4 +1,5 @@
 import './country-ui-density.css'
+import './country-ui-accessibility.css'
 
 type CountryUiMap = {
   addLayer(layer: Record<string, unknown>): void
@@ -107,10 +108,12 @@ function installRegionToolbar(): void {
     }
     if (controls.dataset.countryUiV2 === 'true') return
     controls.dataset.countryUiV2 = 'true'
+    controls.setAttribute('role', 'group')
 
     const label = controls.querySelector<HTMLElement>('.stream-map-region-controls__label')
     if (label) label.textContent = 'Intensity'
     select.classList.add('stream-map-region-controls__native-select')
+    select.hidden = true
 
     const toggle = document.createElement('div')
     toggle.className = 'stream-map-metric-toggle'
@@ -132,7 +135,7 @@ function installRegionToolbar(): void {
 
     const legend = document.createElement('div')
     legend.className = 'stream-map-country-legend'
-    legend.setAttribute('aria-label', 'Intensity legend from low to high')
+    legend.setAttribute('role', 'img')
     const low = document.createElement('span')
     low.textContent = 'Low'
     legend.append(low)
@@ -161,6 +164,8 @@ function installRegionToolbar(): void {
         button.classList.toggle('is-active', active)
         button.setAttribute('aria-pressed', String(active))
       }
+      const metricName = select.value === 'viewers' ? 'Viewers' : 'Streams'
+      legend.setAttribute('aria-label', `${metricName} intensity legend: five log-scaled steps from Low to High`)
     }
     select.addEventListener('change', syncMetric)
     syncMetric()
