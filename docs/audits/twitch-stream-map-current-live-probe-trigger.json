@@ -2,7 +2,7 @@
   "schemaVersion": "viewloom-twitch-stream-map-current-live-probe-trigger-v0.1",
   "oneTime": true,
   "rearm": false,
-  "requestSequence": 2,
+  "requestSequence": 3,
   "productionDeployment": false,
   "d1Writes": 0,
   "maxTokenRequests": 1,
@@ -12,5 +12,5 @@
   "automaticAcceptanceAuthorized": false,
   "publicCurrentPlacementAuthorized": false,
   "baseMutationAuthorized": false,
-  "expectedProbePackageMergeSha": "e0e51fe93825ccc3fa734e120703ac6fbb08ad6b"
+  "expectedProbePackageMergeSha": "9c9836a3a303f98c95946277c0f788278cddc858"
 }
