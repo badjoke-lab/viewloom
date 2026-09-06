@@ -5,12 +5,12 @@ Normative specification: `docs/product/stream-map-spec-v0.7.md`
 Execution plan: `docs/product/stream-map-implementation-plan-v0.10.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `9fe01ac2cdff55fb1bc8ebd2fc126d74deec8956`  
+Audited runtime baseline: main `08d15987f4d804bf4c8f851d5b24c4d0a76e8c12`  
 Last updated: 2026-09-06
 
 ## 1. Current milestone
 
-**Twitch Country and Twitch City are closed at their current public product boundaries. The shared Twitch Map keyboard/mobile/legend regression batch is closed through #1247, and the already-public `/twitch/map/` route is now included in the permanent sitemap/public-surface/browser/production-smoke inventory through #1259. Current / IRL remains fail-closed: the September 6 fresh Top300 refresh measured 299 unique stable identities, reviewed 9 candidates across all 4 accepted evidence classes, and still produced zero fresh accepted Current placements. Kick Country K1 staging, K2 production stable-ID persistence, K3 production reviewed-Country runtime connection and KUI1/KUI2/KUI3a/KUI3b pre-public UI/proof are complete. K4 preactivation proof and the exact K4 cutover contract are also complete through #1255/#1265, but `/kick/map/` remains intentionally absent because K4 activation itself still requires separate explicit authorization.**
+**Twitch Country and Twitch City are closed at their current public product boundaries. The shared Twitch Map keyboard/mobile/legend regression batch is closed through #1247, and the already-public `/twitch/map/` route is now included in the permanent sitemap/public-surface/browser/production-smoke inventory through #1259. Current / IRL remains fail-closed: the latest September 6 Top300 refresh measured 300 unique stable identities, reviewed 10 candidates across all 4 accepted evidence classes (40 identity/class pairs), and still produced zero fresh accepted Current placements. Kick Country K1 staging, K2 production stable-ID persistence, K3 production reviewed-Country runtime connection and KUI1/KUI2/KUI3a/KUI3b pre-public UI/proof are complete. K4 preactivation proof and the exact K4 cutover contract are also complete through #1255/#1265, but `/kick/map/` remains intentionally absent because K4 activation itself still requires separate explicit authorization.**
 
 The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock.
 
@@ -22,7 +22,7 @@ The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock
 | Twitch City | C1-C6 complete; public City activation, reviewed aggregate references/list-only fallback and production acceptance complete; mobile action-target regression closeout #1247 complete | scoped quality/coverage only |
 | Kick Country runtime | K1 #1239 complete; K2 #1249 complete; K3 #1252 complete in production; production smoke `34010236817` verifies reviewed Country runtime and K4 block | K4 remains separate explicit public gate |
 | Kick Country UI | KUI1 #1241 + KUI2 #1242 + KUI3a #1244 + KUI3b #1253 complete; preactivation #1255 and exact cutover contract #1265 complete; real-production browser proof remains green | K4 activation only after separate explicit authorization |
-| Current / IRL | 2026-09-06 bounded refresh: 299 unique stable IDs, 9 reviewed, 36 accepted-class pairs, 0 fresh qualifying evidence, 0 accepted, 0 true cross-country conflicts; public control disabled | fail closed; production stable-ID persistence and any public Current path remain separately gated |
+| Current / IRL | 2026-09-06 latest bounded refresh: 300 unique stable IDs, 10 reviewed, 40 accepted-class pairs, 0 fresh qualifying evidence, 0 accepted, 0 true cross-country conflicts; public control disabled | fail closed; production stable-ID persistence and any public Current path remain separately gated |
 | Shared Map UI | #1245 geography controls + #1246 Country compact controls/legend + #1247 City mobile targets complete; #1259 adds Twitch Map to permanent public-surface/browser/smoke coverage | scoped regression/accessibility work only |
 | Reviewed-evidence maintenance | bounded maintenance only | never block Map lanes |
 
@@ -256,22 +256,22 @@ Current/IRL  fresh explicitly time-bounded accepted geography
 Latest September 6 refresh:
 
 ```text
-source run                               34015266644
-artifact                                 9983696759
+source run                               34036562297
+artifact                                 9990351519
 requested population                            300
-unique stable identities measured               299
-duplicate stable-ID page overlap dropped          1
-reviewable candidates                              9
-future/planned travel rejected                     6
-accepted-class identity pairs reviewed            36
+unique stable identities measured               300
+duplicate stable-ID page overlap dropped          0
+reviewable candidates                             10
+future/planned travel rejected                     2
+accepted-class identity pairs reviewed            40
 fresh qualifying evidence                          0
 accepted Current placement                         0
-no-fresh-qualifying outcomes                       9
+no-fresh-qualifying outcomes                      10
 true unresolved cross-country conflicts            0
-same-country granularity conflicts closed          1
+same-country granularity conflicts closed          2
 ```
 
-The sole machine conflict was `robcdee` with Japan Country + Tokyo City candidates. That is a same-country granularity difference, not evidence for two competing countries, and it remained unmapped because no separate fresh accepted-class Current statement was established.
+The two machine conflicts were `robcdee` and `joeykaotyk`, each with Japan Country + Tokyo City candidates. These are same-country granularity differences, not evidence for competing countries. Both remained unmapped because no separate fresh accepted-class Current statement established present geography; recent stream metadata for `joeykaotyk` instead pointed toward China but remained candidate-only under the Current evidence contract.
 
 Current blockers:
 
@@ -350,8 +350,10 @@ DONE   Kick K3 production reviewed-Country runtime #1252 / run 34010236817
 DONE   Kick KUI3b real production-connected proof #1253 / main run 34010502534
 DONE   Kick K4 preactivation proof #1255
 DONE   Twitch Map permanent public-surface inventory #1259 / 104 scenarios
-DONE   Current fresh Sep 6 review #1264 / run 34015266644 / 299 -> 9 reviewed -> 0 accepted
+DONE   Current fresh Sep 6 review #1264 / run 34015266644 / 299 -> 9 reviewed -> 0 accepted (superseded by sequence 4)
 DONE   Kick exact K4 cutover contract #1265
+DONE   Current live candidate probe sequence 4 #1272 / run 34036197901 / 300 -> 10 candidates
+DONE   Current review queue refresh #1273 / run 34036562297 / 300 -> 10 reviewed -> 0 accepted
 PAR    scoped shared Map regression/accessibility work and maintenance only
 BLOCK  Kick K4 canonical /kick/map/ activation pending separate explicit authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
