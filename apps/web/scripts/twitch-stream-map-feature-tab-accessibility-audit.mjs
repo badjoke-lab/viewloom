@@ -19,7 +19,7 @@ await mkdir(outputRoot, { recursive: true })
 const routes = await loadTwitchFeatureRoutes()
 const browser = await chromium.launch({ headless: true })
 const evidence = {
-  schema: 'viewloom-twitch-stream-map-feature-tab-accessibility-v1',
+  schema: 'viewloom-twitch-stream-map-feature-tab-accessibility-v2',
   origin,
   result: 'running',
   counts: {},
@@ -76,11 +76,11 @@ async function auditScenario(browser, route, viewport) {
 
   try {
     await page.goto(`${origin}${route.route}`, { waitUntil: 'domcontentloaded', timeout: 45_000 })
-    const locator = page.locator('[data-twitch-stream-map-feature-tab="true"]')
+    const locator = page.locator('.feature-tabs a[href="/twitch/map/"]')
     await locator.waitFor({ timeout: 15_000 })
 
     const state = await page.evaluate(() => {
-      const links = [...document.querySelectorAll('[data-twitch-stream-map-feature-tab="true"]')]
+      const links = [...document.querySelectorAll('.feature-tabs a[href="/twitch/map/"]')]
       const link = links[0]
       const rect = link?.getBoundingClientRect()
       const style = link ? getComputedStyle(link) : null
@@ -93,6 +93,7 @@ async function auditScenario(browser, route, viewport) {
         display: style?.display ?? null,
         active: Boolean(link?.classList.contains('active')),
         current: link?.getAttribute('aria-current') ?? null,
+        installerOwned: link?.getAttribute('data-twitch-stream-map-feature-tab') === 'true',
         kickMapLinks: document.querySelectorAll('.feature-tabs a[href="/kick/map/"]').length,
       }
     })
@@ -138,7 +139,7 @@ async function focusStreamMapWithKeyboard(page) {
     await page.keyboard.press('Tab')
     const state = await page.evaluate(() => {
       const active = document.activeElement
-      if (!(active instanceof HTMLElement) || active.dataset.twitchStreamMapFeatureTab !== 'true') {
+      if (!(active instanceof HTMLAnchorElement) || active.getAttribute('href') !== '/twitch/map/' || !active.closest('.feature-tabs')) {
         return { reached: false, focusVisible: false, visualIndicator: false }
       }
       const style = getComputedStyle(active)
