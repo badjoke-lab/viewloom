@@ -185,24 +185,51 @@ try {
   assert.match(await page.locator('[data-selected-city]').textContent(), /City aggregate reference/)
   assert.deepEqual(await visibleStreamNames(page), ['Dallas Live'])
 
-  await page.locator('[data-clear-selected-city]').click()
-  await page.waitForFunction(() => document.querySelector('[data-selected-city]')?.hidden === true)
-  assert.deepEqual((await visibleStreamNames(page)).sort(), ['Dallas Live', 'Sant Cugat Live'])
-  assert.equal(await page.locator('.stream-map-city-reference-marker:visible').count(), 1)
-
   await page.setViewportSize({ width: 390, height: 844 })
   const mobile = await page.evaluate(() => {
     const marker = document.querySelector('.stream-map-city-reference-marker')
+    const selectors = [
+      '[data-selected-city]:not([hidden]) button',
+      '[data-city-places] .stream-map-city-place',
+      '.stream-map-filter-option:not([data-city-unavailable="true"])',
+      '.stream-map-population-control select',
+      '.stream-map-filter-clear',
+      '.stream-map-canvas .maplibregl-ctrl-group button',
+    ]
+    const seen = new Set()
+    const targets = selectors.flatMap((selector) => [...document.querySelectorAll(selector)]).flatMap((node) => {
+      if (!(node instanceof HTMLElement) || seen.has(node)) return []
+      seen.add(node)
+      const style = getComputedStyle(node)
+      const rect = node.getBoundingClientRect()
+      const visible = style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || '1') > 0 && rect.width > 0 && rect.height > 0
+      if (!visible || node.hasAttribute('disabled')) return []
+      return [{
+        name: node.getAttribute('aria-label') || (node.textContent || '').trim() || node.tagName.toLowerCase(),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+      }]
+    })
     return {
       width: document.documentElement.clientWidth,
       scrollWidth: document.documentElement.scrollWidth,
       markerWidth: Math.round(marker?.getBoundingClientRect().width ?? 0),
       markerHeight: Math.round(marker?.getBoundingClientRect().height ?? 0),
+      targets,
     }
   })
   assert.equal(mobile.scrollWidth, mobile.width)
   assert.ok(mobile.markerWidth >= 44, `City marker tap target too narrow: ${mobile.markerWidth}`)
   assert.ok(mobile.markerHeight >= 44, `City marker tap target too short: ${mobile.markerHeight}`)
+  assert.ok(mobile.targets.length > 0, 'Expected visible City mobile interaction targets')
+  for (const target of mobile.targets) {
+    assert.ok(target.height >= 44, `City mobile target below 44px: ${target.name} ${target.height}px`)
+  }
+
+  await page.locator('[data-clear-selected-city]').click()
+  await page.waitForFunction(() => document.querySelector('[data-selected-city]')?.hidden === true)
+  assert.deepEqual((await visibleStreamNames(page)).sort(), ['Dallas Live', 'Sant Cugat Live'])
+  assert.equal(await page.locator('.stream-map-city-reference-marker:visible').count(), 1)
 
   await page.waitForTimeout(250)
   assert.equal(pageErrors.length, 0, `page errors: ${pageErrors.join(' | ')}`)
