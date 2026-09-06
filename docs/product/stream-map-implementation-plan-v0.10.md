@@ -3,12 +3,14 @@
 Status: accepted on merge / active execution plan  
 Specification: `docs/product/stream-map-spec-v0.7.md`  
 Supersedes: `docs/product/stream-map-implementation-plan-v0.9.md`  
-Audited runtime baseline: main `d024276a9a478e488f15f507ffb736c091b5702c`  
+Audited runtime baseline: main `f30a9b26ca8204fb7a8a9e895ad2759984cccf9f`  
 Date: 2026-09-06
 
 ## 1. Current position
 
 Twitch Country and Twitch City are closed at their current public product boundaries.
+
+The September 6 shared Twitch Map keyboard/mobile/legend regression batch is complete through #1247. Shared UI is now scoped maintenance/quality work only rather than an unfinished serial phase.
 
 Current / IRL remains fail-closed after the September 5 Top300 review produced zero accepted temporal placements.
 
@@ -60,7 +62,7 @@ Lane B  Twitch City maintenance/quality only
 Lane C  Kick Country runtime/data path
 Lane U  Kick Country pre-public UI path
 Lane D  Current Location / IRL
-Lane E  shared Map UI/accessibility/verification
+Lane E  shared Map UI scoped maintenance/verification only
 Lane M  reviewed-evidence maintenance only
 ```
 
@@ -80,7 +82,7 @@ Read Stream Map work in this order:
 
 Older implementation plans remain historical and do not override v0.10.
 
-A blocked production dependency in one lane does not stop safe work in another lane. In particular, K2 did not prevent preview-only Kick UI, validators, contract work, browser-safe fixtures, documentation or shared UI work; those safe KUI3a tasks are now completed.
+A blocked production dependency in one lane does not stop safe work in another lane. In particular, K2 did not prevent preview-only Kick UI, validators, contract work, browser-safe fixtures, documentation or shared UI work; those safe KUI3a tasks and the current shared Twitch UI regression batch are now completed.
 
 ## 3. Twitch Country — CLOSED
 
@@ -324,15 +326,42 @@ Stale Draft #1107 must not be merged as-is.
 
 Current never becomes Base/Home or Base City, and expired Current evidence never survives as a placement.
 
-## 8. Shared UI / accessibility
+## 8. Shared UI / accessibility — CURRENT REGRESSION BATCH COMPLETE
 
-Safe independent work remains:
+PRs #1245-#1247 close the concrete September 6 shared Twitch Map UI findings without changing geography/evidence semantics:
 
-- keyboard/focus verification;
-- mobile tap-target/overflow regression checks;
-- map/legend/accessibility labels;
-- explicit empty/conflict/unmapped states;
-- geography URL-state verification;
+```text
+#1245  geography resolution controls
+       44px minimum targets + focus-visible
+       keyboard Country/City switching
+       URL-state / aria-pressed / Current-disabled verification
+       1440px + 390px Chromium coverage
+
+#1246  compact Country controls and intensity legend
+       geography/Streams/Viewers/World view/mobile targets hardened
+       replaced native intensity select removed from duplicate keyboard interaction
+       five-step log legend exposes active Streams/Viewers metric
+       keyboard Viewers activation + legend update verified
+       visible 390px controls rejected below 44px
+       bundled/real-basemap renderer tests aligned to visible controls
+
+#1247  City mobile controls
+       selected-City actions/evidence filters/population selects/MapLibre controls hardened
+       390px City reference-point browser proof enumerates visible enabled controls
+       all measured City mobile targets >= 44px
+```
+
+The existing City empty/conflict/unmapped presentation was re-audited read-only: no accepted City placement has an explicit empty state, country-only evidence stays accounted rather than promoted, and Base City conflicts remain separate accounting. No creator-coordinate, Current-placement or new evidence semantics were introduced.
+
+The #1246 post-merge production Twitch Map browser smoke passed exact deployment resolution and real Country/City rendering. The #1247 post-merge production smoke is the current structural confirmation lane.
+
+Further Lane E work is scoped regression/quality only:
+
+- newly discovered keyboard/focus defects;
+- mobile tap-target/overflow regressions;
+- map/legend/accessibility label regressions;
+- empty/conflict/unmapped presentation regressions;
+- geography URL-state regressions;
 - production/browser structural verification.
 
 Shared mechanics may be reused, but evidence and geometry semantics remain provider/geography specific. Shared mechanics must not collapse Twitch/Kick, Country/City or Base/Current into one evidence model.
@@ -394,7 +423,10 @@ DONE   Kick K1 internal reviewed-evidence runtime staging #1239
 DONE   Kick KUI1 fail-closed preview shell #1241
 DONE   Kick KUI2 Country aggregate preview renderer #1242
 DONE   Kick KUI3a non-mutating browser proof #1244 / run 33978336854
-PAR    safe shared Map regression/accessibility work and non-mutating lane maintenance
+DONE   Shared Twitch geography control regression #1245
+DONE   Shared Country compact controls/legend regression #1246
+DONE   Shared City mobile target regression #1247
+PAR    scoped shared Map regression/accessibility work and non-mutating lane maintenance only
 BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
 WAIT   Kick K3 production runtime connection until K2
 WAIT   Kick KUI3b real-data browser/API proof until K3
@@ -408,6 +440,7 @@ BLOCK  Current public route/evidence gates remain unresolved
 ```text
 Twitch Country remains usable/tested/evidence-safe
 AND Twitch City remains useful without inferred creator precision
+AND current shared Twitch Map regression baseline remains green
 AND Kick KUI1/KUI2/KUI3a pre-public UI remains ready without pretending to be public
 AND Kick obtains production broadcaster_user_id only under explicit authorization
 AND Kick staged reviewed evidence is connected to production runtime only after stable identity exists
