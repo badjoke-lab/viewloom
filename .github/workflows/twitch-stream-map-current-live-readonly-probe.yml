@@ -175,6 +175,7 @@ jobs:
             (.result.sampleSize > 0 and .result.sampleSize <= 300) and
             .result.stableIdentity == "twitchUserId" and
             .result.stableIdentityUnique == true and
+            (.result.duplicateStableIdentityRowsDropped >= 0) and
             .result.apiRequests.token == 1 and
             (.result.apiRequests.streams > 0 and .result.apiRequests.streams <= 3) and
             .result.apiRequests.users == 0 and
@@ -204,8 +205,8 @@ jobs:
             if [[ -f "$ARTIFACT_DIR/post-diagnostic.json" ]]; then
               jq -r '"- POST HTTP: \(.httpCode)\n- curl exit: \(.curlExit)\n- response ok: \(.response.ok)\n- error class: \(.response.errorClass // "none")\n- error: \(.response.error // "none")"' "$ARTIFACT_DIR/post-diagnostic.json"
             fi
-            if [[ -f "$ARTIFACT_DIR/probe.json" ]]; then
-              jq -r '"- Population measured: \(.result.measurement.population)\n- Candidate streams: \(.result.measurement.candidateStreams)\n- Candidate coverage: \((.result.measurement.candidateCoverage * 10000 | round) / 100)%\n- Title candidate streams: \(.result.measurement.counts.titleCandidateStreams)\n- Tag candidate streams: \(.result.measurement.counts.tagCandidateStreams)\n- Future/planned travel titles rejected: \(.result.measurement.counts.rejectedFutureTravelTitles)\n- Public Current placement authorized: \(.result.decision.publicCurrentPlacementAuthorized)"' "$ARTIFACT_DIR/probe.json"
+            if [[ -f "$ARTIFACT_DIR/probe.json" ]] && jq -e '.ok == true and ((.result.measurement // null) | type == "object")' "$ARTIFACT_DIR/probe.json" >/dev/null 2>&1; then
+              jq -r '"- Population measured: \(.result.measurement.population)\n- Unique stable identities: \(.result.sampleSize)\n- Duplicate stable-ID rows dropped: \(.result.duplicateStableIdentityRowsDropped)\n- Candidate streams: \(.result.measurement.candidateStreams)\n- Candidate coverage: \((.result.measurement.candidateCoverage * 10000 | round) / 100)%\n- Title candidate streams: \(.result.measurement.counts.titleCandidateStreams)\n- Tag candidate streams: \(.result.measurement.counts.tagCandidateStreams)\n- Future/planned travel titles rejected: \(.result.measurement.counts.rejectedFutureTravelTitles)\n- Public Current placement authorized: \(.result.decision.publicCurrentPlacementAuthorized)"' "$ARTIFACT_DIR/probe.json"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
