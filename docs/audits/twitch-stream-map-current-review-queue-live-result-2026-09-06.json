@@ -1,0 +1,416 @@
+{
+  "schemaVersion": "viewloom-twitch-stream-map-current-review-queue-live-result-v0.1",
+  "provider": "twitch",
+  "layer": "current",
+  "mode": "current_location_review_queue_top300_preview",
+  "source": {
+    "workflowRunId": 34015266644,
+    "workflowName": "Twitch Stream Map Current Review Queue Live Probe",
+    "mainSha": "47c9e3d9811b01ca754b5b8b44ff52365d4a0ca9",
+    "probePackageMergeSha": "e86e231167a1bf0909ed71a9701f3d641f59eed2",
+    "artifactId": 9983696759,
+    "artifactName": "twitch-stream-map-current-review-queue-live-probe-34015266644",
+    "artifactSha256": "da1a93e3a05b0b768804613e0ed8698b8c945b4e013511ef437a399c5f33dba1"
+  },
+  "observedAt": "2026-09-06T05:58:17.534Z",
+  "population": {
+    "requestedSize": 300,
+    "sampleSize": 299,
+    "coveredPages": 3,
+    "hasMore": true,
+    "stableIdentity": "twitchUserId",
+    "stableIdentityUnique": true,
+    "duplicateStableIdentityRowsDropped": 1
+  },
+  "apiRequests": {
+    "token": 1,
+    "streams": 3,
+    "users": 0
+  },
+  "persistence": {
+    "d1Writes": 0,
+    "productionDeployment": false,
+    "rawTitleStored": false,
+    "rawTagsStored": false,
+    "rawLanguageStored": false,
+    "rawTextArtifactAllowed": false,
+    "canonicalMutationApplied": false
+  },
+  "decision": {
+    "status": "review_queue_only",
+    "acceptanceAuthorized": false,
+    "publicCurrentPlacementAuthorized": false,
+    "baseMutationAuthorized": false,
+    "languageUsedForPlacement": false
+  },
+  "summary": {
+    "inputStreams": 299,
+    "reviewableCandidates": 9,
+    "rejectedFutureTravel": 6,
+    "invalidIdentity": 0,
+    "conflictingCandidates": 1
+  },
+  "reviewBoundary": {
+    "titleOrTagCanAutoAccept": false,
+    "publicCurrentPlacementAuthorized": false,
+    "baseMutationAuthorized": false,
+    "rawTextRetained": false,
+    "languageUsedForPlacement": false
+  },
+  "reviewQueue": [
+    {
+      "twitchUserId": "169185650",
+      "userLogin": "robcdee",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/robcdee",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reviewWindowExpiresAt": "2026-09-07T05:58:17.534Z",
+      "reviewState": "candidate_conflict_review_required",
+      "candidatePlaces": [
+        {
+          "kind": "country",
+          "countryCode": "JP",
+          "countryName": "Japan",
+          "city": null,
+          "sourceClasses": [
+            "stream_tag"
+          ]
+        },
+        {
+          "kind": "city",
+          "countryCode": "JP",
+          "countryName": "Japan",
+          "city": "Tokyo",
+          "sourceClasses": [
+            "stream_tag"
+          ]
+        }
+      ],
+      "sourceClasses": [
+        "stream_tag"
+      ],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "438944099",
+      "userLogin": "hello_kiko",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/hello_kiko",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reviewWindowExpiresAt": "2026-09-07T05:58:17.534Z",
+      "reviewState": "candidate_review_required",
+      "candidatePlaces": [
+        {
+          "kind": "country",
+          "countryCode": "AU",
+          "countryName": "Australia",
+          "city": null,
+          "sourceClasses": [
+            "stream_tag"
+          ]
+        }
+      ],
+      "sourceClasses": [
+        "stream_tag"
+      ],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "693883340",
+      "userLogin": "clioaite",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/clioaite",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reviewWindowExpiresAt": "2026-09-07T05:58:17.534Z",
+      "reviewState": "candidate_review_required",
+      "candidatePlaces": [
+        {
+          "kind": "country",
+          "countryCode": "AU",
+          "countryName": "Australia",
+          "city": null,
+          "sourceClasses": [
+            "stream_tag"
+          ]
+        }
+      ],
+      "sourceClasses": [
+        "stream_tag"
+      ],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "623981355",
+      "userLogin": "piapiufo",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/piapiufo",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reviewWindowExpiresAt": "2026-09-07T05:58:17.534Z",
+      "reviewState": "candidate_review_required",
+      "candidatePlaces": [
+        {
+          "kind": "country",
+          "countryCode": "JP",
+          "countryName": "Japan",
+          "city": null,
+          "sourceClasses": [
+            "stream_tag"
+          ]
+        }
+      ],
+      "sourceClasses": [
+        "stream_tag"
+      ],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "582336589",
+      "userLogin": "cesgod",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/cesgod",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reviewWindowExpiresAt": "2026-09-07T05:58:17.534Z",
+      "reviewState": "candidate_review_required",
+      "candidatePlaces": [
+        {
+          "kind": "country",
+          "countryCode": "MX",
+          "countryName": "Mexico",
+          "city": null,
+          "sourceClasses": [
+            "stream_tag"
+          ]
+        }
+      ],
+      "sourceClasses": [
+        "stream_tag"
+      ],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "478290210",
+      "userLogin": "sheiden",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/sheiden",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reviewWindowExpiresAt": "2026-09-07T05:58:17.534Z",
+      "reviewState": "candidate_review_required",
+      "candidatePlaces": [
+        {
+          "kind": "country",
+          "countryCode": "PH",
+          "countryName": "Philippines",
+          "city": null,
+          "sourceClasses": [
+            "stream_tag"
+          ]
+        }
+      ],
+      "sourceClasses": [
+        "stream_tag"
+      ],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "164567690",
+      "userLogin": "tiffajessi",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/tiffajessi",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reviewWindowExpiresAt": "2026-09-07T05:58:17.534Z",
+      "reviewState": "candidate_review_required",
+      "candidatePlaces": [
+        {
+          "kind": "country",
+          "countryCode": "US",
+          "countryName": "United States",
+          "city": null,
+          "sourceClasses": [
+            "stream_tag"
+          ]
+        }
+      ],
+      "sourceClasses": [
+        "stream_tag"
+      ],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "902215505",
+      "userLogin": "yokojpn4",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/yokojpn4",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reviewWindowExpiresAt": "2026-09-07T05:58:17.534Z",
+      "reviewState": "candidate_review_required",
+      "candidatePlaces": [
+        {
+          "kind": "country",
+          "countryCode": "JP",
+          "countryName": "Japan",
+          "city": null,
+          "sourceClasses": [
+            "stream_tag"
+          ]
+        }
+      ],
+      "sourceClasses": [
+        "stream_tag"
+      ],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "320878",
+      "userLogin": "protonjon",
+      "provider": "twitch",
+      "layer": "current",
+      "sourceReference": "https://www.twitch.tv/protonjon",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reviewWindowExpiresAt": "2026-09-07T05:58:17.534Z",
+      "reviewState": "candidate_review_required",
+      "candidatePlaces": [
+        {
+          "kind": "country",
+          "countryCode": "CA",
+          "countryName": "Canada",
+          "city": null,
+          "sourceClasses": [
+            "stream_tag"
+          ]
+        }
+      ],
+      "sourceClasses": [
+        "stream_tag"
+      ],
+      "qualifyingEvidenceRequired": true,
+      "candidateSourceCanAutoAccept": false,
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    }
+  ],
+  "rejected": [
+    {
+      "twitchUserId": "121202124",
+      "userLogin": "hadi_ow",
+      "sourceReference": "https://www.twitch.tv/hadi_ow",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reason": "future_or_planned_travel_wording",
+      "candidatePlaces": [],
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "654791928",
+      "userLogin": "overezeggs",
+      "sourceReference": "https://www.twitch.tv/overezeggs",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reason": "future_or_planned_travel_wording",
+      "candidatePlaces": [],
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "59624901",
+      "userLogin": "payo",
+      "sourceReference": "https://www.twitch.tv/payo",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reason": "future_or_planned_travel_wording",
+      "candidatePlaces": [
+        {
+          "kind": "country",
+          "countryCode": "CA",
+          "countryName": "Canada",
+          "city": null,
+          "sourceClasses": [
+            "stream_tag"
+          ]
+        }
+      ],
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "51115394",
+      "userLogin": "midnightsumo",
+      "sourceReference": "https://www.twitch.tv/midnightsumo",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reason": "future_or_planned_travel_wording",
+      "candidatePlaces": [
+        {
+          "kind": "country",
+          "countryCode": "JP",
+          "countryName": "Japan",
+          "city": null,
+          "sourceClasses": [
+            "stream_tag"
+          ]
+        }
+      ],
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "100408103",
+      "userLogin": "zchum",
+      "sourceReference": "https://www.twitch.tv/zchum",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reason": "future_or_planned_travel_wording",
+      "candidatePlaces": [],
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    },
+    {
+      "twitchUserId": "139417491",
+      "userLogin": "woojungx4",
+      "sourceReference": "https://www.twitch.tv/woojungx4",
+      "observedAt": "2026-09-06T05:58:17.534Z",
+      "reason": "future_or_planned_travel_wording",
+      "candidatePlaces": [
+        {
+          "kind": "country",
+          "countryCode": "KR",
+          "countryName": "South Korea",
+          "city": null,
+          "sourceClasses": [
+            "stream_tag"
+          ]
+        }
+      ],
+      "rawTextRetained": false,
+      "acceptedCurrentPlacement": false
+    }
+  ],
+  "invalid": []
+}
