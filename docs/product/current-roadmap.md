@@ -5,12 +5,12 @@ Normative specification: `docs/product/stream-map-spec-v0.7.md`
 Execution plan: `docs/product/stream-map-implementation-plan-v0.10.md`  
 City visualization specification: `docs/product/stream-map-city-visualization-spec-v0.1.md`  
 City reference-geometry contract: `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`  
-Audited runtime baseline: main `08d15987f4d804bf4c8f851d5b24c4d0a76e8c12`  
+Audited runtime baseline: main `db37167696aae41c9600822b417ac53724771859`  
 Last updated: 2026-09-06
 
 ## 1. Current milestone
 
-**Twitch Country and Twitch City are closed at their current public product boundaries. The shared Twitch Map keyboard/mobile/legend regression batch is closed through #1247, and the already-public `/twitch/map/` route is now included in the permanent sitemap/public-surface/browser/production-smoke inventory through #1259. Current / IRL remains fail-closed: the latest September 6 Top300 refresh measured 300 unique stable identities, reviewed 10 candidates across all 4 accepted evidence classes (40 identity/class pairs), and still produced zero fresh accepted Current placements. Kick Country K1 staging, K2 production stable-ID persistence, K3 production reviewed-Country runtime connection and KUI1/KUI2/KUI3a/KUI3b pre-public UI/proof are complete. K4 preactivation proof and the exact K4 cutover contract are also complete through #1255/#1265, but `/kick/map/` remains intentionally absent because K4 activation itself still requires separate explicit authorization.**
+**Twitch Country and Twitch City are closed at their current public product boundaries. The shared Twitch Map keyboard/mobile/legend regression batch is closed through #1247, and the already-public `/twitch/map/` route is now included in the permanent sitemap/public-surface/browser/production-smoke inventory through #1259. The later fail-closed data-error closeout is complete through #1275/#1276: failed population/API refreshes no longer retain stale geography/counts or stale population copy, and unavailable unmapped accounting is rendered explicitly until fresh recovery. Current / IRL remains fail-closed: the latest September 6 Top300 refresh measured 300 unique stable identities, reviewed 10 candidates across all 4 accepted evidence classes (40 identity/class pairs), and still produced zero fresh accepted Current placements. Kick Country K1 staging, K2 production stable-ID persistence, K3 production reviewed-Country runtime connection and KUI1/KUI2/KUI3a/KUI3b pre-public UI/proof are complete. K4 preactivation proof and the exact K4 cutover contract are also complete through #1255/#1265, but `/kick/map/` remains intentionally absent because K4 activation itself still requires separate explicit authorization.**
 
 The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock.
 
@@ -23,7 +23,7 @@ The Map program is not scheduled by the weekly Top-20 evidence-maintenance clock
 | Kick Country runtime | K1 #1239 complete; K2 #1249 complete; K3 #1252 complete in production; production smoke `34010236817` verifies reviewed Country runtime and K4 block | K4 remains separate explicit public gate |
 | Kick Country UI | KUI1 #1241 + KUI2 #1242 + KUI3a #1244 + KUI3b #1253 complete; preactivation #1255 and exact cutover contract #1265 complete; real-production browser proof remains green | K4 activation only after separate explicit authorization |
 | Current / IRL | 2026-09-06 latest bounded refresh: 300 unique stable IDs, 10 reviewed, 40 accepted-class pairs, 0 fresh qualifying evidence, 0 accepted, 0 true cross-country conflicts; public control disabled | fail closed; production stable-ID persistence and any public Current path remain separately gated |
-| Shared Map UI | #1245 geography controls + #1246 Country compact controls/legend + #1247 City mobile targets complete; #1259 adds Twitch Map to permanent public-surface/browser/smoke coverage | scoped regression/accessibility work only |
+| Shared Map UI | #1245 geography controls + #1246 Country compact controls/legend + #1247 City mobile targets complete; #1259 adds Twitch Map to permanent public-surface/browser/smoke coverage; #1275-#1276 close stale-data fail-closed and unavailable-copy regressions | scoped regression/accessibility work only |
 | Reviewed-evidence maintenance | bounded maintenance only | never block Map lanes |
 
 ## 3. Twitch Country — CLOSED
@@ -186,7 +186,7 @@ browser scenarios               4
 violations                      0
 ```
 
-The normal preview consumed the unchanged production payload and remained `country_blocked` with geography hidden because K4 is false. The renderer-proof scenario cloned that same production payload only inside local Chromium and lifted the K4 authorization flag for test purposes; Country rows and accounting were not substituted. This is proof, not production activation.
+The normal preview consumed the unchanged production payload and remained `country_blocked` with geography hidden because K4 is false. The renderer-proof scenario cloned that same production payload only inside local Chromium and lifted only the K4 authorization flag for test purposes; Country rows and accounting were not substituted. This is proof, not production activation.
 
 ### K4 preactivation and cutover contract
 
@@ -315,6 +315,10 @@ indexable/sitemap routes         22
 browser scenarios               104
 ```
 
+PR #1275 fixed a later fail-closed defect in the already-public Twitch Map: after a successful population load, a later API/population refresh failure could leave the previous Country/stream/count payload visible under `Data error`. The page now clears those stale presentation surfaces while preserving renderer-only fallback behavior.
+
+PR #1276 completed that error-state presentation contract. Population state is cleared to `Unavailable`, compact unmapped accounting renders `Unmapped accounting unavailable`, and fresh recovery restores current counts/reasons. Accepted candidate browser run `34041133229` passed the 104-scenario matrix plus the deterministic success → 503 → recovery audit with 3 API calls and 0 violations; artifact `9991741143`. Post-merge main production proof also passed Primary Domain Production Smoke `34041371788` and Twitch Map Production Browser Smoke `34041371752`; production artifact `9991785120` records Country/City `basemap-ready`, one canvas each, and zero page/console errors.
+
 Read-only City presentation audit still shows explicit empty state, separate country-only accounting and separate Base City conflict accounting. No creator coordinates, Current placement or new geography semantics were added.
 
 Shared UI is scoped maintenance/quality work only, not a serial blocker for Kick or Current prerequisites.
@@ -354,6 +358,8 @@ DONE   Current fresh Sep 6 review #1264 / run 34015266644 / 299 -> 9 reviewed ->
 DONE   Kick exact K4 cutover contract #1265
 DONE   Current live candidate probe sequence 4 #1272 / run 34036197901 / 300 -> 10 candidates
 DONE   Current review queue refresh #1273 / run 34036562297 / 300 -> 10 reviewed -> 0 accepted
+DONE   Twitch Map stale-data fail-closed recovery #1275
+DONE   Twitch Map unavailable presentation closeout #1276 / run 34041133229 / artifact 9991741143
 PAR    scoped shared Map regression/accessibility work and maintenance only
 BLOCK  Kick K4 canonical /kick/map/ activation pending separate explicit authorization/proof
 BLOCK  Current production stable-ID persistence pending explicit collector authorization
