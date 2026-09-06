@@ -1,7 +1,7 @@
 # ViewLoom documentation index
 
 Status: source-of-truth map  
-Stream Map audited runtime baseline: main `d024276a9a478e488f15f507ffb736c091b5702c`  
+Stream Map audited runtime baseline: main `ff220d1d141e2bcd190692a1f1ffbb7ee5f5390a`  
 Last updated: 2026-09-06
 
 ## Read first for Stream Map work
@@ -14,55 +14,43 @@ Last updated: 2026-09-06
 6. the relevant lane contract/specification
 7. current implementation/tests on `main`
 
+Current-main documents and accepted contracts override cached handoffs, old chat summaries and superseded branch-local plans.
+
 For Twitch City work, also read:
 
 - `docs/product/stream-map-city-confidence-contract-v0.1.md`
 - `docs/product/stream-map-city-visualization-spec-v0.1.md`
 - `docs/product/stream-map-city-reference-geometry-contract-v0.1.md`
 
-Older versioned Stream Map specs/plans remain history and do not override this current chain. `docs/product/stream-map-current-execution-v0.1.md` remains a superseded historical snapshot, not an active override.
-
-## Permanent product records outside Stream Map
-
-Stream Map updates must not delete or reinterpret accepted records for other ViewLoom surfaces.
-
-### Local Watchlist
-
-- `docs/product/local-watchlist-spec.md`
-- `docs/product/watchlist-v1-implementation-plan.md`
-- `docs/operations/watchlist-production-acceptance-2026-06-25.md`
+Older versioned Stream Map specs/plans remain historical and do not override this current chain.
 
 ## Current Stream Map snapshot
 
 ```text
 Program mainline                         Stream Map
-Audited runtime baseline                 d024276a9a478e488f15f507ffb736c091b5702c
+Audited runtime baseline                 ff220d1d141e2bcd190692a1f1ffbb7ee5f5390a
 Twitch Country                           closed at current product boundary
-Country primary renderer                 choropleth / filled regions
-Country UI issue #1214                   completed / closed
 Twitch City                              C1-C6 complete / public accepted
-City primary semantic object             City aggregate
-City reviewed reference points           8 aggregate references
-City no_geometry                         1 / list-only
-City creator coordinates                 not published / not inferred
-City Current-location evidence filter    disabled
+Shared Twitch UI regression              complete #1245-#1247
 Current / IRL public activation          false / disabled
-Current 2026-09-05 live review            300 measured / 8 reviewed
+Current 2026-09-05 live review           300 measured / 8 reviewed
 Current fresh qualifying evidence        0
 Current accepted placement               0
 Current true unresolved conflicts        2
-Kick Country review                      100/100 complete: 7 accepted / 3 excluded / 90 no evidence
-Kick internal runtime staging            connected / validated on real review artifacts
-Kick KUI1 preview shell                  complete #1241 / non-public
-Kick KUI2 Country aggregate UI           complete #1242 / non-public
-Kick KUI3a browser proof                 complete #1244 / 10 scenarios / 0 violations
-Kick KUI3b real-data proof               waits K3
-Kick canonical /kick/map/                absent
-Kick public reviewed-evidence runtime    not activated
-Kick production stable ID                blocked pending collector authorization
-Kick public activation                   blocked pending separate authorization/proof
-Twitch production stable ID              blocked pending collector authorization
-Twitch/Kick aggregation                  forbidden
+Kick Country review                      100 reviewed / 7 accepted / 3 excluded / 90 no evidence
+Kick K1 runtime staging                  complete #1239
+Kick KUI1                                complete #1241 / non-public
+Kick KUI2                                complete #1242 / non-public
+Kick KUI3a                               complete #1244 / 10 scenarios / 0 violations
+Kick K2 stable-ID persistence            complete #1249 / production
+Kick K2 production proof                 run 34008795931 / 100 observed / 100 stable IDs
+Kick current mapped streams              0
+Kick current API state                   blocked_reviewed_evidence
+Kick K3                                  next / separate authorization required
+Kick KUI3b                               waits K3
+Kick K4                                  separate public activation gate
+Kick canonical /kick/map/                absent / not public
+Twitch production stable ID for Current  blocked pending its own authorization
 Top20 weekly review                      maintenance sublane only
 ```
 
@@ -84,9 +72,7 @@ Top20 weekly review                      maintenance sublane only
 
 `docs/product/current-schedule.md`
 
-### Lane contracts
-
-Important Stream Map contracts include:
+### Important lane contracts
 
 - `docs/product/stream-map-city-confidence-contract-v0.1.md`
 - `docs/product/stream-map-city-visualization-spec-v0.1.md`
@@ -100,25 +86,23 @@ Important Stream Map contracts include:
 
 A lane contract narrows only its lane and cannot authorize another geography/provider path.
 
-## Current Country summary
+## Twitch Country summary
 
-Country is closed at its current product boundary.
+Country is closed at its current product boundary:
 
 ```text
 filled Country regions
 -> Streams/Viewers intensity
--> 5 log buckets
+-> five log buckets
 -> persistent Country selection independent of camera
 -> explicit World view reset
 -> mapped Country/stream drilldown
 -> explicit unmapped diagnostics
 ```
 
-Small-country markers remain aggregate Country fallbacks only, never creator/current-location pins.
+Small-country markers are aggregate Country fallbacks only, never creator/current-location pins. Issue #1214 remains completed and closed.
 
-Issue #1214 is completed and closed. Country maintenance does not block City/Kick/Current work.
-
-## Current City summary
+## Twitch City summary
 
 City remains explicit:
 
@@ -127,29 +111,20 @@ City remains explicit:
 /twitch/map/?geography=city
 ```
 
-Only accepted `home_base` / `declared_location` City evidence can place Base City. Country-only evidence is not promoted. Current/temporary evidence is not Base City. Conflicts fail closed.
+Only accepted `home_base` / `declared_location` City evidence may place Base City. Country-only evidence is not promoted. Current/temporary evidence is not Base City. Conflicts fail closed.
 
-Stable Twitch ID state is represented as `unavailable | partial | available`; login is not stable identity.
-
-City visualization semantics:
+Primary City semantics:
 
 ```text
 primary object              City aggregate
 aggregate key               countryCode + region-or-__none__ + city
 creator point layer         prohibited
-exact aggregate list        first-class
 map geometry                reviewed static registry only
 reference_point             City aggregate reference only
 missing/ambiguous geometry  no_geometry / list-only
 ```
 
-City C1-C6 are complete through #1233. The current registry has 8 reviewed `reference_point` entries and 1 `no_geometry` entry. `Sant Cugat del Valles` remains list-only.
-
-Public City acceptance includes reviewed marker/list reconciliation, mapped results before unmapped diagnostics, full-width mapped-stream results and a disabled Current-location evidence filter. Current / IRL itself remains disabled.
-
-Acceptance audit:
-
-`docs/audits/twitch-stream-map-city-public-acceptance-2026-09-05.json`
+Current reviewed geometry remains 8 `reference_point` entries and 1 `no_geometry`. These are aggregate references, not creator coordinates or municipal-boundary claims.
 
 ## Current / IRL boundary
 
@@ -158,29 +133,19 @@ Home/Base    durable accepted base geography
 Current/IRL  fresh explicitly time-bounded accepted geography
 ```
 
-Ready in code: optional stable-ID consumption, stable-ID coverage reporting, fail-closed Current response core and explicit public-readiness validation.
-
-Fresh September 5 evidence state:
+September 5 review:
 
 ```text
-Top300 live population      300
-reviewable candidates         8
-machine conflict rows         3
-reviewed identities           8
-fresh qualifying evidence     0
-accepted Current placement    0
-no qualifying evidence        6
-true unresolved conflicts     2
+Top300 population            300
+reviewable candidates          8
+reviewed identities            8
+fresh qualifying evidence      0
+accepted Current placement     0
+no qualifying evidence         6
+true unresolved conflicts      2
 ```
 
-The live queue's third machine conflict was `Japan` + `Tokyo` granularity for the same country and was not promoted to a competing-country conflict during manual review.
-
-Fresh audit records:
-
-- `docs/audits/twitch-stream-map-current-review-queue-live-result-2026-09-05.json`
-- `docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-result-2026-09-05.json`
-
-Current blockers:
+Current blockers remain:
 
 ```text
 production Twitch snapshot does not retain user_id / twitchUserId
@@ -188,142 +153,138 @@ public Twitch geography route has no Current mode
 fresh reviewed Current evidence = 0 accepted placements
 ```
 
-Current remains fail-closed. The same probe is not immediately rerun simply to seek a non-zero result. A later review requires a justified new signal/window.
+Kick K2 authorization does not authorize Twitch collector changes. Current remains fail-closed. Stale Draft #1107 is not a merge candidate as-is.
 
-Current never overwrites Base/Home automatically. Expired Current stops placing. Event venue alone does not prove presence. No inferred travel path or residential/GPS precision is published.
+## Kick Country boundary
 
-Stale Draft #1107 is not a merge candidate as-is and does not authorize a production collector change.
+Kick remains provider-separated. Stable identity is `broadcaster_user_id`, never slug/login.
 
-## Kick boundary
+Reviewed Country evidence:
 
-Kick remains provider-separated. Its stable identity is `broadcaster_user_id`, not slug/login.
+```text
+reviewed identities       100
+accepted Country            7
+excluded non-person         3
+no qualifying evidence     90
+conflict unmapped            0
+```
 
-The four reviewed Country batches are complete: 100 identities reviewed, 7 accepted, 3 excluded non-person, 90 with no qualifying evidence.
+K1 #1239 staged the reviewed Country bridge/runtime internally. The bridge deliberately strips provenance/raw profile text/viewer details beyond the terminal reviewed Country state; UI must not reconstruct what the runtime contract removed.
 
-Runtime/data ready in code: stable-ID-capable snapshot parser, public adapter, reviewed-evidence bridge, stable-ID live join, Country response core and internal reviewed-evidence runtime staging.
+## Kick K2 production acceptance
 
-K1 completed in PR #1239. The existing reviewed-evidence workflow validates the real four result files through the internal runtime staging path with reconciliation passing. Public activation remains false.
+K2 is complete through #1249.
 
-The pre-public UI lane is explicit:
+Implementation:
+
+```text
+existing /public/v1/livestreams request
+-> raw broadcaster_user_id
+-> normalized Kick stream row
+-> existing minute snapshot JSON
+```
+
+No additional Channels request, D1 schema/binding change, cadence change, retention/backfill change or Twitch collector change was made.
+
+Provider-scoped deploy run `34008654160` deployed Kick only and skipped Twitch.
+
+Production proof run `34008795931` observed:
+
+```text
+updatedAt                    2026-09-06T03:21:00.627Z
+observedStreams              100
+stableIdentityStreams        100
+missingStableIdentityStreams   0
+stableIdentityPercent          1
+mappedStreams                  0
+state                         blocked_reviewed_evidence
+```
+
+Draft #1083 is superseded by #1249 and closed.
+
+## Kick next gates
+
+```text
+K3     production reviewed-evidence runtime join     NEXT / separate authorization required
+KUI3b real production-connected UI/API/browser proof AFTER K3
+K4     canonical /kick/map/ public activation        SEPARATE GATE
+```
+
+K2 completion does not authorize K3 or K4.
+
+Until K4:
+
+```text
+/apps/web/kick/map/  absent
+/kick/map/           not public
+public activation    false
+mapped public rows   0
+```
+
+Current exact production Kick blockers are:
+
+```text
+reviewed_kick_country_evidence_runtime_not_connected
+public_country_activation_not_authorized
+```
+
+## Kick pre-public UI
 
 ```text
 KUI1  fail-closed preview shell                 COMPLETE #1241
 KUI2  Country aggregate choropleth/results      COMPLETE #1242
 KUI3a non-mutating browser proof                COMPLETE #1244
 KUI3b real production-connected proof           AFTER K3
-K4    canonical /kick/map/ public activation    SEPARATE GATE
 ```
 
-KUI1/KUI2/KUI3a remain under `apps/web/preview/kick-stream-map/`; they do not create `apps/web/kick/map/`, do not enter production Vite inputs and do not add a public navigation target.
+KUI3a accepted run `33978336854`: 10 scenarios, zero violations, zero mobile horizontal overflow, 44px minimum ready actions, zero creator markers, zero Twitch API requests, no public Kick map link/canonical.
 
-KUI2 aggregates only reviewed terminal `geography.countryCode` rows and paints Country regions. It does not use creator coordinates or Twitch evidence.
+KUI3a is fixture proof only and does not satisfy KUI3b.
 
-KUI3a accepted browser run `33978336854` covers 5 fixture states × 2 viewports = 10 scenarios with zero violations. Every 390px scenario has zero horizontal overflow; the ready path proves 44px action targets, MapLibre canvas rendering, keyboard Country selection, metric switching and World view reset. Creator marker count and Twitch API request count are both zero. This fixture proof does not substitute for KUI3b real production-connected proof.
+## Shared Map UI
 
-The current reviewed runtime bridge intentionally drops evidence/source prose beyond terminal reviewed Country. The UI therefore does not invent a source-provenance filter that the runtime contract cannot support.
-
-Kick blockers remain:
+The September 6 regression batch is complete:
 
 ```text
-production Kick snapshot does not retain broadcaster_user_id
-public Kick Country activation is not authorized
+#1245 geography controls / keyboard / URL state / 44px
+#1246 compact Country controls + active five-step intensity legend
+#1247 City selected-City/filter/population/MapLibre mobile targets >=44px
 ```
 
-K2 production stable-ID persistence requires explicit collector authorization. Stale Draft #1083 is not a merge candidate as-is. Twitch evidence reuse and automatic Kick geography remain prohibited.
+Shared UI work is now scoped maintenance and does not serialize Kick or Current lanes.
 
-## Scheduling rule
+## Reviewed-evidence maintenance
 
-The reviewed-evidence Top-20 cadence is maintenance-only and does not block:
+The bounded Top-20 process is a maintenance sublane only. It does not govern the entire Stream Map schedule and does not authorize collector/schema/cadence/retention changes.
 
-- shared Map UI/accessibility/regression work;
-- later justified Current/IRL read-only/evidence work;
-- docs, fixtures, CI and preview-only verification;
-- other safe non-mutating lane maintenance.
+## Production safety
 
-Explicit production collector authorization is required before either blocked stable-ID persistence change is implemented/merged.
+- `main` is production; no direct push.
+- Provider identity/evidence remains separated; no Twitch/Kick aggregation.
+- Home/Base and Current/IRL remain distinct.
+- No language/timezone/name/category/IP geography inference.
+- No creator residential/GPS precision.
+- No production collector, D1/schema/binding, cadence, retention or backfill mutation without its own authorization/gate.
+- K2 authorization was consumed by #1249 and is not reusable for K3, K4 or Twitch stable-ID persistence.
 
-## Global Stream Map invariants
+## Permanent product records outside Stream Map
 
-- provider-scoped identities remain provider-separated;
-- no Twitch/Kick geography/viewer aggregation;
-- no language/timezone/name/category/IP geography inference;
-- no candidate-only placement;
-- no nationality/birthplace-as-residence/current placement;
-- no City inference from Country;
-- no Current inference from Country/Home/Base;
-- no Country/region centroid as creator City coordinate;
-- no fuzzy geocoder City placement;
-- no non-person-as-person placement;
-- no silent geography conflict resolution;
-- no demo geography presented as real;
-- no residential address/GPS publication;
-- no inferred travel path;
-- collector cadence, retention, D1 schema/binding, backfill and permanent acquisition changes remain separately gated.
+Stream Map updates must not delete or reinterpret accepted records for other ViewLoom surfaces.
 
-## Current mainline order
+### Local Watchlist
 
-```text
-DONE   documentation source-of-truth reconciliation #1219
-DONE   Country closeout + #1214 completion
-DONE   City C1-C6 through #1233
-DONE   Twitch Current current-main readiness gate #1234
-DONE   Kick Country current-main readiness gate #1235
-DONE   Current fresh Top300 review: 300 -> 8 reviewed -> 0 accepted
-DONE   Kick K1 internal reviewed-evidence runtime staging #1239
-DONE   Kick KUI1 fail-closed pre-public shell #1241
-DONE   Kick KUI2 Country aggregate renderer/results #1242
-DONE   Kick KUI3a non-mutating browser proof #1244 / run 33978336854
-PAR    shared Map regression/accessibility work and non-mutating lane maintenance
-BLOCK  Kick K2 production stable-ID persistence pending explicit collector authorization
-WAIT   Kick K3 production runtime connection until K2
-WAIT   Kick KUI3b real production-connected proof until K3
-BLOCK  Kick K4 canonical /kick/map/ activation pending separate authorization/proof
-BLOCK  Current production stable-ID persistence pending explicit collector authorization
-BLOCK  Current public path additionally pending fresh accepted temporal evidence
-```
+- `docs/product/local-watchlist-spec.md`
+- `docs/product/watchlist-v1-implementation-plan.md`
+- `docs/operations/watchlist-production-acceptance-2026-06-25.md`
 
-There is no active schedule that sends development back to City C1-C5.
+## Historical accepted category-program state
 
-## Historical records
+These records remain historical acceptance evidence and do not override the current Stream Map authority chain.
 
-Older Stream Map specs/plans/execution snapshots remain useful for audit history but cannot override the current authority chain.
-
-This does not make permanent non-Stream-Map records historical; the Watchlist records above remain accepted permanent product records.
-
-## Documentation synchronization rule
-
-A normative Stream Map change must not leave a known contradictory active source-of-truth document.
-
-Every relevant PR must consider:
-
-```text
-spec impact
-implementation-plan impact
-roadmap impact
-schedule impact
-Country/City/Kick/Current boundary impact
-collector/D1/schema/cadence/retention impact
-production impact
-```
-
-Material changes to a versioned specification/plan use a new version rather than rewriting historical meaning.
-
-## Retained Twitch category rollout
-
-The completed Twitch category/Heatmap rollout remains a historical accepted milestone and is preserved independently of Stream Map work.
-
-- final seven-day audit accepted `2016 / 2016` expected slots;
-- category-reference coverage was `0.995353`;
-- PR #740 exposed Category + Top;
-- PR #741 repaired the rejected 390px mobile overflow;
-- accepted production SHA was `b006f45d0676c9ff3e05e5d6727458e43802de53`;
-- no Kick category UI was authorized by the Twitch rollout.
-
-Historical development-policy verifier anchors retained below; they do not redefine the current Stream Map milestone:
-
-```text
 Twitch category stability + Heatmap public rollout complete
+
 Public production acceptance run 31244148651 success
-12a5-twitch-heatmap-category-public-cutover-acceptance.json
-Current-main documents and accepted contracts override cached handoffs
-```
+
+Accepted cutover record: `docs/audits/12a5-twitch-heatmap-category-public-cutover-acceptance.json`
+
+The completed Twitch Heatmap category-filter rollout remains accepted. Kick category UI was not authorized by that rollout. The accepted production SHA remains `b006f45d0676c9ff3e05e5d6727458e43802de53`.
