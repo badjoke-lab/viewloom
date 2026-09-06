@@ -7,10 +7,10 @@ const publicRouteSource = readFileSync('apps/web/functions/api/twitch-stream-map
 const geographyUiSource = readFileSync('apps/web/src/features/twitch-stream-map/geography-ui-bootstrap.ts', 'utf8')
 const responseCoreSource = readFileSync('scripts/twitch-stream-map-current-response-core.mjs', 'utf8')
 const liveResult = JSON.parse(
-  readFileSync('docs/audits/twitch-stream-map-current-review-queue-live-result-2026-09-05.json', 'utf8'),
+  readFileSync('docs/audits/twitch-stream-map-current-review-queue-live-result-2026-09-06.json', 'utf8'),
 )
 const acquisitionResult = JSON.parse(
-  readFileSync('docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-result-2026-09-05.json', 'utf8'),
+  readFileSync('docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-result-2026-09-06.json', 'utf8'),
 )
 
 const collectorRetainsStableId = collectorSource.includes('twitchUserId: string | null') &&
@@ -36,11 +36,13 @@ const currentUiRemainsDisabled = geographyUiSource.includes('Current / IRL remai
 const sourceProbeRun = Number(acquisitionResult?.sourceProbe?.workflowRunId ?? 0)
 const liveProbeRun = Number(liveResult?.source?.workflowRunId ?? 0)
 const liveSampleSize = Number(liveResult?.population?.sampleSize ?? 0)
+const liveDuplicateStableIdentityRowsDropped = Number(liveResult?.population?.duplicateStableIdentityRowsDropped ?? 0)
 const liveReviewableCandidates = Number(liveResult?.summary?.reviewableCandidates ?? 0)
 const liveConflictingCandidates = Number(liveResult?.summary?.conflictingCandidates ?? 0)
 const reviewedCandidates = Number(acquisitionResult?.summary?.identitiesReviewed ?? 0)
 const noFreshQualifyingEvidence = Number(acquisitionResult?.summary?.noFreshQualifyingEvidence ?? 0)
 const conflictUnmapped = Number(acquisitionResult?.summary?.conflictUnmapped ?? 0)
+const sameCountryGranularityMachineConflictsClosed = Number(acquisitionResult?.summary?.sameCountryGranularityMachineConflictsClosed ?? 0)
 const freshReviewedEvidence = Number(acquisitionResult?.summary?.freshQualifyingEvidence ?? 0)
 const acceptedCurrentPlacement = Number(acquisitionResult?.summary?.acceptedCurrentPlacement ?? 0)
 const acquisitionEntries = Array.isArray(acquisitionResult?.entries) ? acquisitionResult.entries : []
@@ -68,11 +70,13 @@ const readiness = {
     sourceProbeRun,
     sourceObservedAt: acquisitionResult?.sourceProbe?.observedAt ?? null,
     liveSampleSize,
+    liveDuplicateStableIdentityRowsDropped,
     liveReviewableCandidates,
     liveConflictingCandidates,
     reviewedCandidates,
     noFreshQualifyingEvidence,
     conflictUnmapped,
+    sameCountryGranularityMachineConflictsClosed,
     freshQualifyingEvidence: freshReviewedEvidence,
     acceptedCurrentPlacement,
   },
@@ -93,20 +97,22 @@ const readiness = {
 
 assert.equal(liveResult?.schemaVersion, 'viewloom-twitch-stream-map-current-review-queue-live-result-v0.1')
 assert.equal(acquisitionResult?.schemaVersion, 'viewloom-twitch-stream-map-current-temporal-evidence-acquisition-result-v0.2')
-assert.equal(sourceProbeRun, 33961161696, 'Current evidence review must point at the September 5 live probe')
+assert.equal(sourceProbeRun, 34015266644, 'Current evidence review must point at the September 6 live probe')
 assert.equal(liveProbeRun, sourceProbeRun, 'Current live result and evidence review must use the same probe run')
-assert.equal(liveSampleSize, 300)
-assert.equal(liveReviewableCandidates, 8)
-assert.equal(liveConflictingCandidates, 3)
+assert.equal(liveSampleSize, 299)
+assert.equal(liveDuplicateStableIdentityRowsDropped, 1)
+assert.equal(liveReviewableCandidates, 9)
+assert.equal(liveConflictingCandidates, 1)
 assert.equal(liveResult?.persistence?.d1Writes, 0)
 assert.equal(liveResult?.persistence?.productionDeployment, false)
 assert.equal(liveResult?.persistence?.rawTextArtifactAllowed, false)
 assert.equal(liveResult?.decision?.acceptanceAuthorized, false)
 assert.equal(liveResult?.decision?.publicCurrentPlacementAuthorized, false)
-assert.equal(reviewedCandidates, 8)
+assert.equal(reviewedCandidates, 9)
 assert.equal(acquisitionEntries.length, reviewedCandidates)
-assert.equal(noFreshQualifyingEvidence, 6)
-assert.equal(conflictUnmapped, 2)
+assert.equal(noFreshQualifyingEvidence, 9)
+assert.equal(conflictUnmapped, 0)
+assert.equal(sameCountryGranularityMachineConflictsClosed, 1)
 assert.equal(acquisitionEntries.filter((entry) => entry?.outcome === 'conflict_unmapped').length, conflictUnmapped)
 assert.equal(acquisitionEntries.filter((entry) => entry?.outcome === 'no_fresh_qualifying_temporal_evidence').length, noFreshQualifyingEvidence)
 assert.equal(acquisitionEntries.some((entry) => Array.isArray(entry?.freshQualifyingEvidence) && entry.freshQualifyingEvidence.length > 0), false)

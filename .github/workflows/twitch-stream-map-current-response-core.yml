@@ -7,9 +7,10 @@ on:
       - 'scripts/verify-twitch-stream-map-current-response-core.mjs'
       - 'scripts/verify-twitch-stream-map-current-public-readiness.mjs'
       - 'scripts/verify-twitch-stream-map-current-r2-preauthorization-readiness.mjs'
+      - 'scripts/verify-twitch-stream-map-current-temporal-evidence-2026-09-06.mjs'
       - 'docs/audits/twitch-stream-map-current-response-fixture-v0.1.json'
-      - 'docs/audits/twitch-stream-map-current-review-queue-live-result-2026-09-05.json'
-      - 'docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-result-2026-09-05.json'
+      - 'docs/audits/twitch-stream-map-current-review-queue-live-result-2026-09-06.json'
+      - 'docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-result-2026-09-06.json'
       - 'docs/audits/twitch-stream-map-current-r2-preauthorization-readiness-2026-09-06.json'
       - 'workers/collector-twitch/scripts/current-location-evidence-eligibility.mjs'
       - 'workers/collector-twitch/src/index-category.ts'
@@ -24,9 +25,10 @@ on:
       - 'scripts/verify-twitch-stream-map-current-response-core.mjs'
       - 'scripts/verify-twitch-stream-map-current-public-readiness.mjs'
       - 'scripts/verify-twitch-stream-map-current-r2-preauthorization-readiness.mjs'
+      - 'scripts/verify-twitch-stream-map-current-temporal-evidence-2026-09-06.mjs'
       - 'docs/audits/twitch-stream-map-current-response-fixture-v0.1.json'
-      - 'docs/audits/twitch-stream-map-current-review-queue-live-result-2026-09-05.json'
-      - 'docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-result-2026-09-05.json'
+      - 'docs/audits/twitch-stream-map-current-review-queue-live-result-2026-09-06.json'
+      - 'docs/audits/twitch-stream-map-current-temporal-evidence-acquisition-result-2026-09-06.json'
       - 'docs/audits/twitch-stream-map-current-r2-preauthorization-readiness-2026-09-06.json'
       - 'workers/collector-twitch/scripts/current-location-evidence-eligibility.mjs'
       - 'workers/collector-twitch/src/index-category.ts'
@@ -48,6 +50,8 @@ jobs:
           node-version: '22'
       - name: Verify Twitch Current response core
         run: node scripts/verify-twitch-stream-map-current-response-core.mjs
+      - name: Verify September 6 Current temporal evidence audit
+        run: node scripts/verify-twitch-stream-map-current-temporal-evidence-2026-09-06.mjs
       - name: Verify Twitch Current public readiness remains explicitly blocked
         run: node scripts/verify-twitch-stream-map-current-public-readiness.mjs
       - name: Verify Twitch Current R2 pre-authorization readiness
