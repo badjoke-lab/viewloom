@@ -2,9 +2,9 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { buildKickReviewedCityEvidence } from './kick-stream-map-reviewed-city-evidence-core.mjs'
 import {
-  KICK_REVIEWED_CITY_RUNTIME_DATA,
-  KICK_REVIEWED_CITY_RUNTIME_DATA_VERSION,
-} from '../apps/web/functions/api/kick-stream-map-reviewed-city-runtime-data.mjs'
+  KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA,
+  KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA_VERSION,
+} from './kick-stream-map-reviewed-city-runtime-staging-data.mjs'
 
 const result = JSON.parse(readFileSync('docs/audits/kick-stream-map-city-review-result-2026-09-07-01.json', 'utf8'))
 const evidence = buildKickReviewedCityEvidence([result])
@@ -38,8 +38,8 @@ const nonAccepted = evidence.filter((row) => row.outcome !== 'accepted')
 assert.ok(nonAccepted.every((row) => row.claimKind === null && row.placement === null))
 assert.deepEqual(nonAccepted.map((row) => row.stableKickUserId).sort(), ['27894320', '37423182'])
 
-assert.equal(KICK_REVIEWED_CITY_RUNTIME_DATA_VERSION, 'viewloom-kick-reviewed-city-runtime-data-v0.1')
-const runtimeComparable = KICK_REVIEWED_CITY_RUNTIME_DATA.map((row) => ({
+assert.equal(KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA_VERSION, 'viewloom-kick-reviewed-city-runtime-staging-data-v0.1')
+const runtimeComparable = KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA.map((row) => ({
   provider: 'kick',
   stableKickUserId: row.stableKickUserId,
   outcome: row.outcome,
@@ -48,7 +48,7 @@ const runtimeComparable = KICK_REVIEWED_CITY_RUNTIME_DATA.map((row) => ({
 }))
 assert.deepEqual(runtimeComparable, evidence)
 
-const runtimeSerialized = JSON.stringify(KICK_REVIEWED_CITY_RUNTIME_DATA)
+const runtimeSerialized = JSON.stringify(KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA)
 for (const forbidden of [
   '\"slug\"',
   '\"sourceUrl\"',
@@ -70,7 +70,7 @@ for (const productionPath of [
 ]) {
   const source = readFileSync(productionPath, 'utf8')
   assert.equal(
-    source.includes('kick-stream-map-reviewed-city-runtime-data'),
+    source.includes('kick-stream-map-reviewed-city-runtime-staging-data'),
     false,
     `${productionPath} must not connect KC2 City staging before KC3`,
   )
@@ -90,7 +90,7 @@ console.log(JSON.stringify({
   accepted: result.summary.accepted,
   noQualifyingEvidence: result.summary.noQualifyingEvidence,
   acceptedCities: Object.keys(result.summary.acceptedCities),
-  runtimeDataVersion: KICK_REVIEWED_CITY_RUNTIME_DATA_VERSION,
+  runtimeDataVersion: KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA_VERSION,
   productionConnected: false,
   providerRequests: result.providerRequests,
   productionDeployment: result.productionDeployment,
