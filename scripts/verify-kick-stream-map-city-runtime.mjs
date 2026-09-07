@@ -64,6 +64,18 @@ assert.equal(response.coverage.unmappedReasons.no_qualifying_reviewed_city, 2)
 assert.equal(response.coverage.unmappedReasons.no_reviewed_kick_city_evidence, 1)
 assert.equal(response.coverage.unmappedReasons.stable_identity_unavailable, 1)
 
+const stableComplete = buildKickStreamMapCityRuntime({
+  snapshotItems: snapshotItems.filter((row) => row.broadcaster_user_id),
+  updatedAt: '2026-09-07T00:00:00Z',
+  sourceMode: 'fixture',
+})
+assert.equal(stableComplete.coverage.observedStreams, 8)
+assert.equal(stableComplete.coverage.stableIdentityStreams, 8)
+assert.equal(stableComplete.activation.publicCityActivationReady, true)
+assert.equal(stableComplete.publicCityActivationAuthorized, false)
+assert.equal(stableComplete.state, 'blocked_public_activation')
+assert.deepEqual(stableComplete.activation.blockers, ['public_city_activation_not_authorized'])
+
 const mappedCities = new Map(response.mappedStreams.map((row) => [row.slug, row.geography]))
 assert.equal(mappedCities.get('eray')?.city, 'İstanbul')
 assert.equal(mappedCities.get('niter')?.city, 'Wrocław')
@@ -123,6 +135,7 @@ console.log(JSON.stringify({
   mappedCityAggregates: response.coverage.mappedCityAggregateCount,
   referenceGeometryAggregates: response.coverage.referenceGeometryAggregates,
   listOnlyAggregates: response.coverage.listOnlyAggregates,
+  stableCompleteState: stableComplete.state,
   publicCityActivationAuthorized: response.publicCityActivationAuthorized,
   countryDefaultActivationPreserved: true,
   stableIdentityPublished: response.semantics.stableIdentityPublished,
