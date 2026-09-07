@@ -79,9 +79,9 @@ for (const fragment of [
   'Country response contract is unsafe',
   'country_empty',
   'No reviewed Country rows to render',
-  'Preview data unavailable',
+  'Country preview data unavailable',
 ]) {
-  assert.ok(entry.includes(fragment), `preview entry missing explicit state: ${fragment}`)
+  assert.ok(entry.includes(fragment), `preview entry missing explicit Country state: ${fragment}`)
 }
 
 const html = readFileSync('apps/web/preview/kick-stream-map/index.html', 'utf8')
