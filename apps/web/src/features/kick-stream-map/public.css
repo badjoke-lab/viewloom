@@ -86,6 +86,34 @@
   display: none;
 }
 
+.page--kick-stream-map .kick-map-preview__tooltip {
+  position: absolute;
+  z-index: 8;
+  display: grid;
+  gap: 3px;
+  pointer-events: none;
+  padding: 8px 10px;
+  border: 1px solid #637064;
+  border-radius: 8px;
+  background: rgba(10, 14, 12, .96);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, .35);
+  font-size: 12px;
+}
+
+.stream-map-kick-reason-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line, #30363d);
+}
+
+.stream-map-kick-reason-row code {
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 720px) {
   .page--kick-stream-map .stream-map-geography-panel {
     grid-template-columns: 1fr;
