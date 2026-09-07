@@ -46,6 +46,7 @@ export async function renderKickCountryPreviewMap(
 ): Promise<KickCountryPreviewMapController | null> {
   if (!model.allowGeography || !model.contractSafe || model.countryRows.length === 0) return null
 
+  const previewOnly = container.hasAttribute('data-kick-preview-map')
   container.dataset.mapState = 'basemap-loading'
   const geometry = await loadGeometry()
   let metric: Metric = 'viewers'
@@ -54,13 +55,21 @@ export async function renderKickCountryPreviewMap(
 
   const map = new maplibregl.Map({
     container,
-    style: OPENFREEMAP_DARK_STYLE,
-    center: [10, 18],
-    zoom: 1.15,
-    minZoom: 0.8,
-    maxZoom: 6,
+    style: previewOnly ? {
+      version: 8,
+      sources: {},
+      layers: [{
+        id: 'kick-preview-background',
+        type: 'background',
+        paint: { 'background-color': '#0d1117' },
+      }],
+    } : OPENFREEMAP_DARK_STYLE,
+    center: previewOnly ? [0, 18] : [10, 18],
+    zoom: previewOnly ? 0.55 : 1.15,
+    minZoom: previewOnly ? 0.25 : 0.8,
+    maxZoom: previewOnly ? 5 : 6,
     maxBounds: SAFE_WORLD_BOUNDS,
-    attributionControl: {},
+    attributionControl: previewOnly ? false : {},
     dragRotate: false,
     pitchWithRotate: false,
   })
@@ -79,7 +88,7 @@ export async function renderKickCountryPreviewMap(
   map.on('error', failBeforeLoad)
 
   await new Promise<void>((resolve, reject) => {
-    const timeout = window.setTimeout(() => reject(new Error('Kick OpenFreeMap basemap load timed out')), 20_000)
+    const timeout = window.setTimeout(() => reject(new Error('Kick Map basemap load timed out')), 20_000)
     map.once('load', () => {
       window.clearTimeout(timeout)
       loaded = true
