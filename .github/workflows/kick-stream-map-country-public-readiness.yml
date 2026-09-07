@@ -161,6 +161,124 @@ jobs:
         if: github.event_name == 'pull_request'
         working-directory: apps/web
         run: node scripts/kick-stream-map-kui3b-production-browser-proof.mjs
+      - name: Run live production Kick public Map proof
+        shell: bash
+        run: |
+          mkdir -p /tmp/kick-stream-map-production-public-browser-proof
+          cat > /tmp/viewloom-playwright/kick-production-public-proof.mjs <<'NODE'
+          import assert from 'node:assert/strict'
+          import { writeFile } from 'node:fs/promises'
+          import { chromium } from 'playwright'
+
+          const origin = (process.env.KICK_MAP_PRODUCTION_ORIGIN || 'https://www.viewloom.net').replace(/\/$/, '')
+          const outputRoot = '/tmp/kick-stream-map-production-public-browser-proof'
+          const viewports = [
+            { id: 'desktop-1440', width: 1440, height: 1000 },
+            { id: 'mobile-390', width: 390, height: 844 },
+          ]
+          const browser = await chromium.launch({
+            headless: true,
+            args: ['--enable-webgl', '--use-gl=angle', '--use-angle=swiftshader', '--disable-gpu-sandbox'],
+          })
+          const evidence = { schema: 'viewloom-kick-stream-map-production-public-browser-proof-v1', origin, result: 'running', scenarios: [], violations: [] }
+
+          try {
+            for (const viewport of viewports) {
+              const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } })
+              const page = await context.newPage()
+              const pageErrors = []
+              const consoleErrors = []
+              const apiRequests = []
+              page.on('pageerror', (error) => pageErrors.push(error.message))
+              page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()) })
+              page.on('request', (request) => {
+                const url = new URL(request.url())
+                if (url.pathname.startsWith('/api/')) apiRequests.push(`${url.pathname}${url.search}`)
+              })
+
+              const response = await page.goto(`${origin}/kick/map/?production-public-proof=${encodeURIComponent(process.env.GITHUB_RUN_ID || 'manual')}-${viewport.id}`, { waitUntil: 'domcontentloaded', timeout: 45_000 })
+              await page.waitForFunction(() => {
+                const state = document.querySelector('[data-stream-map-state]')?.textContent?.trim()
+                return state && state !== 'Loading'
+              }, null, { timeout: 30_000 })
+              await page.waitForFunction(() => {
+                const state = document.querySelector('#stream-map-root')?.getAttribute('data-map-state')
+                return state && state !== 'basemap-loading'
+              }, null, { timeout: 45_000 })
+
+              const facts = await page.evaluate(() => {
+                const text = (selector) => document.querySelector(selector)?.textContent?.trim() ?? ''
+                const number = (selector) => Number(text(selector).replace(/,/g, '')) || 0
+                const map = document.querySelector('#stream-map-root')
+                const mapRect = map instanceof HTMLElement ? map.getBoundingClientRect() : null
+                return {
+                  title: document.title,
+                  h1: text('h1'),
+                  state: text('[data-stream-map-state]'),
+                  mapState: map?.getAttribute('data-map-state') ?? null,
+                  observed: number('#stream-map-observed'),
+                  mapped: number('#stream-map-mapped'),
+                  unmapped: number('#stream-map-unmapped'),
+                  canvasCount: document.querySelectorAll('#stream-map-root .maplibregl-canvas').length,
+                  controlCount: document.querySelectorAll('#stream-map-root .maplibregl-ctrl').length,
+                  countryRows: document.querySelectorAll('#stream-map-country-list .stream-map-country-row').length,
+                  streamRows: document.querySelectorAll('#stream-map-stream-list .stream-map-stream-row').length,
+                  countryEmpty: document.querySelectorAll('#stream-map-country-list .stream-map-empty').length,
+                  streamEmpty: document.querySelectorAll('#stream-map-stream-list .stream-map-empty').length,
+                  oldPreviewFacts: document.querySelectorAll('.kick-map-preview__facts').length,
+                  oldAuditCards: Array.from(document.querySelectorAll('body *')).filter((node) => /Stable identity contract|Public activation|Current blockers/i.test(node.textContent ?? '') && node.children.length === 0).length,
+                  overflow: Math.max(0, document.body.scrollWidth - document.body.clientWidth),
+                  mapRect: mapRect ? { width: Math.round(mapRect.width), height: Math.round(mapRect.height) } : { width: 0, height: 0 },
+                }
+              })
+
+              const violations = []
+              if (response?.status() !== 200) violations.push(`route returned ${response?.status() ?? 'null'}`)
+              if (facts.title !== 'Stream Map for Kick live streams | ViewLoom') violations.push(`title ${facts.title}`)
+              if (facts.h1 !== 'Stream Map') violations.push(`h1 ${facts.h1}`)
+              if (facts.state !== 'Ready') violations.push(`state ${facts.state}`)
+              if (facts.observed <= 0) violations.push(`observed ${facts.observed}`)
+              if (facts.oldPreviewFacts !== 0) violations.push('old preview facts remain public')
+              if (facts.oldAuditCards !== 0) violations.push(`old audit cards ${facts.oldAuditCards}`)
+              if (facts.overflow > 2) violations.push(`horizontal overflow ${facts.overflow}px`)
+              if (apiRequests.some((request) => /twitch/i.test(request))) violations.push(`Twitch API request ${apiRequests.join(', ')}`)
+              if (pageErrors.length) violations.push(`page errors: ${pageErrors.join(' | ')}`)
+              if (consoleErrors.length) violations.push(`console errors: ${consoleErrors.join(' | ')}`)
+
+              if (facts.mapped > 0) {
+                if (facts.mapState !== 'basemap-ready') violations.push(`mapped map state ${facts.mapState}`)
+                if (facts.canvasCount !== 1) violations.push(`mapped canvas count ${facts.canvasCount}`)
+                if (facts.controlCount < 1) violations.push(`mapped controls ${facts.controlCount}`)
+                if (facts.countryRows < 1) violations.push(`mapped country rows ${facts.countryRows}`)
+                if (facts.streamRows !== facts.mapped) violations.push(`mapped stream rows ${facts.streamRows} != ${facts.mapped}`)
+                if (facts.mapRect.height < (viewport.width <= 390 ? 300 : 400)) violations.push(`mapped map height ${facts.mapRect.height}px`)
+              } else {
+                if (facts.mapState !== 'empty') violations.push(`zero-mapped map state ${facts.mapState}`)
+                if (facts.canvasCount !== 0) violations.push(`zero-mapped canvas count ${facts.canvasCount}`)
+                if (facts.countryRows !== 0) violations.push(`zero-mapped country rows ${facts.countryRows}`)
+                if (facts.streamRows !== 0) violations.push(`zero-mapped stream rows ${facts.streamRows}`)
+                if (facts.countryEmpty < 1) violations.push('zero-mapped country empty state missing')
+                if (facts.streamEmpty < 1) violations.push('zero-mapped stream empty state missing')
+              }
+
+              const screenshot = `kick-production--${viewport.id}.png`
+              await page.screenshot({ path: `${outputRoot}/${screenshot}`, fullPage: true })
+              const scenario = { id: `kick-production--${viewport.id}`, viewport, facts, apiRequests, pageErrors, consoleErrors, violations, screenshot }
+              evidence.scenarios.push(scenario)
+              for (const violation of violations) evidence.violations.push({ scenario: scenario.id, violation })
+              await context.close()
+            }
+            evidence.result = evidence.violations.length === 0 ? 'pass' : 'fail'
+            evidence.counts = { viewports: viewports.length, scenarios: evidence.scenarios.length, violations: evidence.violations.length }
+            await writeFile(`${outputRoot}/evidence.json`, `${JSON.stringify(evidence, null, 2)}\n`)
+            console.log(JSON.stringify({ result: evidence.result, counts: evidence.counts, scenarios: evidence.scenarios.map(({ id, facts, violations }) => ({ id, facts, violations })) }, null, 2))
+            assert.equal(evidence.violations.length, 0, JSON.stringify(evidence.violations))
+          } finally {
+            await browser.close()
+          }
+          NODE
+          cd /tmp/viewloom-playwright
+          node kick-production-public-proof.mjs
       - name: Upload Kick Map browser evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -170,6 +288,7 @@ jobs:
             /tmp/kick-stream-map-preview-browser-audit/**
             /tmp/kick-stream-map-public-browser-proof/**
             /tmp/kick-stream-map-kui3b-production-browser-proof/**
+            /tmp/kick-stream-map-production-public-browser-proof/**
             /tmp/kick-map-preview-vite.log
             /tmp/kick-map-public.html
           if-no-files-found: warn
