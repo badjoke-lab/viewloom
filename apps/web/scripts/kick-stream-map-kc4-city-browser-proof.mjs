@@ -93,7 +93,7 @@ async function fetchProductionPayloads() {
   assert.equal(country.state === 'ready' || country.state === 'empty', true)
   assert.equal(city.provider, 'kick')
   assert.equal(city.geographyMode, 'city')
-  assert.equal(city.publicCityActivationAuthorized, false)
+  assert.equal(city.publicCityActivationAuthorized, true)
   assert.equal(city.activation?.publicCityActivationReady, true)
   assert.equal(city.coverage?.stableIdentityStreams, city.coverage?.observedStreams)
   assert.equal(city.coverage?.reconciliation?.passes, true)
@@ -104,7 +104,7 @@ async function fetchProductionPayloads() {
   assert.equal(city.semantics?.creatorCoordinatesAllowed, false)
   assert.equal(city.semantics?.reviewedAggregateReferenceOnly, true)
   assert.equal(city.semantics?.noGeometryListOnly, true)
-  assert.equal(city.coverage?.referenceGeometryAggregates, 0, 'KC3 production must remain list-only before reviewed Kick City reference geometry exists')
+  assert.equal(city.coverage?.referenceGeometryAggregates, 0, 'Current production City must remain list-only while no reviewed Kick City reference geometry exists')
   assert.equal(city.coverage?.listOnlyAggregates, city.coverage?.mappedCityAggregateCount)
   assert.deepEqual(findForbiddenKeys(country), [])
   assert.deepEqual(findForbiddenKeys(city), [])
@@ -230,7 +230,7 @@ async function auditProductionConnected(browser, production, viewport) {
   if (pageErrors.length) violations.push(`page errors: ${pageErrors.join(' | ')}`)
   if (consoleErrors.length) violations.push(`console errors: ${consoleErrors.join(' | ')}`)
   if (facts.overflow > 2) violations.push(`horizontal overflow ${facts.overflow}px`)
-  if (facts.publicCityActivation !== 'City not authorized') violations.push(`KC5 boundary changed: ${facts.publicCityActivation}`)
+  if (facts.publicCityActivation !== 'City authorized') violations.push(`KC5 production activation not reflected: ${facts.publicCityActivation}`)
   for (const target of facts.actionTargets) if (target.height < 44) violations.push(`production City action target below 44px: ${target.name} ${target.height}px`)
 
   const screenshot = `production-connected--${viewport.id}.png`
