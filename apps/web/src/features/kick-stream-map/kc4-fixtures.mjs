@@ -167,7 +167,7 @@ export const kickMapKc4Scenarios = Object.freeze([
     httpStatus: 200,
     payload: readyPayload,
     expect: Object.freeze({
-      state: 'City preview ready',
+      state: 'city_ready',
       mapVisible: true,
       resultsVisible: true,
       mappedStreams: 3,
@@ -203,7 +203,7 @@ export const kickMapKc4Scenarios = Object.freeze([
       }),
     }),
     expect: Object.freeze({
-      state: 'City stable identity blocked',
+      state: 'city_runtime_blocked',
       mapVisible: false,
       resultsVisible: false,
       mappedStreams: 0,
