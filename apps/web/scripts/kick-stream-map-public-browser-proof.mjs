@@ -125,6 +125,7 @@ async function audit(viewport) {
   await page.locator('[data-kick-world]').click()
 
   const cityButton = page.locator('[data-kick-geography="city"]')
+  await page.keyboard.press('Tab')
   await cityButton.focus()
   if (!await hasVisibleFocus(cityButton)) violations.push('City geography focus-visible treatment missing')
   await page.keyboard.press('Enter')
