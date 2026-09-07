@@ -1,0 +1,227 @@
+{
+  "schemaVersion": "viewloom-kick-stream-map-city-review-result-v0.1",
+  "batchId": "2026-09-07-01",
+  "reviewMode": "manual_bounded_city_review",
+  "reviewedOn": "2026-09-07",
+  "sourceSelection": "seven identities with accepted Country outcomes were independently re-reviewed for explicit Base City evidence",
+  "externalLookupsUsed": 9,
+  "providerRequests": 0,
+  "canonicalMutationApplied": false,
+  "productionDeployment": false,
+  "completed": true,
+  "identities": [
+    {
+      "rank": 1,
+      "broadcasterUserId": "27894320",
+      "slug": "absi",
+      "lookupsUsed": 2,
+      "outcome": "no_qualifying_evidence",
+      "evidence": [],
+      "reviewedSources": [
+        {
+          "sourceClass": "first_party_profile",
+          "sourceUrl": "https://x.com/Absi_151/with_replies",
+          "observedOn": "2026-09-07"
+        },
+        {
+          "sourceClass": "platform_profile",
+          "sourceUrl": "https://kick.com/absi",
+          "observedOn": "2026-09-07"
+        }
+      ],
+      "placement": null,
+      "researchNote": "The current first-party X profile binds kick.com/absi and declares Jordan only; the current Kick profile does not add an explicit Base City. Country evidence is not promoted to City."
+    },
+    {
+      "rank": 6,
+      "broadcasterUserId": "37423182",
+      "slug": "nexxuz",
+      "lookupsUsed": 2,
+      "outcome": "no_qualifying_evidence",
+      "evidence": [],
+      "reviewedSources": [
+        {
+          "sourceClass": "first_party_link_hub",
+          "sourceUrl": "https://solo.to/nexxuz",
+          "observedOn": "2026-09-07"
+        },
+        {
+          "sourceClass": "platform_profile",
+          "sourceUrl": "https://kick.com/nexxuz/about",
+          "observedOn": "2026-09-07"
+        }
+      ],
+      "placement": null,
+      "researchNote": "The current user-managed link hub binds kick.com/nexxuz and declares España only; the current Kick About page does not provide an explicit Base City. Country evidence is not promoted to City."
+    },
+    {
+      "rank": 8,
+      "broadcasterUserId": "11096104",
+      "slug": "eray",
+      "lookupsUsed": 1,
+      "outcome": "accepted",
+      "evidence": [
+        {
+          "sourceClass": "first_party_profile",
+          "sourceUrl": "https://x.com/erayozkenar/with_replies",
+          "observedOn": "2026-09-07",
+          "claimKind": "declared_location",
+          "confidence": "explicit",
+          "countryCode": "TR",
+          "countryName": "Türkiye",
+          "region": null,
+          "city": "İstanbul"
+        }
+      ],
+      "placement": {
+        "state": "mapped",
+        "countryCode": "TR",
+        "region": null,
+        "city": "İstanbul"
+      },
+      "researchNote": "The current first-party X profile directly links kick.com/eray and explicitly declares İstanbul, Türkiye."
+    },
+    {
+      "rank": 10,
+      "broadcasterUserId": "190599",
+      "slug": "niter",
+      "lookupsUsed": 1,
+      "outcome": "accepted",
+      "evidence": [
+        {
+          "sourceClass": "first_party_profile",
+          "sourceUrl": "https://x.com/thenitrozyniak/with_replies?lang=en",
+          "observedOn": "2026-09-07",
+          "claimKind": "declared_location",
+          "confidence": "explicit",
+          "countryCode": "PL",
+          "countryName": "Poland",
+          "region": null,
+          "city": "Wrocław"
+        }
+      ],
+      "placement": {
+        "state": "mapped",
+        "countryCode": "PL",
+        "region": null,
+        "city": "Wrocław"
+      },
+      "researchNote": "The current first-party X profile directly links kick.com/niter and explicitly declares Wrocław, Polska."
+    },
+    {
+      "rank": 14,
+      "broadcasterUserId": "75943919",
+      "slug": "beenielol",
+      "lookupsUsed": 1,
+      "outcome": "accepted",
+      "evidence": [
+        {
+          "sourceClass": "platform_profile",
+          "sourceUrl": "https://kick.com/beenielol",
+          "observedOn": "2026-09-07",
+          "claimKind": "declared_location",
+          "confidence": "explicit",
+          "countryCode": "BR",
+          "countryName": "Brazil",
+          "region": null,
+          "city": "Rio de Janeiro"
+        }
+      ],
+      "placement": {
+        "state": "mapped",
+        "countryCode": "BR",
+        "region": null,
+        "city": "Rio de Janeiro"
+      },
+      "researchNote": "The current Kick About profile explicitly declares Rio de Janeiro for this creator identity."
+    },
+    {
+      "rank": 52,
+      "broadcasterUserId": "106756949",
+      "slug": "8bitheadflicker",
+      "lookupsUsed": 1,
+      "outcome": "accepted",
+      "evidence": [
+        {
+          "sourceClass": "platform_profile",
+          "sourceUrl": "https://kick.com/8bitheadflicker/subscribe",
+          "observedOn": "2026-09-07",
+          "claimKind": "declared_location",
+          "confidence": "explicit",
+          "countryCode": "IN",
+          "countryName": "India",
+          "region": "Punjab",
+          "city": "Fazilka"
+        }
+      ],
+      "placement": {
+        "state": "mapped",
+        "countryCode": "IN",
+        "region": "Punjab",
+        "city": "Fazilka"
+      },
+      "researchNote": "The current Kick account page exposes the creator bio with Fazilka, Punjab, India."
+    },
+    {
+      "rank": 95,
+      "broadcasterUserId": "106763992",
+      "slug": "binks69",
+      "lookupsUsed": 1,
+      "outcome": "accepted",
+      "evidence": [
+        {
+          "sourceClass": "platform_profile",
+          "sourceUrl": "https://kick.com/binks69",
+          "observedOn": "2026-09-07",
+          "claimKind": "declared_location",
+          "confidence": "explicit",
+          "countryCode": "IN",
+          "countryName": "India",
+          "region": null,
+          "city": "Mumbai"
+        }
+      ],
+      "placement": {
+        "state": "mapped",
+        "countryCode": "IN",
+        "region": null,
+        "city": "Mumbai"
+      },
+      "researchNote": "The current Kick About profile explicitly states Location: Mumbai, India."
+    }
+  ],
+  "summary": {
+    "reviewed": 7,
+    "accepted": 5,
+    "excludedNonperson": 0,
+    "noQualifyingEvidence": 2,
+    "conflictUnmapped": 0,
+    "acceptedCities": {
+      "BR|Rio de Janeiro": 1,
+      "IN|Punjab|Fazilka": 1,
+      "IN|Mumbai": 1,
+      "PL|Wrocław": 1,
+      "TR|İstanbul": 1
+    }
+  },
+  "constraints": {
+    "maxIdentities": 25,
+    "maxExternalLookupsPerIdentity": 5,
+    "baseCityClaimKinds": [
+      "home_base",
+      "declared_location"
+    ],
+    "countryOnlyPromotionAllowed": false,
+    "currentLocationAllowedForBaseCity": false,
+    "temporaryLocationAllowedForBaseCity": false,
+    "birthplaceAsPlacementAllowed": false,
+    "nationalityAsPlacementAllowed": false,
+    "languageAsPlacementAllowed": false,
+    "eventVenueAsBaseAllowed": false,
+    "organizationHeadquartersAsBaseAllowed": false,
+    "preciseLocationAllowed": false,
+    "creatorCoordinatesAllowed": false,
+    "twitchEvidenceReuseAllowed": false,
+    "automaticRuntimePromotion": false
+  }
+}

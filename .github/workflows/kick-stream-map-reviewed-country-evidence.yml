@@ -11,6 +11,10 @@ on:
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-country-snapshot-adapter-core.mjs'
       - 'scripts/kick-stream-map-country-response-core.mjs'
+      - 'docs/audits/kick-stream-map-city-review-result-2026-09-07-*.json'
+      - 'scripts/kick-stream-map-reviewed-city-evidence-core.mjs'
+      - 'scripts/kick-stream-map-reviewed-city-runtime-staging-data.mjs'
+      - 'scripts/verify-kick-stream-map-reviewed-city-evidence-core.mjs'
       - '.github/workflows/kick-stream-map-reviewed-country-evidence.yml'
   push:
     branches: [main]
@@ -22,6 +26,10 @@ on:
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/kick-stream-map-country-snapshot-adapter-core.mjs'
       - 'scripts/kick-stream-map-country-response-core.mjs'
+      - 'docs/audits/kick-stream-map-city-review-result-2026-09-07-*.json'
+      - 'scripts/kick-stream-map-reviewed-city-evidence-core.mjs'
+      - 'scripts/kick-stream-map-reviewed-city-runtime-staging-data.mjs'
+      - 'scripts/verify-kick-stream-map-reviewed-city-evidence-core.mjs'
       - '.github/workflows/kick-stream-map-reviewed-country-evidence.yml'
 
 permissions:
@@ -38,18 +46,23 @@ jobs:
           node-version: '22'
       - name: Verify reviewed Country evidence bridge
         run: node scripts/verify-kick-stream-map-reviewed-country-evidence-core.mjs
+      - name: Verify reviewed City evidence staging
+        run: node scripts/verify-kick-stream-map-reviewed-city-evidence-core.mjs
       - name: Publish safety boundary
         if: always()
         shell: bash
         run: |
           {
-            echo '## Kick reviewed Country evidence bridge'
-            echo '- Input: completed manual Kick Country review artifacts'
+            echo '## Kick reviewed Country/City evidence bridge'
+            echo '- Country input: completed manual Kick Country review artifacts'
+            echo '- City input: independently re-reviewed Kick City artifacts'
             echo '- Runtime identity: broadcaster_user_id only'
-            echo '- Slug/display/viewers/raw profile fields: omitted from reviewed evidence'
+            echo '- Slug/display/viewers/raw profile fields: omitted from terminal staging'
+            echo '- City Country-only promotion: false'
+            echo '- Current/temporary to Base City promotion: false'
+            echo '- City staging connected to apps/web production runtime: false'
             echo '- D1 writes: 0'
             echo '- Production deployment: false'
             echo '- Collector mutation: false'
             echo '- Automatic geography promotion: false'
-            echo '- Public activation remains false'
           } >> "$GITHUB_STEP_SUMMARY"
