@@ -14,7 +14,7 @@ type SnapshotRow = {
 type GeographyMode = 'country' | 'city'
 
 const K4_PUBLIC_ACTIVATION_AUTHORIZED = true
-const KICK_CITY_PUBLIC_ACTIVATION_AUTHORIZED = false
+const KICK_CITY_PUBLIC_ACTIVATION_AUTHORIZED = true
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   let geographyMode: GeographyMode = 'country'
