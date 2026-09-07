@@ -60,7 +60,7 @@ export async function renderKickCountryPreviewMap(
     minZoom: 0.8,
     maxZoom: 6,
     maxBounds: SAFE_WORLD_BOUNDS,
-    attributionControl: true,
+    attributionControl: {},
     dragRotate: false,
     pitchWithRotate: false,
   })
