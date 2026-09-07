@@ -29,6 +29,43 @@
   flex-wrap: wrap;
 }
 
+.kick-map-preview__resolution {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kick-map-preview__resolution button,
+.kick-map-preview__resolution span {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border: 1px solid var(--line, #3b4250);
+  border-radius: 999px;
+  background: #111820;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+}
+
+.kick-map-preview__resolution button {
+  cursor: pointer;
+}
+
+.kick-map-preview__resolution button[aria-pressed='true'] {
+  border-color: #53fc18;
+  box-shadow: inset 0 0 0 1px #53fc18;
+}
+
+.kick-map-preview__resolution span[aria-disabled='true'] {
+  color: var(--muted, #9ca3af);
+  cursor: not-allowed;
+  opacity: .72;
+}
+
 .kick-map-preview__gate {
   display: grid;
   min-height: 420px;
@@ -181,6 +218,7 @@
 }
 
 .kick-map-preview__country-row,
+.kick-map-preview__city-row,
 .kick-map-preview__stream-row {
   width: 100%;
   min-width: 0;
@@ -193,7 +231,8 @@
   text-align: left;
 }
 
-.kick-map-preview__country-row {
+.kick-map-preview__country-row,
+.kick-map-preview__city-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -201,18 +240,40 @@
   cursor: pointer;
 }
 
-.kick-map-preview__country-row[aria-pressed='true'] {
+.kick-map-preview__country-row[aria-pressed='true'],
+.kick-map-preview__city-row[aria-pressed='true'] {
   border-color: #53fc18;
   box-shadow: inset 0 0 0 1px #53fc18;
 }
 
-[data-kick-preview-world] {
+.kick-map-preview__city-label {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.kick-map-preview__city-label small {
+  color: var(--muted, #9ca3af);
+}
+
+.kick-map-preview__city-detail {
+  min-width: 0;
+  color: var(--muted, #9ca3af);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+[data-kick-preview-world],
+[data-kick-city-all] {
   min-height: 44px;
 }
 
+.kick-map-preview__resolution button:focus-visible,
 .kick-map-preview__country-row:focus-visible,
+.kick-map-preview__city-row:focus-visible,
 .kick-map-preview__metric select:focus-visible,
-[data-kick-preview-world]:focus-visible {
+[data-kick-preview-world]:focus-visible,
+[data-kick-city-all]:focus-visible {
   outline: 3px solid currentColor;
   outline-offset: 3px;
 }
@@ -262,6 +323,15 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .kick-map-preview__resolution {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kick-map-preview__resolution span {
+    grid-column: 1 / -1;
+  }
+
   .kick-map-preview__gate {
     min-height: 300px;
     padding: 22px 16px;
@@ -278,7 +348,13 @@
   }
 
   .kick-map-preview__list li,
-  .kick-map-preview__country-row {
+  .kick-map-preview__country-row,
+  .kick-map-preview__city-row {
     flex-wrap: wrap;
+  }
+
+  .kick-map-preview__city-detail {
+    width: 100%;
+    text-align: left;
   }
 }
