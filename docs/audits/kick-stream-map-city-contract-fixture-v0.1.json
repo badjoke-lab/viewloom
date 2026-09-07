@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "viewloom-kick-stream-map-city-contract-fixture-v0.1",
+  "observedAt": "2026-09-07T00:00:00Z",
+  "snapshotItems": [
+    {
+      "slug": "los-angeles-a",
+      "displayName": "Los Angeles A",
+      "viewer_count": 100,
+      "broadcaster_user_id": "101"
+    },
+    {
+      "slug": "sant-cugat",
+      "displayName": "Sant Cugat",
+      "viewer_count": 90,
+      "broadcaster_user_id": "102"
+    },
+    {
+      "slug": "country-only",
+      "displayName": "Country Only",
+      "viewer_count": 80,
+      "broadcaster_user_id": "103"
+    },
+    {
+      "slug": "city-conflict",
+      "displayName": "City Conflict",
+      "viewer_count": 70,
+      "broadcaster_user_id": "104"
+    },
+    {
+      "slug": "current-only",
+      "displayName": "Current Only",
+      "viewer_count": 60,
+      "broadcaster_user_id": "105"
+    },
+    {
+      "slug": "missing-id",
+      "displayName": "Missing Stable ID",
+      "viewer_count": 50
+    },
+    {
+      "slug": "excluded-channel",
+      "displayName": "Excluded Channel",
+      "viewer_count": 40,
+      "broadcaster_user_id": "107"
+    },
+    {
+      "slug": "los-angeles-b",
+      "displayName": "Los Angeles B",
+      "viewer_count": 30,
+      "broadcaster_user_id": "108"
+    }
+  ],
+  "reviewedCityEvidence": [
+    {
+      "stableKickUserId": "101",
+      "outcome": "accepted",
+      "claimKind": "home_base",
+      "placement": {
+        "countryCode": "US",
+        "region": "CA",
+        "city": "Los Angeles"
+      },
+      "referenceGeometry": {
+        "state": "reference_point",
+        "referenceKey": "US|CA|Los Angeles"
+      }
+    },
+    {
+      "stableKickUserId": "102",
+      "outcome": "accepted",
+      "claimKind": "declared_location",
+      "placement": {
+        "countryCode": "ES",
+        "city": "Sant Cugat del Valles"
+      },
+      "referenceGeometry": {
+        "state": "no_geometry"
+      }
+    },
+    {
+      "stableKickUserId": "103",
+      "outcome": "accepted",
+      "claimKind": "home_base",
+      "placement": {
+        "countryCode": "JP"
+      }
+    },
+    {
+      "stableKickUserId": "104",
+      "outcome": "conflict_unmapped",
+      "reason": "reviewed_city_conflict"
+    },
+    {
+      "stableKickUserId": "105",
+      "outcome": "accepted",
+      "claimKind": "current_location",
+      "placement": {
+        "countryCode": "US",
+        "region": "NY",
+        "city": "New York"
+      },
+      "referenceGeometry": {
+        "state": "reference_point",
+        "referenceKey": "US|NY|New York"
+      }
+    },
+    {
+      "stableKickUserId": "107",
+      "outcome": "excluded_nonperson",
+      "reason": "reviewed_nonperson_exclusion"
+    },
+    {
+      "stableKickUserId": "108",
+      "outcome": "accepted",
+      "claimKind": "declared_location",
+      "placement": {
+        "countryCode": "US",
+        "region": "CA",
+        "city": "Los Angeles"
+      },
+      "referenceGeometry": {
+        "state": "reference_point",
+        "referenceKey": "US|CA|Los Angeles"
+      }
+    }
+  ],
+  "expected": {
+    "observedStreams": 8,
+    "observedViewers": 520,
+    "mappedStreams": 3,
+    "mappedViewers": 220,
+    "unmappedStreams": 3,
+    "unmappedViewers": 190,
+    "excludedStreams": 1,
+    "excludedViewers": 40,
+    "conflictStreams": 1,
+    "conflictViewers": 70,
+    "mappedCityAggregateCount": 2,
+    "referenceGeometryAggregates": 1,
+    "listOnlyAggregates": 1,
+    "streamCoverage": 0.375,
+    "viewerCoverage": 0.423077
+  }
+}
