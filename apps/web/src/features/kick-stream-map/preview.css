@@ -268,11 +268,17 @@
   min-height: 44px;
 }
 
+.kick-map-preview__resolution button:focus,
 .kick-map-preview__resolution button:focus-visible,
+.kick-map-preview__country-row:focus,
 .kick-map-preview__country-row:focus-visible,
+.kick-map-preview__city-row:focus,
 .kick-map-preview__city-row:focus-visible,
+.kick-map-preview__metric select:focus,
 .kick-map-preview__metric select:focus-visible,
+[data-kick-preview-world]:focus,
 [data-kick-preview-world]:focus-visible,
+[data-kick-city-all]:focus,
 [data-kick-city-all]:focus-visible {
   outline: 3px solid currentColor;
   outline-offset: 3px;
