@@ -143,7 +143,10 @@ async function auditDeterministic(browser, fixture, viewport) {
   await page.waitForFunction(() => document.querySelector('[data-kick-preview-state]')?.textContent?.trim() !== 'Loading', null, { timeout: 20_000 })
   await page.locator('[data-kick-preview-geography="city"]').click()
   await page.waitForFunction((expected) => document.querySelector('[data-kick-preview-state]')?.textContent?.trim() === expected, fixture.expect.state, { timeout: 20_000 })
-  if (fixture.expect.mapVisible) await page.locator('[data-kick-city-map] .maplibregl-canvas').waitFor({ state: 'visible', timeout: 20_000 })
+  if (fixture.expect.mapVisible) {
+    await page.locator('[data-kick-city-map] .maplibregl-canvas').waitFor({ state: 'visible', timeout: 20_000 })
+    await page.waitForFunction(() => document.querySelector('[data-kick-city-map]')?.getAttribute('data-map-state') === 'basemap-ready', null, { timeout: 20_000 })
+  }
 
   const facts = await readCityFacts(page)
   const violations = validateBaseFacts({ facts, fixture, apiRequests, consoleErrors, pageErrors, response, viewport })
