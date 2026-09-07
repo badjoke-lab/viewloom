@@ -98,10 +98,28 @@ assert.equal(response.semantics.temporaryLocationUsedForBaseCity, false)
 assert.equal(response.semantics.creatorCoordinatesAllowed, false)
 assert.equal(response.semantics.noGeometryListOnly, true)
 
+function collectObjectKeys(value, target = new Set()) {
+  if (Array.isArray(value)) {
+    for (const item of value) collectObjectKeys(item, target)
+    return target
+  }
+  if (!value || typeof value !== 'object') return target
+  for (const [key, child] of Object.entries(value)) {
+    target.add(key)
+    collectObjectKeys(child, target)
+  }
+  return target
+}
+
 const serialized = JSON.stringify(response)
+const publicKeys = collectObjectKeys(response)
+for (const forbiddenKey of ['stableKickUserId', 'broadcaster_user_id']) {
+  assert.equal(publicKeys.has(forbiddenKey), false, `public City runtime must not expose key ${forbiddenKey}`)
+}
+for (const stableId of snapshotItems.map((row) => row.broadcaster_user_id).filter(Boolean)) {
+  assert.equal(serialized.includes(stableId), false, `public City runtime must not expose stable identity value ${stableId}`)
+}
 for (const forbidden of [
-  'stableKickUserId',
-  'broadcaster_user_id',
   'sourceUrl',
   'researchNote',
   'current_location',
