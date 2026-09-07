@@ -16,6 +16,7 @@ on:
       - 'apps/web/src/provider-home-shell.ts'
       - 'apps/web/public/sitemap.xml'
       - 'apps/web/scripts/kick-stream-map-preview-browser-audit.mjs'
+      - 'apps/web/scripts/kick-stream-map-public-browser-proof.mjs'
       - 'apps/web/scripts/kick-stream-map-kui3b-production-browser-proof.mjs'
       - 'apps/web/scripts/public-current-browser-audit.mjs'
       - 'apps/web/vite.config.ts'
@@ -56,6 +57,7 @@ on:
       - 'apps/web/src/provider-home-shell.ts'
       - 'apps/web/public/sitemap.xml'
       - 'apps/web/scripts/kick-stream-map-preview-browser-audit.mjs'
+      - 'apps/web/scripts/kick-stream-map-public-browser-proof.mjs'
       - 'apps/web/scripts/kick-stream-map-kui3b-production-browser-proof.mjs'
       - 'apps/web/scripts/public-current-browser-audit.mjs'
       - 'apps/web/vite.config.ts'
@@ -152,7 +154,10 @@ jobs:
       - name: Run KUI3a desktop/mobile browser proof
         working-directory: apps/web
         run: node scripts/kick-stream-map-preview-browser-audit.mjs
-      - name: Run KUI3b against still-gated production before merge
+      - name: Run public Kick Map desktop/mobile browser proof
+        working-directory: apps/web
+        run: node scripts/kick-stream-map-public-browser-proof.mjs
+      - name: Run current authorized Kick production boundary proof
         if: github.event_name == 'pull_request'
         working-directory: apps/web
         run: node scripts/kick-stream-map-kui3b-production-browser-proof.mjs
@@ -163,6 +168,7 @@ jobs:
           name: kick-stream-map-country-browser-audit
           path: |
             /tmp/kick-stream-map-preview-browser-audit/**
+            /tmp/kick-stream-map-public-browser-proof/**
             /tmp/kick-stream-map-kui3b-production-browser-proof/**
             /tmp/kick-map-preview-vite.log
             /tmp/kick-map-public.html

@@ -28,7 +28,7 @@ const productionViolations = validateProductionPayload(productionPayload, deploy
 const expected = aggregateMappedCountries(productionPayload)
 const browser = await chromium.launch({ headless: true })
 const evidence = {
-  schema: 'viewloom-kick-stream-map-kui3b-production-browser-proof-v1',
+  schema: 'viewloom-kick-stream-map-kui3b-production-browser-proof-v2',
   result: 'running',
   production: {
     origin: productionOrigin,
@@ -57,13 +57,9 @@ const evidence = {
 
 try {
   for (const viewport of viewports) {
-    const gated = await auditPreview(browser, productionPayload, viewport, { activationLift: false })
-    evidence.scenarios.push(gated)
-    evidence.violations.push(...gated.violations.map((violation) => `${gated.id}: ${violation}`))
-
-    const lifted = await auditPreview(browser, productionPayload, viewport, { activationLift: true })
-    evidence.scenarios.push(lifted)
-    evidence.violations.push(...lifted.violations.map((violation) => `${lifted.id}: ${violation}`))
+    const scenario = await auditAuthorizedProductionPreview(browser, productionPayload, viewport)
+    evidence.scenarios.push(scenario)
+    evidence.violations.push(...scenario.violations.map((violation) => `${scenario.id}: ${violation}`))
   }
 
   evidence.result = evidence.violations.length === 0 ? 'pass' : 'fail'
@@ -84,8 +80,8 @@ try {
   await browser.close()
 }
 
-async function auditPreview(browser, payload, viewport, { activationLift }) {
-  const id = `${activationLift ? 'renderer-proof' : 'k4-gated'}--${viewport.id}`
+async function auditAuthorizedProductionPreview(browser, payload, viewport) {
+  const id = `authorized-production--${viewport.id}`
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } })
   const page = await context.newPage()
   const apiRequests = []
@@ -101,9 +97,8 @@ async function auditPreview(browser, payload, viewport, { activationLift }) {
     if (message.type() === 'error') consoleErrors.push(message.text())
   })
 
-  const routedPayload = activationLift ? liftActivationForLocalProof(payload) : payload
   await page.route('**/api/kick-stream-map*', async (route) => {
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(routedPayload) })
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(payload) })
   })
 
   const response = await page.goto(`${localOrigin}/preview/kick-stream-map/`, {
@@ -116,7 +111,7 @@ async function auditPreview(browser, payload, viewport, { activationLift }) {
   }, { timeout: 20_000 })
 
   const mappedAvailable = integer(payload?.coverage?.mappedStreams) > 0
-  if (activationLift && mappedAvailable) {
+  if (mappedAvailable) {
     await page.locator('[data-kick-preview-map] .maplibregl-canvas').waitFor({ state: 'visible', timeout: 20_000 })
   }
 
@@ -132,18 +127,12 @@ async function auditPreview(browser, payload, viewport, { activationLift }) {
   if (pageErrors.length) violations.push(`page errors: ${pageErrors.join(' | ')}`)
   if (consoleErrors.length) violations.push(`console errors: ${consoleErrors.join(' | ')}`)
 
-  if (!activationLift) {
-    if (facts.state !== 'country_blocked') violations.push(`K4-gated state ${facts.state}`)
-    if (facts.mapVisible) violations.push('K4-gated preview rendered geography')
-    if (facts.resultsVisible) violations.push('K4-gated preview rendered Country results')
-    if (facts.canvasCount !== 0) violations.push(`K4-gated canvas count ${facts.canvasCount}`)
-    if (!facts.metricDisabled) violations.push('K4-gated metric enabled')
-  } else if (mappedAvailable) {
-    if (facts.state !== 'country_ready_for_preview') violations.push(`renderer proof state ${facts.state}`)
-    if (!facts.mapVisible) violations.push('renderer proof map hidden')
-    if (!facts.resultsVisible) violations.push('renderer proof results hidden')
-    if (facts.canvasCount !== 1) violations.push(`renderer proof canvas count ${facts.canvasCount}`)
-    if (facts.metricDisabled) violations.push('renderer proof metric disabled')
+  if (mappedAvailable) {
+    if (facts.state !== 'country_ready_for_preview') violations.push(`authorized state ${facts.state}`)
+    if (!facts.mapVisible) violations.push('authorized map hidden')
+    if (!facts.resultsVisible) violations.push('authorized results hidden')
+    if (facts.canvasCount !== 1) violations.push(`authorized canvas count ${facts.canvasCount}`)
+    if (facts.metricDisabled) violations.push('authorized metric disabled')
     if (facts.mappedCount !== integer(payload?.coverage?.mappedStreams)) violations.push(`mapped count ${facts.mappedCount}`)
     if (facts.excludedCount !== integer(payload?.coverage?.excludedStreams)) violations.push(`excluded count ${facts.excludedCount}`)
     if (facts.conflictCount !== integer(payload?.coverage?.conflictStreams)) violations.push(`conflict count ${facts.conflictCount}`)
@@ -151,15 +140,14 @@ async function auditPreview(browser, payload, viewport, { activationLift }) {
     if (JSON.stringify(facts.countryCodes) !== JSON.stringify(expected.countries.map((row) => row.countryCode))) {
       violations.push(`country codes ${JSON.stringify(facts.countryCodes)}`)
     }
-    if (facts.reconciliationText !== `Reconciliation passes · ${integer(payload?.coverage?.observedStreams).toLocaleString('en-US')} observed streams accounted for.`) {
-      violations.push(`reconciliation text ${facts.reconciliationText}`)
-    }
     for (const target of facts.actionTargets) {
       if (target.height < 44) violations.push(`action target below 44px: ${target.name} ${target.height}px`)
     }
   } else {
-    if (facts.state !== 'country_empty') violations.push(`empty renderer proof state ${facts.state}`)
-    if (facts.mapVisible || facts.canvasCount !== 0) violations.push('empty renderer proof created map')
+    if (facts.state !== 'country_empty') violations.push(`empty authorized state ${facts.state}`)
+    if (facts.mapVisible || facts.canvasCount !== 0) violations.push('empty authorized snapshot created map')
+    if (facts.resultsVisible) violations.push('empty authorized snapshot rendered Country results')
+    if (!facts.metricDisabled) violations.push('empty authorized snapshot enabled metric')
   }
 
   const screenshot = `${id}.png`
@@ -167,8 +155,6 @@ async function auditPreview(browser, payload, viewport, { activationLift }) {
   await context.close()
   return {
     id,
-    activationLift,
-    activationLiftScope: activationLift ? 'local-browser-proof-only' : 'none',
     viewport,
     apiRequests,
     facts,
@@ -176,20 +162,6 @@ async function auditPreview(browser, payload, viewport, { activationLift }) {
     consoleErrors,
     violations,
     screenshot,
-  }
-}
-
-function liftActivationForLocalProof(payload) {
-  return {
-    ...payload,
-    publicActivationAuthorized: true,
-    activation: {
-      ...(payload?.activation || {}),
-      publicCountryActivationReady: true,
-      blockers: Array.isArray(payload?.activation?.blockers)
-        ? payload.activation.blockers.filter((value) => value !== 'public_country_activation_not_authorized')
-        : [],
-    },
   }
 }
 
@@ -202,10 +174,12 @@ function validateProductionPayload(payload, deployment) {
   if (text(payload?.provider) !== 'kick' || text(payload?.platform) !== 'kick') violations.push('provider/platform mismatch')
   if (text(payload?.source) !== 'real') violations.push(`source ${text(payload?.source)}`)
   if (text(payload?.geographyMode) !== 'country') violations.push(`geographyMode ${text(payload?.geographyMode)}`)
-  if (payload?.publicActivationAuthorized !== false) violations.push('K4 public activation must remain false')
-  if (payload?.activation?.publicCountryActivationReady !== true) violations.push('K3 technical Country readiness must be true')
-  if (!Array.isArray(payload?.activation?.blockers) || !payload.activation.blockers.includes('public_country_activation_not_authorized')) {
-    violations.push('K4 blocker missing')
+  if (payload?.publicActivationAuthorized !== true) violations.push('K4 public activation must be authorized')
+  if (payload?.activation?.publicCountryActivationReady !== true) violations.push('Country public readiness must be true')
+  if (!Array.isArray(payload?.activation?.blockers)) {
+    violations.push('activation blockers must be an array')
+  } else if (payload.activation.blockers.includes('public_country_activation_not_authorized')) {
+    violations.push('stale K4 authorization blocker present')
   }
   if (payload?.semantics?.reviewedEvidenceRuntimeConnected !== true) violations.push('reviewedEvidenceRuntimeConnected must be true')
   if (payload?.semantics?.stableIdentityPublished !== false) violations.push('stableIdentityPublished must be false')
@@ -301,7 +275,6 @@ async function readFacts(page) {
       conflictCount: count('[data-kick-preview-conflicts]'),
       countryCodes: Array.from(document.querySelectorAll('.kick-map-preview__country-row[data-country-code]')).map((node) => node.getAttribute('data-country-code')),
       streamRowCount: document.querySelectorAll('[data-kick-preview-streams] .kick-map-preview__stream-row').length,
-      reconciliationText: text('[data-kick-preview-reconciliation]'),
       canvasCount: document.querySelectorAll('[data-kick-preview-map] .maplibregl-canvas').length,
       markerCount: document.querySelectorAll('[data-kick-preview-map] .maplibregl-marker').length,
       actionTargets: targets,

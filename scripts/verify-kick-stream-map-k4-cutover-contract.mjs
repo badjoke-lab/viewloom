@@ -50,9 +50,14 @@ assert.equal(runtimeSource.includes('stableIdentityPublished: false'), true)
 assert.equal(routeSource.includes('const K4_PUBLIC_ACTIVATION_AUTHORIZED = true'), true)
 assert.ok((routeSource.match(/publicActivationAuthorized: K4_PUBLIC_ACTIVATION_AUTHORIZED/g)?.length ?? 0) >= 3)
 assert.equal(publicEntrySource.includes("fetch('/api/kick-stream-map'"), true)
-assert.equal(publicEntrySource.includes("buildKickCountryPreviewModel(payload, { allowGeography: readiness.canRenderCountryGeography })"), true)
+assert.equal(publicEntrySource.includes('buildKickStreamMapPreviewModel'), false)
+assert.equal(publicEntrySource.includes('buildKickCountryPreviewModel(current, { allowGeography: true })'), true)
 assert.equal(publicPageSource.includes('data-kick-map-public'), true)
 assert.equal(publicPageSource.includes('https://www.viewloom.net/kick/map/'), true)
+assert.equal(publicPageSource.includes('/src/features/twitch-stream-map/stream-map.css'), true)
+assert.equal(publicPageSource.includes('kick-map-preview__facts'), false)
+assert.equal(publicPageSource.includes('Stable identity contract'), false)
+assert.equal(publicPageSource.includes('Current blockers'), false)
 assert.equal(browserAuditSource.includes('Kick Home missing authorized /kick/map/ entry'), true)
 
 const routeList = Array.isArray(kickRoutes.routes) ? kickRoutes.routes : []
@@ -150,6 +155,8 @@ console.log(JSON.stringify({
   requiredPublicSurfaceChanges: requiredPublicSurfacePaths.length,
   requiredAcceptanceAndInventoryChanges: acceptancePaths.length,
   operationalAcceptanceAmendment: 'apps/web/scripts/public-current-browser-audit.mjs',
+  publicUiBaseline: 'twitch-stream-map-shell',
+  previewModelUsedByPublicUi: false,
   expectedPublicInventoryAfterCutover: contract.expectedPublicInventoryAfterCutover,
   stableIdentityPublished: false,
 }, null, 2))
