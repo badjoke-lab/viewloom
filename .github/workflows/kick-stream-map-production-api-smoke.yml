@@ -8,6 +8,9 @@ on:
       - 'apps/web/functions/api/kick-stream-map-public-adapter-core.mjs'
       - 'apps/web/functions/api/kick-stream-map-country-runtime-core.mjs'
       - 'apps/web/functions/api/kick-stream-map-reviewed-country-runtime-data.mjs'
+      - 'apps/web/functions/api/kick-stream-map-city-runtime-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-city-runtime-core.d.mts'
+      - 'apps/web/functions/api/kick-stream-map-reviewed-city-runtime-data.mjs'
       - '.github/workflows/kick-stream-map-production-api-smoke.yml'
   push:
     branches: [main]
@@ -20,6 +23,9 @@ on:
       - 'apps/web/functions/api/kick-stream-map-snapshot-source-core.d.mts'
       - 'apps/web/functions/api/kick-stream-map-country-runtime-core.mjs'
       - 'apps/web/functions/api/kick-stream-map-reviewed-country-runtime-data.mjs'
+      - 'apps/web/functions/api/kick-stream-map-city-runtime-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-city-runtime-core.d.mts'
+      - 'apps/web/functions/api/kick-stream-map-reviewed-city-runtime-data.mjs'
       - '.github/workflows/deploy-web-pages.yml'
       - '.github/workflows/kick-stream-map-production-api-smoke.yml'
   workflow_dispatch:
@@ -195,6 +201,53 @@ jobs:
 
           echo "Kick Stream Map K4 production proof: state=$state authorized=$authorized observed=$observed stable=$stable reviewed=$reviewed mapped=$mapped"
 
+      - name: Verify production Kick City runtime remains non-public
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/kick-stream-map?geography=city&production-smoke=$GITHUB_RUN_ID" -o kick-stream-map-city.json
+          jq '{version, implementationState, platform, provider, sourceMode, updatedAt, geographyMode, state, publicActivationAuthorized, publicCityActivationAuthorized, coverage, identity, activation, semantics, cityAggregates}' kick-stream-map-city.json
+
+          jq -e '
+            .version == "viewloom-kick-stream-map-city-runtime-v0.1" and
+            .implementationState == "reviewed_city_runtime_connected" and
+            .platform == "kick" and
+            .provider == "kick" and
+            .source == "real" and
+            .geographyMode == "city" and
+            .publicActivationAuthorized == false and
+            .publicCityActivationAuthorized == false and
+            .state == "blocked_public_activation" and
+            .activation.publicCityActivationReady == true and
+            (.activation.blockers | index("public_city_activation_not_authorized")) != null and
+            (.activation.blockers | index("production_livestream_snapshot_missing_broadcaster_user_id")) == null and
+            .identity.stableKey == "broadcaster_user_id" and
+            .identity.slugIsStableIdentity == false and
+            .coverage.observedStreams > 0 and
+            .coverage.stableIdentityStreams == .coverage.observedStreams and
+            .coverage.reviewedEvidenceCatalogSize == 7 and
+            .coverage.referenceGeometryAggregates == 0 and
+            .coverage.listOnlyAggregates == .coverage.mappedCityAggregateCount and
+            .coverage.reconciliation.passes == true and
+            .coverage.reconciliation.selectedPopulation == .coverage.observedStreams and
+            .coverage.reconciliation.reconciledPopulation == .coverage.observedStreams and
+            .semantics.reviewedCityEvidenceRuntimeConnected == true and
+            .semantics.reviewedCityEvidenceDataVersion == "viewloom-kick-reviewed-city-runtime-data-v0.1" and
+            .semantics.stableIdentityPublished == false and
+            .semantics.countryInferenceToCityAllowed == false and
+            .semantics.currentLocationUsedForBaseCity == false and
+            .semantics.temporaryLocationUsedForBaseCity == false and
+            .semantics.preciseAddressAllowed == false and
+            .semantics.creatorCoordinatesAllowed == false and
+            .semantics.reviewedAggregateReferenceOnly == true and
+            .semantics.noGeometryListOnly == true and
+            ([paths | .[-1] | tostring | select(. == "stableKickUserId" or . == "broadcaster_user_id" or . == "currentLocation" or . == "current_location" or . == "temporaryLocation" or . == "temporary_location" or . == "latitude" or . == "longitude" or . == "coordinates" or . == "address")] | length) == 0 and
+            ([.cityAggregates[]? | select(.referenceGeometry.state != "no_geometry" or .referenceGeometry.referenceKey != null or .referenceGeometry.semantics != "list_only")] | length) == 0
+          ' kick-stream-map-city.json >/dev/null
+
+          echo "Kick Stream Map City production proof: state=$(jq -r '.state' kick-stream-map-city.json) authorized=$(jq -r '.publicCityActivationAuthorized' kick-stream-map-city.json) observed=$(jq -r '.coverage.observedStreams' kick-stream-map-city.json) mapped=$(jq -r '.coverage.mappedStreams' kick-stream-map-city.json) cityAggregates=$(jq -r '.coverage.mappedCityAggregateCount' kick-stream-map-city.json)"
+
       - name: Upload production smoke evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -203,5 +256,6 @@ jobs:
           path: |
             deployment.json
             kick-stream-map.json
+            kick-stream-map-city.json
           if-no-files-found: warn
           retention-days: 7
