@@ -302,7 +302,7 @@ function filterPopulation(source: KickPayload, sourceMode: GeographyMode): KickP
     unmappedReasons[reason] = (unmappedReasons[reason] ?? 0) + 1
   }
 
-  const coverage = {
+  const coverage: Record<string, any> = {
     ...(source.coverage ?? {}),
     observedStreams: selected.length,
     observedViewers: sum(selected),
