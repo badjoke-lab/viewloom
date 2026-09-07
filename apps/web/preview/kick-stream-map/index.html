@@ -23,13 +23,19 @@
         <div>
           <div class="kicker">KICK DATA · WHERE · PREVIEW ONLY</div>
           <h1>Stream Map</h1>
-          <p class="lede">Pre-public Country UI for the Kick Stream Map contract. It may display real readiness and accounting from <code>/api/kick-stream-map</code>, but geography remains hidden until both production readiness and separate public activation gates are true.</p>
+          <p class="lede">Non-public verification surface for Kick Country and City runtime contracts. Country reads <code>/api/kick-stream-map</code>; City reads the separate explicit <code>/api/kick-stream-map?geography=city</code> contract and remains gated until KC5 is explicitly authorized.</p>
         </div>
         <div class="head-facts">
           <div class="fact"><small>State</small><strong data-kick-preview-state>Loading</strong></div>
           <div class="fact"><small>Updated</small><strong data-kick-preview-updated>—</strong></div>
         </div>
       </section>
+
+      <nav class="kick-map-preview__resolution" aria-label="Kick Stream Map geography resolution">
+        <button type="button" data-kick-preview-geography="country" aria-pressed="true">Country</button>
+        <button type="button" data-kick-preview-geography="city" aria-pressed="false">City</button>
+        <span aria-disabled="true">Current · disabled</span>
+      </nav>
 
       <section class="kick-map-preview__facts" aria-label="Kick Stream Map readiness accounting">
         <article class="kick-map-preview__card"><small>Observed streams</small><strong data-kick-preview-observed>—</strong></article>
@@ -38,7 +44,7 @@
         <article class="kick-map-preview__card"><small>Unmapped streams</small><strong data-kick-preview-unmapped>—</strong></article>
       </section>
 
-      <section class="surface" aria-label="Kick Country map preview">
+      <section class="surface" data-kick-preview-country-surface aria-label="Kick Country map preview">
         <div class="stream-map-shell__head">
           <div>
             <div class="stream-map-shell__eyebrow">Country surface</div>
@@ -63,6 +69,31 @@
         <p class="kick-map-preview__note">Country selection changes the result list only. It does not change evidence acceptance and does not infer a streamer position inside the country.</p>
       </section>
 
+      <section class="surface" data-kick-preview-city-surface hidden aria-label="Kick City aggregate preview">
+        <div class="stream-map-shell__head">
+          <div>
+            <div class="stream-map-shell__eyebrow">City surface · KC4 preview</div>
+            <h2>Reviewed City aggregates</h2>
+            <p class="kick-map-preview__note">City rows come only from the provider-stable reviewed Base City runtime. A map point is a reviewed City aggregate reference, never a creator coordinate. <code>no_geometry</code> aggregates stay list-only.</p>
+          </div>
+          <label class="kick-map-preview__metric">
+            <span>City intensity</span>
+            <select data-kick-city-metric aria-label="Kick City intensity metric" disabled>
+              <option value="viewers" selected>Viewers</option>
+              <option value="streams">Streams</option>
+            </select>
+          </label>
+        </div>
+        <div class="kick-map-preview__gate" data-kick-city-gate data-ready="false" role="status" aria-live="polite">
+          <div>
+            <strong data-kick-city-gate-heading>City preview is loading</strong>
+            <p data-kick-city-gate-detail>Loading the explicit Kick City runtime contract…</p>
+          </div>
+        </div>
+        <div class="kick-map-preview__map" data-kick-city-map hidden role="region" aria-label="Kick reviewed City aggregate reference map"></div>
+        <p class="kick-map-preview__note">The City renderer never promotes Country-only evidence, Current/temporary evidence, or map centroids into a creator location.</p>
+      </section>
+
       <section class="kick-map-preview__grid">
         <article class="kick-map-preview__card">
           <small>Stable identity contract</small>
@@ -72,7 +103,7 @@
         <article class="kick-map-preview__card">
           <small>Public activation</small>
           <strong data-kick-preview-activation>—</strong>
-          <p class="kick-map-preview__note">This preview does not authorize <code>/kick/map/</code>.</p>
+          <p class="kick-map-preview__note">City preview does not authorize the separate KC5 public gate.</p>
         </article>
         <article class="kick-map-preview__card">
           <small>Excluded non-person</small>
@@ -80,9 +111,9 @@
           <p class="kick-map-preview__note">Organizations/event channels are accounted for but not placed as people.</p>
         </article>
         <article class="kick-map-preview__card">
-          <small>Country conflicts</small>
+          <small>Geography conflicts</small>
           <strong data-kick-preview-conflicts>—</strong>
-          <p class="kick-map-preview__note">Conflicting Country evidence remains unmapped.</p>
+          <p class="kick-map-preview__note">Conflicting reviewed evidence remains unmapped.</p>
         </article>
       </section>
 
@@ -103,6 +134,27 @@
           <div>
             <h3 data-kick-preview-stream-heading>Mapped streams</h3>
             <div class="kick-map-preview__stream-list" data-kick-preview-streams></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="surface" data-kick-city-results hidden>
+        <div class="stream-map-shell__head">
+          <div>
+            <div class="stream-map-shell__eyebrow">Reviewed City result · KC4</div>
+            <h2>Mapped City aggregates and streams</h2>
+            <p class="kick-map-preview__note" data-kick-city-reconciliation>Reconciliation pending.</p>
+          </div>
+          <button type="button" class="stream-map-filter-clear" data-kick-city-all>All cities</button>
+        </div>
+        <div class="kick-map-preview__results-grid">
+          <div>
+            <h3>City aggregates</h3>
+            <div class="kick-map-preview__country-list" data-kick-city-aggregates></div>
+          </div>
+          <div>
+            <h3 data-kick-city-stream-heading>Mapped streams</h3>
+            <div class="kick-map-preview__stream-list" data-kick-city-streams></div>
           </div>
         </div>
       </section>

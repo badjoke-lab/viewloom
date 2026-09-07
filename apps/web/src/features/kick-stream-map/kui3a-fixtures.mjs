@@ -190,7 +190,7 @@ export const kickMapKui3aScenarios = [
     payload: { error: 'fixture unavailable' },
     expect: {
       state: 'Unavailable',
-      gateHeading: 'Preview data unavailable',
+      gateHeading: 'Country preview data unavailable',
       mapVisible: false,
       resultsVisible: false,
     },

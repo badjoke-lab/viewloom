@@ -238,3 +238,8 @@ async function hasVisibleFocus(page, selector) {
     return document.activeElement === node && style.outlineStyle !== 'none' && outlineWidth > 0
   })
 }
+
+await import('../../../scripts/verify-kick-stream-map-ui-kc4-city-preview.mjs')
+await import('./kick-stream-map-kc4-city-browser-proof.mjs')
+const { cp } = await import('node:fs/promises')
+await cp('/tmp/kick-stream-map-kc4-city-browser-proof', `${outputRoot}/kc4-city`, { recursive: true })

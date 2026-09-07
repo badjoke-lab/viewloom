@@ -94,7 +94,11 @@ assert.equal(mapSource.includes('twitch-stream-map'), false, 'Kick renderer must
 
 const entry = readFileSync('apps/web/src/features/kick-stream-map/preview-entry.ts', 'utf8')
 assert.ok(entry.includes('buildKickCountryPreviewModel'))
-assert.ok(entry.includes('readiness.canRenderCountryGeography'))
+assert.match(
+  entry,
+  /buildKickCountryPreviewModel\(payload,\s*\{\s*allowGeography:\s*[A-Za-z_$][\w$]*\.canRenderCountryGeography\s*\}\)/,
+  'Country preview must inherit canRenderCountryGeography from the outer readiness gate regardless of local variable name',
+)
 assert.ok(entry.includes('reviewed Country terminal state · stable join only'))
 
 const html = readFileSync('apps/web/preview/kick-stream-map/index.html', 'utf8')
