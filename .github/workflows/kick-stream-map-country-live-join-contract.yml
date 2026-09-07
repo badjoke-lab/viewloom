@@ -8,6 +8,12 @@ on:
       - 'docs/audits/kick-stream-map-country-live-join-fixture-v0.1.json'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/verify-kick-stream-map-country-live-join.mjs'
+      - 'scripts/verify-kick-stream-map-city-runtime.mjs'
+      - 'scripts/kick-stream-map-reviewed-city-runtime-staging-data.mjs'
+      - 'apps/web/functions/api/kick-stream-map.ts'
+      - 'apps/web/functions/api/kick-stream-map-city-runtime-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-city-runtime-core.d.mts'
+      - 'apps/web/functions/api/kick-stream-map-reviewed-city-runtime-data.mjs'
       - '.github/workflows/kick-stream-map-country-live-join-contract.yml'
   push:
     branches: [main]
@@ -16,6 +22,12 @@ on:
       - 'docs/audits/kick-stream-map-country-live-join-fixture-v0.1.json'
       - 'scripts/kick-stream-map-country-live-join-core.mjs'
       - 'scripts/verify-kick-stream-map-country-live-join.mjs'
+      - 'scripts/verify-kick-stream-map-city-runtime.mjs'
+      - 'scripts/kick-stream-map-reviewed-city-runtime-staging-data.mjs'
+      - 'apps/web/functions/api/kick-stream-map.ts'
+      - 'apps/web/functions/api/kick-stream-map-city-runtime-core.mjs'
+      - 'apps/web/functions/api/kick-stream-map-city-runtime-core.d.mts'
+      - 'apps/web/functions/api/kick-stream-map-reviewed-city-runtime-data.mjs'
       - '.github/workflows/kick-stream-map-country-live-join-contract.yml'
 
 permissions:
@@ -32,3 +44,5 @@ jobs:
           node-version: '22'
       - name: Verify Kick Country live join contract
         run: node scripts/verify-kick-stream-map-country-live-join.mjs
+      - name: Verify Kick City KC3 runtime
+        run: node scripts/verify-kick-stream-map-city-runtime.mjs
