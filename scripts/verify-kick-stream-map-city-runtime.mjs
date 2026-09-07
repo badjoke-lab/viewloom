@@ -76,6 +76,18 @@ assert.equal(stableComplete.publicCityActivationAuthorized, false)
 assert.equal(stableComplete.state, 'blocked_public_activation')
 assert.deepEqual(stableComplete.activation.blockers, ['public_city_activation_not_authorized'])
 
+const kc5Authorized = buildKickStreamMapCityRuntime({
+  snapshotItems: snapshotItems.filter((row) => row.broadcaster_user_id),
+  updatedAt: '2026-09-07T00:00:00Z',
+  sourceMode: 'fixture',
+  publicCityActivationAuthorized: true,
+})
+assert.equal(kc5Authorized.publicCityActivationAuthorized, true)
+assert.equal(kc5Authorized.activation.publicCityActivationReady, true)
+assert.equal(kc5Authorized.state, 'ready')
+assert.deepEqual(kc5Authorized.activation.blockers, [])
+assert.equal(kc5Authorized.coverage.reconciliation.passes, true)
+
 const mappedCities = new Map(response.mappedStreams.map((row) => [row.slug, row.geography]))
 assert.equal(mappedCities.get('eray')?.city, 'İstanbul')
 assert.equal(mappedCities.get('niter')?.city, 'Wrocław')
@@ -134,7 +146,7 @@ for (const forbidden of [
 
 const routeSource = readFileSync('apps/web/functions/api/kick-stream-map.ts', 'utf8')
 assert.ok(routeSource.includes("const K4_PUBLIC_ACTIVATION_AUTHORIZED = true"))
-assert.ok(routeSource.includes("const KICK_CITY_PUBLIC_ACTIVATION_AUTHORIZED = false"))
+assert.ok(routeSource.includes("const KICK_CITY_PUBLIC_ACTIVATION_AUTHORIZED = true"))
 assert.ok(routeSource.includes("normalized === 'city'"))
 assert.ok(routeSource.includes("geography must be country or city"))
 assert.ok(routeSource.includes('buildKickStreamMapCountryRuntime'))
@@ -154,7 +166,8 @@ console.log(JSON.stringify({
   referenceGeometryAggregates: response.coverage.referenceGeometryAggregates,
   listOnlyAggregates: response.coverage.listOnlyAggregates,
   stableCompleteState: stableComplete.state,
-  publicCityActivationAuthorized: response.publicCityActivationAuthorized,
+  kc5AuthorizedState: kc5Authorized.state,
+  publicCityActivationAuthorized: kc5Authorized.publicCityActivationAuthorized,
   countryDefaultActivationPreserved: true,
   stableIdentityPublished: response.semantics.stableIdentityPublished,
 }, null, 2))

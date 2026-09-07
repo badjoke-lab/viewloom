@@ -4,18 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Stream Map for Kick live streams | ViewLoom</title>
-  <meta name="description" content="Explore reviewed Country-level geographic context for currently observed Kick live streams in ViewLoom." />
+  <meta name="description" content="Explore reviewed Country and Base City geographic context for currently observed Kick live streams in ViewLoom." />
   <link rel="canonical" href="https://www.viewloom.net/kick/map/" />
   <meta property="og:site_name" content="ViewLoom" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://www.viewloom.net/kick/map/" />
   <meta property="og:title" content="Stream Map for Kick live streams | ViewLoom" />
-  <meta property="og:description" content="Explore reviewed Country-level geographic context for currently observed Kick live streams in ViewLoom." />
+  <meta property="og:description" content="Explore reviewed Country and Base City geographic context for currently observed Kick live streams in ViewLoom." />
   <meta property="og:image" content="https://www.viewloom.net/og/viewloom.svg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://www.viewloom.net/og/viewloom.svg" />
   <meta name="twitter:title" content="Stream Map for Kick live streams | ViewLoom" />
-  <meta name="twitter:description" content="Explore reviewed Country-level geographic context for currently observed Kick live streams in ViewLoom." />
+  <meta name="twitter:description" content="Explore reviewed Country and Base City geographic context for currently observed Kick live streams in ViewLoom." />
   <link rel="stylesheet" href="/src/mock-site.css" />
   <link rel="stylesheet" href="/src/features/twitch-stream-map/stream-map.css" />
   <link rel="stylesheet" href="/src/features/twitch-stream-map/maplibre-bootstrap.css" />
@@ -40,7 +40,7 @@
         <div>
           <div class="kicker">KICK DATA · WHERE</div>
           <h1>Stream Map</h1>
-          <p class="lede">Geographic context for a selected slice of the current observed Kick Top 100, using only accepted reviewed Country evidence. Unknown, conflicting, excluded and unreviewed streams remain unmapped.</p>
+          <p class="lede">Geographic context for a selected slice of the current observed Kick Top 100. Country is the default; Base City is available through a separate reviewed Kick-only contract. Unknown, conflicting, excluded and unreviewed streams remain unmapped.</p>
         </div>
         <div class="head-facts">
           <div class="fact"><small>Observed population</small><strong id="stream-map-observed">—</strong></div>
@@ -59,17 +59,17 @@
       </div>
 
       <section class="surface stream-map-geography-panel" aria-label="Geography resolution">
-        <div class="stream-map-geography-copy"><div class="stream-map-filter-label">Geography</div><strong>Choose map resolution</strong><p>Country is public. City and Current / IRL stay unavailable until their separate reviewed contracts are activated.</p></div>
+        <div class="stream-map-geography-copy"><div class="stream-map-filter-label">Geography</div><strong>Choose map resolution</strong><p>Country is the default. City uses a separate reviewed Base City contract. Current / IRL remains unavailable.</p></div>
         <div class="stream-map-geography-options" role="group" aria-label="Geography resolution">
-          <button type="button" data-active="true" aria-pressed="true">Country</button>
-          <button type="button" disabled aria-disabled="true">City</button>
+          <button type="button" data-kick-geography="country" data-active="true" aria-pressed="true">Country</button>
+          <button type="button" data-kick-geography="city" data-active="false" aria-pressed="false">City</button>
           <button type="button" disabled aria-disabled="true">Current / IRL</button>
         </div>
       </section>
 
       <section class="surface stream-map-population-panel" aria-label="Observed population filters">
         <div class="stream-map-filter-head">
-          <div><div class="stream-map-filter-label">Population filters</div><strong>Choose the observed Kick slice before reviewed Country placement is summarized</strong></div>
+          <div><div class="stream-map-filter-label">Population filters</div><strong>Choose the observed Kick slice before reviewed geography is summarized</strong></div>
           <button type="button" class="stream-map-filter-clear" data-reset-population-filters>Reset population</button>
         </div>
         <div class="stream-map-population-controls">
@@ -81,37 +81,37 @@
       </section>
 
       <section class="surface stream-map-filter-panel" aria-label="Location evidence contract">
-        <div class="stream-map-filter-head"><div><div class="stream-map-filter-label">Evidence</div><strong>Reviewed Kick Country terminal states only</strong></div></div>
-        <div class="stream-map-fixed-evidence"><span class="stream-map-badge stream-map-badge--kick-reviewed">Reviewed Country</span><p>Stable broadcaster IDs are used only for the internal join. No Twitch evidence, City inference, Current / IRL promotion, address, or creator coordinates are used here.</p></div>
+        <div class="stream-map-filter-head"><div><div class="stream-map-filter-label">Evidence</div><strong>Reviewed Kick Country / Base City terminal states only</strong></div></div>
+        <div class="stream-map-fixed-evidence"><span class="stream-map-badge stream-map-badge--kick-reviewed">Reviewed geography</span><p>Stable broadcaster IDs are used only for internal provider-separated joins. Country and Base City never infer Current / IRL, address, or creator coordinates.</p></div>
       </section>
 
       <section class="surface stream-map-shell" aria-label="Kick Stream Map">
         <div class="stream-map-shell__head">
-          <div><div class="stream-map-shell__eyebrow">Live evidence-backed geography</div><h2>World map</h2><p>Select a country on the map or in the country list to restrict the mapped-stream list. Country selection does not change evidence acceptance.</p></div>
-          <div class="stream-map-metric-controls" role="group" aria-label="Country intensity"><span>Intensity</span><button type="button" data-kick-metric="streams">Streams</button><button type="button" data-kick-metric="viewers" data-active="true">Viewers</button><button type="button" data-kick-world>World view</button></div>
+          <div><div class="stream-map-shell__eyebrow">Live evidence-backed geography</div><h2>World map</h2><p>Select a country on the map or in the country list to restrict the mapped-stream list. Country is the default view; City switches to reviewed Base City aggregates.</p></div>
+          <div class="stream-map-metric-controls" role="group" aria-label="Geography intensity"><span>Intensity</span><button type="button" data-kick-metric="streams">Streams</button><button type="button" data-kick-metric="viewers" data-active="true">Viewers</button><button type="button" data-kick-world>World view</button></div>
         </div>
         <div class="stream-map-stage">
-          <div id="stream-map-root" class="stream-map-canvas" role="region" aria-label="Interactive Kick Country world map"></div>
+          <div id="stream-map-root" class="stream-map-canvas" role="region" aria-label="Interactive Kick reviewed geography map"></div>
           <div class="stream-map-status" data-kick-stream-map-status role="status" aria-live="polite"><strong>Loading live Kick geography…</strong><span>No demo geography will be substituted.</span></div>
         </div>
-        <p class="stream-map-interaction-note">Drag to move. Use the +/− controls to zoom. Country fills are aggregate selectors, never creator locations. Wheel zoom is disabled so page scrolling remains available.</p>
+        <p class="stream-map-interaction-note">Drag to move. Use the +/− controls to zoom. Country fills and City aggregate references are aggregate selectors, never creator locations. City rows without reviewed reference geometry remain list-only. Wheel zoom is disabled so page scrolling remains available.</p>
       </section>
 
       <section class="stream-map-support-grid">
-        <article class="surface"><small>Mapped streams</small><strong id="stream-map-card-mapped">—</strong><p>Accepted reviewed Country placements inside the selected population.</p></article>
+        <article class="surface"><small>Mapped streams</small><strong id="stream-map-card-mapped">—</strong><p>Accepted reviewed placements inside the selected population and active geography mode.</p></article>
         <article class="surface"><small>Mapped viewers</small><strong id="stream-map-card-viewers">—</strong><p>Viewer coverage is recalculated for the selected Top-N/minimum-viewer slice.</p></article>
         <article class="surface"><small>Excluded non-person</small><strong id="stream-map-card-excluded">—</strong><p>Organization and event-broadcast channels stay in accounting but are never placed as people.</p></article>
       </section>
 
       <section class="surface stream-map-unmapped" aria-labelledby="stream-map-unmapped-heading">
-        <div class="stream-map-unmapped__head"><div><div class="stream-map-shell__eyebrow">Reason-aware accounting</div><h2 id="stream-map-unmapped-heading">Why streams are unmapped</h2><p>Reason codes come from the real Kick Country runtime. Population filtering changes only the current slice, never the reviewed evidence decision.</p></div><div class="stream-map-unmapped__facts"><div><small>Unmapped in view</small><strong id="stream-map-unmapped-current">—</strong></div><div><small>Conflicts</small><strong id="stream-map-conflict-current">—</strong></div><div><small>Excluded</small><strong id="stream-map-excluded-current">—</strong></div></div></div>
+        <div class="stream-map-unmapped__head"><div><div class="stream-map-shell__eyebrow">Reason-aware accounting</div><h2 id="stream-map-unmapped-heading">Why streams are unmapped</h2><p>Reason codes come from the active real Kick geography runtime. Population filtering changes only the current slice, never the reviewed evidence decision.</p></div><div class="stream-map-unmapped__facts"><div><small>Unmapped in view</small><strong id="stream-map-unmapped-current">—</strong></div><div><small>Conflicts</small><strong id="stream-map-conflict-current">—</strong></div><div><small>Excluded</small><strong id="stream-map-excluded-current">—</strong></div></div></div>
         <p id="stream-map-unmapped-reconciliation" class="stream-map-filter-note" aria-live="polite">Loading reason accounting…</p>
         <div class="stream-map-unmapped-grid"><div class="stream-map-results-card"><h3>Unmapped reasons</h3><div id="stream-map-unmapped-reason-list" class="stream-map-unmapped-reason-list"><p class="stream-map-empty">Loading…</p></div></div><div class="stream-map-results-card"><h3>Excluded non-person channels</h3><div id="stream-map-excluded-nonperson-list" class="stream-map-excluded-list"><p class="stream-map-empty">Loading…</p></div></div></div>
       </section>
 
       <section class="surface stream-map-results">
-        <div class="stream-map-results__head"><div><div class="stream-map-shell__eyebrow">Current filtered result</div><h2>Mapped countries and streams</h2><p>Choose a country to restrict the result list. The underlying reviewed Country decision does not change.</p></div><div class="head-facts"><div class="fact"><small>Countries</small><strong id="stream-map-country-count">—</strong></div><div class="fact"><small>Country conflicts</small><strong id="stream-map-conflict-count">—</strong></div></div></div>
-        <section id="stream-map-selected-country" class="stream-map-selected-country" aria-live="polite" hidden><div class="stream-map-selected-country__head"><div><div class="stream-map-shell__eyebrow">Selected country</div><h3 id="stream-map-selected-country-name">—</h3></div><button type="button" class="stream-map-filter-clear" data-clear-selected-country>Clear country</button></div><div class="stream-map-selected-country__facts"><div><small>Mapped streams</small><strong id="stream-map-selected-country-streams">0</strong></div><div><small>Mapped viewers</small><strong id="stream-map-selected-country-viewers">0</strong></div><div><small>Evidence</small><strong>Reviewed Country</strong></div></div></section>
+        <div class="stream-map-results__head"><div><div class="stream-map-shell__eyebrow">Current filtered result</div><h2>Mapped countries and streams</h2><p>Choose a country to restrict the result list. City mode switches this result surface to reviewed Base City aggregates.</p></div><div class="head-facts"><div class="fact"><small>Areas</small><strong id="stream-map-country-count">—</strong></div><div class="fact"><small>Conflicts</small><strong id="stream-map-conflict-count">—</strong></div></div></div>
+        <section id="stream-map-selected-country" class="stream-map-selected-country" aria-live="polite" hidden><div class="stream-map-selected-country__head"><div><div class="stream-map-shell__eyebrow">Selected geography</div><h3 id="stream-map-selected-country-name">—</h3></div><button type="button" class="stream-map-filter-clear" data-clear-selected-country>Clear selection</button></div><div class="stream-map-selected-country__facts"><div><small>Mapped streams</small><strong id="stream-map-selected-country-streams">0</strong></div><div><small>Mapped viewers</small><strong id="stream-map-selected-country-viewers">0</strong></div><div><small>Evidence</small><strong>Reviewed Country</strong></div></div></section>
         <div class="stream-map-results-grid"><div class="stream-map-results-card"><h3>Countries</h3><div id="stream-map-country-list" class="stream-map-country-list"><p class="stream-map-empty">Loading…</p></div></div><div class="stream-map-results-card"><h3 id="stream-map-stream-list-title">Mapped streams</h3><div id="stream-map-stream-list" class="stream-map-stream-list"><p class="stream-map-empty">Loading…</p></div></div></div>
       </section>
     </main>
