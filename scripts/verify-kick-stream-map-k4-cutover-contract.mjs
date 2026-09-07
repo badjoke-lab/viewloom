@@ -10,6 +10,10 @@ const adapterSource = read('apps/web/functions/api/kick-stream-map-public-adapte
 const runtimeSource = read('apps/web/functions/api/kick-stream-map-country-runtime-core.mjs')
 const routeSource = read('apps/web/functions/api/kick-stream-map.ts')
 const publicEntrySource = read('apps/web/src/features/kick-stream-map/public-entry.ts')
+const publicKc5EntrySource = existsSync('apps/web/src/features/kick-stream-map/public-kc5-entry.ts')
+  ? read('apps/web/src/features/kick-stream-map/public-kc5-entry.ts')
+  : ''
+const publicRuntimeSource = `${publicEntrySource}\n${publicKc5EntrySource}`
 const publicPageSource = read('apps/web/kick/map/index.html')
 const viteSource = read('apps/web/vite.config.ts')
 const providerHomeSource = read('apps/web/src/provider-home-shell.ts')
@@ -20,7 +24,9 @@ const inventory = json('docs/audits/public-surface-inventory.json')
 
 // The frozen contract remains historical evidence and did not itself authorize
 // activation. A separate explicit authorization was supplied after it was
-// accepted; this verifier checks the resulting cutover against that contract.
+// accepted; this verifier checks that the Country K4 cutover still satisfies
+// the frozen contract even if later provider-separated geography controllers
+// are layered onto the same public route.
 assert.equal(contract.schemaVersion, 'viewloom-kick-stream-map-k4-cutover-contract-v0.1')
 assert.equal(contract.status, 'frozen_not_authorized')
 assert.equal(contract.provider, 'kick')
@@ -49,9 +55,9 @@ assert.equal(runtimeSource.includes("...(!activationAuthorized ? ['public_countr
 assert.equal(runtimeSource.includes('stableIdentityPublished: false'), true)
 assert.equal(routeSource.includes('const K4_PUBLIC_ACTIVATION_AUTHORIZED = true'), true)
 assert.ok((routeSource.match(/publicActivationAuthorized: K4_PUBLIC_ACTIVATION_AUTHORIZED/g)?.length ?? 0) >= 3)
-assert.equal(publicEntrySource.includes("fetch('/api/kick-stream-map'"), true)
-assert.equal(publicEntrySource.includes('buildKickStreamMapPreviewModel'), false)
-assert.equal(publicEntrySource.includes('buildKickCountryPreviewModel(current, { allowGeography: true })'), true)
+assert.equal(publicRuntimeSource.includes("'/api/kick-stream-map'"), true)
+assert.equal(publicRuntimeSource.includes('buildKickStreamMapPreviewModel'), false)
+assert.equal(publicRuntimeSource.includes('buildKickCountryPreviewModel(current, { allowGeography: true })'), true)
 assert.equal(publicPageSource.includes('data-kick-map-public'), true)
 assert.equal(publicPageSource.includes('https://www.viewloom.net/kick/map/'), true)
 assert.equal(publicPageSource.includes('/src/features/twitch-stream-map/stream-map.css'), true)
