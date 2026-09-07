@@ -150,10 +150,10 @@ async function audit(viewport) {
   await page.locator('[data-kick-world]').click()
   if (await page.locator('#stream-map-stream-list .stream-map-stream-row').count() !== 3) violations.push('City World/all reset did not restore three streams')
 
-  await page.locator('[data-population-min-viewers]').selectOption('50')
-  await page.waitForFunction(() => document.querySelector('#stream-map-mapped')?.textContent?.trim() === '2')
-  if (await page.locator('#stream-map-stream-list .stream-map-stream-row').count() !== 2) violations.push('City population filter did not recompute mapped streams')
-  if (await page.locator('#stream-map-country-list .stream-map-city-row').count() !== 2) violations.push('City population filter did not rebuild aggregates')
+  await page.locator('[data-population-min-viewers]').selectOption('100')
+  await page.waitForFunction(() => document.querySelector('#stream-map-mapped')?.textContent?.trim() === '1')
+  if (await page.locator('#stream-map-stream-list .stream-map-stream-row').count() !== 1) violations.push('City population filter did not recompute mapped streams')
+  if (await page.locator('#stream-map-country-list .stream-map-city-row').count() !== 1) violations.push('City population filter did not rebuild aggregates')
   await page.locator('[data-reset-population-filters]').click()
   await page.waitForFunction(() => document.querySelector('#stream-map-mapped')?.textContent?.trim() === '3')
 
