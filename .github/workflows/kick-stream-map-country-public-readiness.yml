@@ -157,7 +157,7 @@ jobs:
       - name: Run public Kick Map desktop/mobile browser proof
         working-directory: apps/web
         run: node scripts/kick-stream-map-public-browser-proof.mjs
-      - name: Run KUI3b against still-gated production before merge
+      - name: Run current authorized Kick production boundary proof
         if: github.event_name == 'pull_request'
         working-directory: apps/web
         run: node scripts/kick-stream-map-kui3b-production-browser-proof.mjs
