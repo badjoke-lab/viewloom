@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises'
+import { cp, mkdir, writeFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
 import { kickMapKui3aScenarios } from '../src/features/kick-stream-map/kui3a-fixtures.mjs'
 import { kickMapKc4Scenarios } from '../src/features/kick-stream-map/kc4-fixtures.mjs'
@@ -65,6 +65,13 @@ try {
   if (evidence.result !== 'pass') process.exitCode = 1
 } finally {
   await browser.close()
+}
+
+if (process.env.GITHUB_EVENT_NAME === 'push') {
+  await import('./kick-stream-map-kc5-production-browser-proof.mjs')
+  const permanentOutput = '/tmp/kick-stream-map-production-public-browser-proof/kc5-city'
+  await mkdir(permanentOutput, { recursive: true })
+  await cp('/tmp/kick-stream-map-kc5-production-browser-proof', permanentOutput, { recursive: true })
 }
 
 async function audit(viewport) {
