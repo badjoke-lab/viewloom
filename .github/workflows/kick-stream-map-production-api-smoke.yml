@@ -81,7 +81,7 @@ jobs:
           jq -e '.schema == "viewloom-deployment-v1" and .environment == "production" and .branch == "main" and (.commit_sha | type == "string" and length > 0)' deployment.json >/dev/null
           cat deployment.json
 
-      - name: Verify currently deployed Kick API remains safely gated during PR
+      - name: Verify currently deployed Kick K4 public Country remains ready during PR
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
@@ -90,21 +90,28 @@ jobs:
           for attempt in {1..30}; do
             curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/kick-stream-map?production-smoke=$GITHUB_RUN_ID&attempt=$attempt" -o kick-stream-map.json
             if jq -e '
+              .version == "viewloom-kick-stream-map-country-runtime-v0.1" and
+              .implementationState == "reviewed_country_runtime_connected" and
               .platform == "kick" and
               .provider == "kick" and
               .source == "real" and
               .geographyMode == "country" and
-              .publicActivationAuthorized == false and
+              .publicActivationAuthorized == true and
+              .state == "ready" and
+              .activation.publicCountryActivationReady == true and
+              (.activation.blockers | index("public_country_activation_not_authorized")) == null and
+              (.activation.blockers | index("reviewed_kick_country_evidence_runtime_not_connected")) == null and
               .identity.stableKey == "broadcaster_user_id" and
               .identity.slugIsStableIdentity == false and
+              .coverage.observedStreams > 0 and
+              .coverage.stableIdentityStreams == .coverage.observedStreams and
+              .coverage.reviewedEvidenceCatalogSize == 100 and
+              .coverage.reconciliation.passes == true and
+              .semantics.stableIdentityPublished == false and
               .semantics.twitchEvidenceReuseAllowed == false and
               .semantics.providerAggregationAllowed == false and
               .semantics.cityInferenceAllowed == false and
-              .semantics.currentLocationPromotionAllowed == false and
-              (
-                (.version == "viewloom-kick-stream-map-public-adapter-v0.1" and .state == "blocked_reviewed_evidence") or
-                (.version == "viewloom-kick-stream-map-country-runtime-v0.1" and (.state == "blocked_public_activation" or .state == "blocked_stable_identity"))
-              )
+              .semantics.currentLocationPromotionAllowed == false
             ' kick-stream-map.json >/dev/null; then
               break
             fi
@@ -112,7 +119,8 @@ jobs:
           done
 
           jq -e '
-            .publicActivationAuthorized == false and
+            .publicActivationAuthorized == true and
+            .state == "ready" and
             ([paths | .[-1] | tostring | select(. == "stableKickUserId" or . == "broadcaster_user_id")] | length) == 0
           ' kick-stream-map.json >/dev/null
           jq '{version, implementationState, state, publicActivationAuthorized, coverage, identity, activation, semantics}' kick-stream-map.json
