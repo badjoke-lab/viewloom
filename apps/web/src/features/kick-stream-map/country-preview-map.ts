@@ -23,9 +23,14 @@ const GEOMETRY_URLS = [
   '/data/geo/countries-110m-4.geojson',
 ] as const
 
-const SOURCE_ID = 'kick-preview-country-regions'
-const FILL_ID = 'kick-preview-country-fill'
-const OUTLINE_ID = 'kick-preview-country-outline'
+const SOURCE_ID = 'kick-public-country-regions'
+const FILL_ID = 'kick-public-country-fill'
+const OUTLINE_ID = 'kick-public-country-outline'
+const OPENFREEMAP_DARK_STYLE = 'https://tiles.openfreemap.org/styles/dark'
+const SAFE_WORLD_BOUNDS: [[number, number], [number, number]] = [
+  [-179.999, -78],
+  [179.999, 82],
+]
 
 maplibregl.setWorkerUrl(workerUrl)
 
@@ -41,40 +46,47 @@ export async function renderKickCountryPreviewMap(
 ): Promise<KickCountryPreviewMapController | null> {
   if (!model.allowGeography || !model.contractSafe || model.countryRows.length === 0) return null
 
+  container.dataset.mapState = 'basemap-loading'
   const geometry = await loadGeometry()
   let metric: Metric = 'viewers'
   let selectedCountryCode: string | null = null
+  let loaded = false
 
   const map = new maplibregl.Map({
     container,
-    center: [0, 18],
-    zoom: 0.55,
-    minZoom: 0.25,
-    maxZoom: 5,
-    maxBounds: [[-179.999, -78], [179.999, 82]],
-    attributionControl: false,
+    style: OPENFREEMAP_DARK_STYLE,
+    center: [10, 18],
+    zoom: 1.15,
+    minZoom: 0.8,
+    maxZoom: 6,
+    maxBounds: SAFE_WORLD_BOUNDS,
+    attributionControl: true,
     dragRotate: false,
     pitchWithRotate: false,
-    style: {
-      version: 8,
-      sources: {},
-      layers: [{
-        id: 'kick-preview-background',
-        type: 'background',
-        paint: { 'background-color': '#0d1117' },
-      }],
-    },
   })
   map.scrollZoom.disable()
   map.touchZoomRotate.disableRotation()
-  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
+  map.addControl(new maplibregl.NavigationControl({ showCompass: false, visualizePitch: false }), 'top-right')
 
   const tooltip = document.createElement('div')
   tooltip.className = 'kick-map-preview__tooltip'
   tooltip.hidden = true
   container.append(tooltip)
 
-  await new Promise<void>((resolve) => map.once('load', () => resolve()))
+  const failBeforeLoad = () => {
+    if (!loaded) container.dataset.mapState = 'basemap-error'
+  }
+  map.on('error', failBeforeLoad)
+
+  await new Promise<void>((resolve, reject) => {
+    const timeout = window.setTimeout(() => reject(new Error('Kick OpenFreeMap basemap load timed out')), 20_000)
+    map.once('load', () => {
+      window.clearTimeout(timeout)
+      loaded = true
+      resolve()
+    })
+  })
+
   map.addSource(SOURCE_ID, { type: 'geojson', data: buildData(geometry, model, metric, selectedCountryCode) as any })
   map.addLayer({
     id: FILL_ID,
@@ -103,6 +115,7 @@ export async function renderKickCountryPreviewMap(
       'line-opacity': 0.95,
     },
   })
+  container.dataset.mapState = 'basemap-ready'
 
   map.on('click', FILL_ID, (event) => {
     const code = validCountryCode(event.features?.[0]?.properties?.viewloomCountryCode)
