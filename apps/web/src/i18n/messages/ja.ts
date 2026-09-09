@@ -49,5 +49,7 @@ export const jaMessages: Record<MessageKey, string> = {
   'map.conflict': '情報競合',
   'map.currentLocation': '現在地',
   'map.homeBase': '拠点 / Base',
+  'map.twitchHomeCopy': '現在観測しているTwitch配信について、採用済みの国・都市地理情報を確認します。',
+  'map.countryCityEvidence': '国 + 都市 · 根拠確認済み',
   'footer.disclaimer': 'ViewLoom · 公開ライブ配信データを独立・非公式に観測するサイトです。',
 }
