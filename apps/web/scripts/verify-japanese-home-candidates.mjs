@@ -17,6 +17,7 @@ const candidates = [
 const sitemap = readWeb('public/sitemap.xml')
 const vite = readWeb('vite.config.ts')
 const routeHelper = readWeb('src/i18n/route.ts')
+const portalRuntime = readWeb('src/portal-page.ts')
 const providerShell = readWeb('src/provider-home-shell.ts')
 const providerMapEntry = readWeb('src/provider-home-stream-map-entry.ts')
 
@@ -39,8 +40,10 @@ for (const candidate of candidates) {
 }
 
 const jaPortal = readWeb('ja/index.html')
-assert.match(jaPortal, /\/api\/twitch-home/, '/ja/: Twitch Home API missing')
-assert.match(jaPortal, /\/api\/kick-home/, '/ja/: Kick Home API missing')
+assert.match(jaPortal, /src=["']\/src\/portal-page\.ts["']/, '/ja/: shared Portal runtime must be used')
+assert.match(portalRuntime, /type Platform\s*=\s*'twitch'\s*\|\s*'kick'/, 'Portal runtime must retain separate Twitch/Kick platform ownership')
+assert.match(portalRuntime, /fetch\(`\/api\/\$\{platform\}-home`/, 'Portal runtime must reuse the existing provider Home API family')
+assert.doesNotMatch(portalRuntime, /\/api\/ja(?:\/|-)/i, 'Portal runtime must not introduce localized API paths')
 assert.match(jaPortal, /href=["']\/ja\/twitch\//, '/ja/: localized Twitch Home link missing')
 assert.match(jaPortal, /href=["']\/ja\/kick\//, '/ja/: localized Kick Home link missing')
 assert.doesNotMatch(jaPortal, /href=["']\/ja\/(?:twitch|kick)\/(?:heatmap|day-flow|battle-lines|history|map|status|watchlist|channel)\//, '/ja/: unreleased Japanese feature link exposed')
