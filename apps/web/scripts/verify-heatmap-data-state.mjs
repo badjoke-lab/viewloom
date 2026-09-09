@@ -132,7 +132,7 @@ for (const fragment of [
   "data-heatmap-state='partial'",
   "data-heatmap-state='stale'",
   "data-heatmap-state='error'",
-  'heatmapMessage',
+  'heatmapText',
   'heatmapReason',
 ]) assert.ok(domSource.includes(fragment), `missing DOM truth fragment: ${fragment}`)
 
