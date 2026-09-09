@@ -26,7 +26,7 @@ const inventory = json('docs/audits/public-surface-inventory.json')
 // activation. A separate explicit authorization was supplied after it was
 // accepted; this verifier checks that the Country K4 cutover still satisfies
 // the frozen contract even if later provider-separated geography controllers
-// are layered onto the same public route.
+// or hidden localization candidates are layered onto the current public build.
 assert.equal(contract.schemaVersion, 'viewloom-kick-stream-map-k4-cutover-contract-v0.1')
 assert.equal(contract.status, 'frozen_not_authorized')
 assert.equal(contract.provider, 'kick')
@@ -68,12 +68,17 @@ assert.equal(browserAuditSource.includes('Kick Home missing authorized /kick/map
 
 const routeList = Array.isArray(kickRoutes.routes) ? kickRoutes.routes : []
 assert.equal(routeList.some((route) => route?.id === 'kick-map' && route?.route === '/kick/map/' && route?.profile === 'stream_map'), true)
-assert.equal(inventory.counts.vite_html_inputs, 27)
-assert.equal(inventory.counts.inventory_entries, 28)
-assert.equal(inventory.counts.indexable_routes, 23)
-assert.equal(inventory.counts.sitemap_routes, 23)
-assert.equal(inventory.counts.current_browser_required_viewports, 4)
-assert.equal(inventory.counts.current_browser_scenarios, 108)
+
+// K4's frozen inventory baseline remains exact in the historical contract below.
+// Current inventory is allowed to grow with later noindex surfaces as long as the
+// K4 indexable/sitemap footprint is unchanged and every current HTML route keeps
+// four browser viewports.
+assert.ok(inventory.counts.vite_html_inputs >= contract.expectedPublicInventoryAfterCutover.viteHtmlInputs)
+assert.equal(inventory.counts.inventory_entries, inventory.counts.vite_html_inputs + 1)
+assert.equal(inventory.counts.indexable_routes, contract.expectedPublicInventoryAfterCutover.indexableRoutes)
+assert.equal(inventory.counts.sitemap_routes, contract.expectedPublicInventoryAfterCutover.sitemapRoutes)
+assert.equal(inventory.counts.current_browser_required_viewports, contract.expectedPublicInventoryAfterCutover.browserViewports)
+assert.equal(inventory.counts.current_browser_scenarios, inventory.counts.vite_html_inputs * inventory.counts.current_browser_required_viewports)
 
 const requiredRuntimePaths = contract.requiredRuntimeChanges.map((row) => row.path)
 assert.deepEqual(requiredRuntimePaths, [
@@ -164,5 +169,6 @@ console.log(JSON.stringify({
   publicUiBaseline: 'twitch-stream-map-shell',
   previewModelUsedByPublicUi: false,
   expectedPublicInventoryAfterCutover: contract.expectedPublicInventoryAfterCutover,
+  currentViteHtmlInputs: inventory.counts.vite_html_inputs,
   stableIdentityPublished: false,
 }, null, 2))
