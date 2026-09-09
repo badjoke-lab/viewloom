@@ -92,10 +92,27 @@ for (const page of pages) {
   requireFragment(path, source, '<meta name="twitter:image" content="https://www.viewloom.net/og/viewloom.svg"')
 }
 
+const middlewarePath = 'functions/_middleware.ts'
+if (!existsSync(join(root, middlewarePath))) {
+  failures.push(`${middlewarePath}: missing edge SEO policy`)
+} else {
+  const middleware = read(middlewarePath)
+  for (const route of ['/twitch/day-flow', '/kick/day-flow', '/twitch/battle-lines', '/kick/battle-lines']) {
+    if (!middleware.includes(`'${route}'`)) failures.push(`${middlewarePath}: missing search-state route ${route}`)
+  }
+  for (const fragment of [
+    'SEARCH_STATE_PAGE_ROUTES.has(pathname) && url.search',
+    "headers.set('X-Robots-Tag', 'noindex, follow')",
+    "contentType.includes('text/html')",
+  ]) {
+    if (!middleware.includes(fragment)) failures.push(`${middlewarePath}: missing search-state noindex contract: ${fragment}`)
+  }
+}
+
 if (failures.length > 0) {
   console.error('ViewLoom SEO QA verification failed:')
   for (const failure of failures) console.error(`- ${failure}`)
   process.exit(1)
 }
 
-console.log(`ViewLoom SEO QA verification passed for ${pages.length} public pages.`)
+console.log(`ViewLoom SEO QA verification passed for ${pages.length} public pages and the Day Flow/Battle Lines search-state index policy.`)
