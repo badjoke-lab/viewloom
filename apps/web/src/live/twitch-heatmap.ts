@@ -16,6 +16,8 @@ import {
   type TwitchHeatmapApiResponse,
   type TwitchHeatmapPayload,
 } from '../features/twitch-heatmap/model'
+import { localeFromPathname } from '../i18n/locale'
+import { heatmapNumber, heatmapText } from '../i18n/heatmap'
 
 let selectedStreamLogin: string | null = null
 let refreshTimer: number | null = null
@@ -58,6 +60,7 @@ const HEATMAP_RUNTIME_CSS = `
 `
 
 export async function hydrateTwitchHeatmap(): Promise<void> {
+  const locale = localeFromPathname(window.location.pathname)
   const provider = heatmapProvider()
   const categoryPreview = readCategoryPreviewState(provider.key)
   ensureRuntimeStyles()
@@ -74,7 +77,10 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
   destroyCanvasScene()
   stage.classList.add('heatmap-live-stage')
   stage.setAttribute('aria-busy', 'true')
-  stage.innerHTML = renderRuntimeState('Loading latest snapshot', `Reading the latest stored ${provider.label} Heatmap snapshot.`)
+  stage.innerHTML = renderRuntimeState(
+    heatmapText(locale, 'runtime.loadingTitle'),
+    heatmapText(locale, 'runtime.loadingBody', { provider: provider.label }),
+  )
 
   try {
     const endpoint = buildCategoryPreviewEndpoint(provider.endpoint, provider.key, categoryPreview)
@@ -98,7 +104,10 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
     }
 
     if (!data.latest) {
-      stage.innerHTML = renderRuntimeState(`No ${provider.label} snapshot yet`, `${provider.storageLabel} is connected, but no latest snapshot is available.`)
+      stage.innerHTML = renderRuntimeState(
+        heatmapText(locale, 'runtime.noSnapshotTitle', { provider: provider.label }),
+        heatmapText(locale, 'runtime.noSnapshotBody', { storage: provider.storageLabel }),
+      )
       return
     }
     const latest = data.latest
@@ -115,8 +124,15 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
       const selectedCategory = data.categoryFilter?.selectedCategory ?? categoryPreview.category
       const categoryEmpty = categoryPreview.enabled && data.categoryFilter?.state === 'selected'
       stage.innerHTML = categoryEmpty
-        ? renderRuntimeState('No live streams in this category', `The latest real ${provider.label} snapshot has no qualifying live streams for category “${selectedCategory}” inside the selected Top ${categoryPreview.top} view.`)
-        : renderRuntimeState('No live records in this snapshot', 'The data path responded successfully, but the latest stored snapshot contains no valid live stream records.')
+        ? renderRuntimeState(
+            heatmapText(locale, 'runtime.categoryEmptyTitle'),
+            heatmapText(locale, 'runtime.categoryEmptyBody', {
+              provider: provider.label,
+              category: selectedCategory,
+              top: categoryPreview.top,
+            }),
+          )
+        : renderRuntimeState(heatmapText(locale, 'runtime.emptyTitle'), heatmapText(locale, 'runtime.emptyBody'))
       return
     }
 
@@ -141,8 +157,10 @@ export async function hydrateTwitchHeatmap(): Promise<void> {
       syncSelectedStreamBridge(initial, latest, provider)
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error'
-    stage.innerHTML = renderRuntimeState(`Failed to load ${provider.label} Heatmap`, message)
+    const message = locale === 'ja'
+      ? heatmapText(locale, 'runtime.unknownError')
+      : error instanceof Error ? error.message : heatmapText(locale, 'runtime.unknownError')
+    stage.innerHTML = renderRuntimeState(heatmapText(locale, 'runtime.failedTitle', { provider: provider.label }), message)
   } finally {
     stage.removeAttribute('aria-busy')
   }
@@ -248,18 +266,19 @@ function syncSelectedStreamBridge(
   latest: NonNullable<TwitchHeatmapApiResponse['latest']>,
   provider: HeatmapProvider,
 ): void {
+  const locale = localeFromPathname(window.location.pathname)
   const share = latest.total_viewers > 0 ? item.viewers / latest.total_viewers : 0
   setText('#heatmap-detail-title', item.displayName)
-  setText('#heatmap-detail-body', item.title || `${item.channelLogin} is selected in the latest observed snapshot.`)
-  setText('#heatmap-detail-viewers', item.viewers.toLocaleString())
+  setText('#heatmap-detail-body', item.title || heatmapText(locale, 'runtime.selectedFallback', { login: item.channelLogin }))
+  setText('#heatmap-detail-viewers', heatmapNumber(locale, item.viewers))
   setText('#heatmap-detail-share', `${(share * 100).toFixed(2)}%`)
-  setText('#heatmap-detail-momentum', item.momentumAvailable === false ? 'Unavailable' : formatSignedPercent(item.momentum))
-  setText('#heatmap-detail-activity', item.activityAvailable === false ? 'Unavailable' : formatPercent(item.activity))
+  setText('#heatmap-detail-momentum', item.momentumAvailable === false ? heatmapText(locale, 'common.unavailable') : formatSignedPercent(item.momentum))
+  setText('#heatmap-detail-activity', item.activityAvailable === false ? heatmapText(locale, 'common.unavailable') : formatPercent(item.activity))
 
   const link = document.querySelector<HTMLAnchorElement>('#heatmap-detail-link')
   if (link) {
     link.href = item.url || provider.streamUrl(item.channelLogin)
-    link.textContent = `Open ${item.displayName}`
+    link.textContent = heatmapText(locale, 'runtime.openSelected', { name: item.displayName })
   }
 }
 
