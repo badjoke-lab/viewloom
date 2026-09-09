@@ -138,11 +138,17 @@ for (const fragment of [
 
 const presentationSource = readFileSync(fileURLToPath(new URL('../src/i18n/heatmap.ts', import.meta.url)), 'utf8')
 for (const fragment of [
-  "'activity.supportZero': 'Sampled zero: {count}'",
+  "'activity.support.available': 'Available: {value}'",
+  "'activity.support.zero': 'Sampled zero: {value}'",
+  "'activity.support.unavailable': 'Unavailable: {value}'",
+  "'activity.support.notSampled': 'Not sampled: {value}'",
   "'common.unavailable': 'Unavailable'",
   "'common.notSampled': 'Not sampled'",
   "'coverage.method': 'Collection method: {method}.'",
-  "'activity.supportZero': 'ゼロとしてサンプル: {count}'",
+  "'activity.support.available': '利用可能: {value}'",
+  "'activity.support.zero': 'サンプル値0: {value}'",
+  "'activity.support.unavailable': '利用不可: {value}'",
+  "'activity.support.notSampled': '未サンプル: {value}'",
   "'common.unavailable': '利用不可'",
   "'common.notSampled': '未サンプル'",
 ]) assert.ok(presentationSource.includes(fragment), `missing Heatmap presentation catalog fragment: ${fragment}`)
