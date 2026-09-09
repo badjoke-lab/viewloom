@@ -208,9 +208,9 @@ function verifyProviderHome() {
 
   for (const fragment of [
     "'utility.title': 'Local Watchlist'",
-    "'utility.copy': 'Saved channels in this browser.'",
+    "'utility.copy': 'Saved channels in this browser. Keep {name} ids separate",
     "'utility.open': 'Open Local Watchlist →'",
-    "'utility.title': 'Local Watchlist'",
+    "'utility.copy': 'このブラウザに保存したチャンネルです。{name}のIDを他プラットフォームと分離したまま",
     "'utility.open': 'Local Watchlistを開く →'",
   ]) assert.ok(homeCatalog.includes(fragment), `Provider Home utility catalog missing: ${fragment}`)
 
