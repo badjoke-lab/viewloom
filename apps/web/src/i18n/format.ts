@@ -40,7 +40,6 @@ export function formatUtcDateTime(
   if (Number.isNaN(date.getTime())) return '—'
 
   return new Intl.DateTimeFormat(localeTag(locale), {
-    timeZone: OBSERVATION_TIMEZONE,
     year: 'numeric',
     month: 'short',
     day: '2-digit',
