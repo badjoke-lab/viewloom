@@ -45,10 +45,11 @@ for (const path of htmlFiles(dist)) {
   if (/data-provider-home(?:\s|>)/.test(html) && !/<h1\b/i.test(html)) {
     const provider = html.match(/data-provider=["'](twitch|kick)["']/i)?.[1] ?? 'provider'
     const name = provider === 'twitch' ? 'Twitch' : provider === 'kick' ? 'Kick' : 'Provider'
-    html = html.replace(
-      /(<div\s+id=["']provider-home-root["'][^>]*>)/i,
-      `$1<noscript><main><h1>${name} data</h1><p>JavaScript is required to load the current observed ${name} dashboard.</p></main></noscript>`,
-    )
+    const isJapanese = /<html\b[^>]*\blang=["']ja["']/i.test(html)
+    const noscript = isJapanese
+      ? `<noscript><main><h1>${name}データ</h1><p>現在の${name}観測ダッシュボードを表示するにはJavaScriptが必要です。</p></main></noscript>`
+      : `<noscript><main><h1>${name} data</h1><p>JavaScript is required to load the current observed ${name} dashboard.</p></main></noscript>`
+    html = html.replace(/(<div\s+id=["']provider-home-root["'][^>]*>)/i, `$1${noscript}`)
   }
 
   if (!html.includes(`href="${projectHubUrl}"`) && !html.includes(`href='${projectHubUrl}'`)) {
