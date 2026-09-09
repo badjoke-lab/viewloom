@@ -175,11 +175,18 @@ function auditPage(page) {
 function auditFeatureTabs(page, html) {
   const match = html.match(/<nav\b[^>]*class=["'][^"']*feature-tabs[^"']*["'][^>]*>([\s\S]*?)<\/nav>/i)
   if (!match) return error(page.route, 'feature tabs are missing.')
-  const hrefs = [...match[1].matchAll(/href=["']([^"']+)["']/gi)].map((item) => stripQuery(item[1]))
-  const required = ['heatmap', 'day-flow', 'battle-lines', 'history', 'status'].map((feature) => `/${page.provider}/${feature}/`)
+  const hrefs = [...match[1].matchAll(/href=["']([^"']+)["']/gi)].map((item) => normalizeRoute(stripQuery(item[1])))
+  const required = ['heatmap', 'day-flow', 'battle-lines', 'history', 'status'].map((feature) => {
+    const localized = `/ja/${page.provider}/${feature}/`
+    return page.route.startsWith('/ja/') && knownRoutes.has(localized)
+      ? localized
+      : `/${page.provider}/${feature}/`
+  })
   for (const route of required) if (!hrefs.includes(route)) error(page.route, `feature tabs are missing ${route}.`)
-  const other = page.provider === 'twitch' ? '/kick/' : '/twitch/'
-  if (hrefs.some((href) => href.startsWith(other))) error(page.route, 'feature tabs cross provider routes.')
+  const otherProvider = page.provider === 'twitch' ? 'kick' : 'twitch'
+  if (hrefs.some((href) => href.startsWith(`/${otherProvider}/`) || href.startsWith(`/ja/${otherProvider}/`))) {
+    error(page.route, 'feature tabs cross provider routes.')
+  }
 }
 
 function auditAsset(scope, source) {
