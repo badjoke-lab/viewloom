@@ -18,6 +18,8 @@ const files = [
   'index.html', 'twitch/index.html', 'kick/index.html',
   'src/portal-page.ts', 'src/portal-page.css',
   'src/provider-home.ts', 'src/provider-home-shell.ts', 'src/provider-home-data.ts', 'src/provider-home.css',
+  'src/provider-home-stream-map-entry.ts',
+  'src/i18n/locale.ts', 'src/i18n/route.ts', 'src/i18n/provider-home.ts',
   'src/shared-shell.ts', 'src/shared-shell.css',
   'functions/_home/model.ts', 'functions/api/twitch-home.ts', 'functions/api/kick-home.ts',
   'fixtures/home-payload-states.json', 'docs/home-qa-contract.md', 'docs/home-payload-contract.md', 'docs/platform-home-repair-plan.md',
@@ -107,14 +109,17 @@ for (const provider of ['twitch', 'kick']) {
 if (existsSync(join(root, 'src/provider-home-shell.ts'))) {
   const source = read('src/provider-home-shell.ts')
   for (const fragment of [
+    "mountProviderHome(platform: Platform, locale: Locale = 'en')",
+    'providerHomeCoverage, providerHomeLede, providerHomeText',
+    'localizeHref(href, locale)',
     "['01 · NOW', 'Heatmap'",
     "['02 · TODAY', 'Day Flow'",
     "['03 · RIVALRY', 'Battle Lines'",
     "['04 · TRENDS', 'History'",
     'id="home-live-table"',
     'class="home-live-context"',
-    '<caption>Top streams in the latest observed',
-    'Reversal review',
+    "t('live.caption'",
+    "t('today.reversalReview')",
     'aria-controls="provider-home-nav"',
     'aria-live="polite"',
   ]) need('src/provider-home-shell.ts', source, fragment)
@@ -129,7 +134,10 @@ if (existsSync(join(root, 'src/provider-home-data.ts'))) {
     '/api/${active}-home',
     'home-table--no-context',
     'home-live-context-',
-    'Review reversals in Battle Lines',
+    'localeFromPathname(window.location.pathname)',
+    'providerHomeText(locale, key, params)',
+    "t('data.reviewReversals')",
+    'formatInteger(Math.max(0, value), locale)',
     'sourceLabel(payload)',
     "status.dataset.state = 'error'",
   ]) need('src/provider-home-data.ts', source, fragment)
@@ -141,6 +149,10 @@ if (existsSync(join(root, 'src/provider-home.ts'))) {
   const source = read('src/provider-home.ts')
   for (const fragment of [
     'installSharedShell, setSharedShellStatus, syncSharedShellStatus',
+    'localeFromPathname(window.location.pathname)',
+    'providerHomeText(locale, key, params)',
+    'mountProviderHome(platform, locale)',
+    'installProviderHomeStreamMapEntry(platform, locale)',
     'installSharedShell()',
     "document.body.dataset.homeState === 'partial'",
     "document.body.dataset.homeState = 'fresh'",
@@ -151,6 +163,40 @@ if (existsSync(join(root, 'src/provider-home.ts'))) {
   forbid('src/provider-home.ts', source, 'internal provider signal section', /Latest provider signals/)
   forbid('src/provider-home.ts', source, 'internal update section', /ViewLoom updates/)
   forbid('src/provider-home.ts', source, 'unofficial badge row', /provider-home-badge/)
+}
+
+if (existsSync(join(root, 'src/i18n/provider-home.ts'))) {
+  const source = read('src/i18n/provider-home.ts')
+  for (const fragment of [
+    "'live.caption': 'Top streams in the latest observed {name} snapshot'",
+    "'today.reversalReview': 'Reversal review'",
+    "'data.reviewReversals': 'Review reversals in Battle Lines'",
+    "'live.caption': '最新の{name}観測スナップショットにおける上位配信'",
+    "'today.reversalReview': '逆転の確認'",
+    "'data.reviewReversals': 'Battle Linesで逆転を確認'",
+    'const ja: Record<ProviderHomeMessageKey, string>',
+    'export function providerHomeText',
+  ]) need('src/i18n/provider-home.ts', source, fragment)
+}
+
+if (existsSync(join(root, 'src/i18n/locale.ts'))) {
+  const source = read('src/i18n/locale.ts')
+  for (const fragment of [
+    "SUPPORTED_LOCALES = ['en', 'ja']",
+    "JAPANESE_PATH_PREFIX = '/ja'",
+    'localeFromPathname(pathname: string)',
+  ]) need('src/i18n/locale.ts', source, fragment)
+}
+
+if (existsSync(join(root, 'src/provider-home-stream-map-entry.ts'))) {
+  const source = read('src/provider-home-stream-map-entry.ts')
+  for (const fragment of [
+    "installProviderHomeStreamMapEntry(platform: Platform, locale: Locale = 'en')",
+    "localizeHref('/twitch/map/', locale)",
+    "translate(locale, 'feature.streamMap')",
+    "translate(locale, 'map.twitchHomeCopy')",
+  ]) need('src/provider-home-stream-map-entry.ts', source, fragment)
+  forbid('src/provider-home-stream-map-entry.ts', source, 'Kick Map routing ownership', /\/kick\/map\//)
 }
 
 if (existsSync(join(root, 'src/shared-shell.ts'))) {
@@ -277,4 +323,4 @@ if (failures.length) {
   process.exit(1)
 }
 
-console.log('ViewLoom Home QA verification passed for the Portal briefing, data-connected provider pages, and shared shell ownership.')
+console.log('ViewLoom Home QA verification passed for the Portal briefing, localized data-connected provider pages, and shared shell ownership.')
