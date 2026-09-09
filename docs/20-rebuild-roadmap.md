@@ -1,4 +1,4 @@
-# ViewLoom Rebuild Roadmap v0.1
+# ViewLoom Rebuild Roadmap v0.2
 
 ## 0. Purpose
 
@@ -100,3 +100,35 @@ Migration from old Livefield should not be considered started until all of the f
 - Twitch Heatmap is live on the new repo
 - DB split plan is reflected in code structure
 - old repo is no longer the default target for new work
+
+## 7. Japanese localization parallel lane
+
+Added 2026-09-09. This lane supplements the completed/ongoing rebuild work and does not replace the current Stream Map roadmap or schedule.
+
+Active localization authorities:
+
+- `docs/product/japanese-localization-spec-v0.1.md`
+- `docs/product/japanese-localization-implementation-plan-v0.1.md`
+
+The localization lane runs in parallel with current product work:
+
+```text
+J0  localization contract and route inventory
+J1  shared i18n foundation
+J2  shared shell
+J3  Portal + Twitch/Kick provider homes
+J4  Heatmap / Day Flow / Battle Lines / History
+J5  Stream Map
+J6  Channel / Watchlist / Data Status and other utility routes
+J7  informational/legal routes
+J8  localized SEO layer
+J9  complete release-candidate QA
+J10 coordinated public Japanese release
+```
+
+Release rule:
+
+- existing English production stays public and unchanged during J0-J9;
+- incomplete Japanese routes are not publicly advertised or indexed;
+- public language switching, Japanese sitemap entries, reciprocal hreflang, and removal of Japanese noindex happen together at J10;
+- Japanese localization does not authorize collector, D1/schema, cadence, retention/backfill, provider aggregation, geography-inference, or Current/IRL changes.
