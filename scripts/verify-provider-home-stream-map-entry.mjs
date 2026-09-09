@@ -6,6 +6,9 @@ const read = (path) => readFileSync(path, 'utf8')
 const entrySource = read('apps/web/src/provider-home-stream-map-entry.ts')
 const homeSource = read('apps/web/src/provider-home.ts')
 const shellSource = read('apps/web/src/provider-home-shell.ts')
+const localeSource = read('apps/web/src/i18n/locale.ts')
+const routeSource = read('apps/web/src/i18n/route.ts')
+const messagesSource = read('apps/web/src/i18n/messages/en.ts')
 const viteSource = read('apps/web/vite.config.ts')
 const sitemapSource = read('apps/web/public/sitemap.xml')
 const twitchSurfaceSource = read('docs/audits/public-surface-routes-twitch.json')
@@ -14,15 +17,24 @@ const kickSurfaceSource = read('docs/audits/public-surface-routes-kick.json')
 assert.equal(existsSync('apps/web/twitch/map/index.html'), true, 'public Twitch Stream Map page must already exist')
 assert.equal(existsSync('apps/web/kick/map/index.html'), true, 'authorized K4 must create the public Kick Stream Map page')
 
-assert.equal(entrySource.includes("const TWITCH_STREAM_MAP_HREF = '/twitch/map/'"), true)
+assert.equal(entrySource.includes("import type { Locale } from './i18n/locale'"), true)
+assert.equal(entrySource.includes("import { localizeHref } from './i18n/route'"), true)
+assert.equal(entrySource.includes("installProviderHomeStreamMapEntry(platform: Platform, locale: Locale = 'en')"), true)
+assert.equal(entrySource.includes("const href = localizeHref('/twitch/map/', locale)"), true)
 assert.equal(entrySource.includes("if (platform !== 'twitch') return"), true, 'legacy Twitch Home helper must remain Twitch-only')
 assert.equal(entrySource.includes("link.dataset.providerHomeStreamMap = 'twitch'"), true)
 assert.equal(entrySource.includes("number.textContent = '05 · WHERE'"), true)
-assert.equal(entrySource.includes("title.textContent = 'Stream Map'"), true)
+assert.equal(entrySource.includes("translate(locale, 'feature.streamMap')"), true)
+assert.equal(entrySource.includes("translate(locale, 'map.twitchHomeCopy')"), true)
+assert.equal(entrySource.includes("translate(locale, 'map.countryCityEvidence')"), true)
 assert.equal(entrySource.includes('/kick/map/'), false, 'Twitch Home helper must not take ownership of Kick Map routing')
 
 assert.equal(homeSource.includes("import { installProviderHomeStreamMapEntry } from './provider-home-stream-map-entry'"), true)
-assert.equal(homeSource.includes('installProviderHomeStreamMapEntry(platform)'), true)
+assert.equal(homeSource.includes('installProviderHomeStreamMapEntry(platform, locale)'), true)
+assert.equal(homeSource.includes('localeFromPathname(window.location.pathname)'), true)
+assert.equal(localeSource.includes("export const JAPANESE_PATH_PREFIX = '/ja'"), true)
+assert.equal(routeSource.includes('withLocalePathname'), true)
+assert.equal(messagesSource.includes("'feature.streamMap': 'Stream Map'"), true)
 assert.equal(shellSource.includes("'05 · WHERE'"), true, 'shared provider Home shell must expose authorized Kick Map card')
 assert.equal(shellSource.includes("'Stream Map'"), true, 'Kick Home Stream Map label missing')
 assert.equal(shellSource.includes("'map'"), true, 'Kick Home Stream Map slug missing')
@@ -38,8 +50,10 @@ assert.equal(kickSurfaceSource.includes('/kick/map/'), true, 'Kick Map must ente
 console.log(JSON.stringify({
   ok: true,
   twitchHomeStreamMapEntry: '/twitch/map/',
+  japaneseTwitchHomeStreamMapEntry: '/ja/twitch/map/',
   kickHomeStreamMapEntry: '/kick/map/',
   providerSeparated: true,
+  localeAwareHomeEntry: true,
   twitchMapPublic: true,
   kickMapPublic: true,
   k4Authorized: true,

@@ -17,6 +17,7 @@ const evidenceStyles = read('src/watchlist-evidence.css')
 const touchStyles = read('src/watchlist-touch.css')
 const channelStyles = read('src/channel-watchlist.css')
 const homeShell = read('src/provider-home-shell.ts')
+const homeCatalog = read('src/i18n/provider-home.ts')
 const homeStyles = read('src/provider-watchlist-link.css')
 const vite = read('vite.config.ts')
 
@@ -197,11 +198,19 @@ function verifyProviderHome() {
   assert.ok(utilityPosition > featurePosition, 'Provider Home utility must follow the core feature directory.')
 
   for (const fragment of [
-    'Local Watchlist',
-    'Saved channels in this browser.',
+    "t('utility.title')",
+    "t('utility.copy', { name })",
     '${base}watchlist/',
     'provider-utility__item',
-  ]) assert.ok(homeShell.includes(fragment), `Provider Home utility missing: ${fragment}`)
+  ]) assert.ok(homeShell.includes(fragment), `Provider Home utility wiring missing: ${fragment}`)
+
+  for (const fragment of [
+    "'utility.title': 'Local Watchlist'",
+    "'utility.copy': 'Saved channels in this browser.",
+    "'utility.open': 'Open Local Watchlist →'",
+    "'utility.title': 'Local Watchlist'",
+    "'utility.open': 'Local Watchlistを開く →'",
+  ]) assert.ok(homeCatalog.includes(fragment), `Provider Home utility catalog missing: ${fragment}`)
 
   assert.equal(homeShell.includes('Watchlist count'), false, 'Provider Home must not display a cross-provider count.')
   assert.ok(homeStyles.includes('.provider-utility__item'), 'Provider Home utility styles are missing.')

@@ -47,6 +47,8 @@ export const enMessages = {
   'map.conflict': 'Conflict',
   'map.currentLocation': 'Current location',
   'map.homeBase': 'Home / Base',
+  'map.twitchHomeCopy': 'Explore accepted Country and City geography for the current observed Twitch population.',
+  'map.countryCityEvidence': 'Country + City · evidence-backed',
   'footer.disclaimer': 'ViewLoom · Independent, unofficial observation of public live-stream data.',
 } as const
 
