@@ -1,7 +1,12 @@
 import type { Locale } from './locale'
-import { withLocalePathname } from './locale'
+import { stripLocalePathname, withLocalePathname } from './locale'
 
 const NON_LOCALIZED_PREFIXES = ['/api/', '/src/', '/assets/', '/og/'] as const
+const JAPANESE_AVAILABLE_PATHNAMES = new Set([
+  '/',
+  '/twitch/',
+  '/kick/',
+])
 
 function splitHash(value: string): [string, string] {
   const index = value.indexOf('#')
@@ -11,6 +16,12 @@ function splitHash(value: string): [string, string] {
 function splitSearch(value: string): [string, string] {
   const index = value.indexOf('?')
   return index === -1 ? [value, ''] : [value.slice(0, index), value.slice(index)]
+}
+
+function normalizePathname(value: string): string {
+  const pathname = value.startsWith('/') ? value : `/${value}`
+  if (pathname === '/') return '/'
+  return `/${pathname.replace(/^\/+|\/+$/g, '')}/`
 }
 
 export function isLocalizableInternalHref(href: string): boolean {
@@ -25,6 +36,12 @@ export function isLocalizableInternalHref(href: string): boolean {
   return !NON_LOCALIZED_PREFIXES.some((prefix) => normalized.startsWith(prefix))
 }
 
+export function isLocalizedRouteAvailable(pathname: string, locale: Locale): boolean {
+  if (locale === 'en') return true
+  const englishPathname = normalizePathname(stripLocalePathname(pathname || '/'))
+  return JAPANESE_AVAILABLE_PATHNAMES.has(englishPathname)
+}
+
 export function localizeHref(href: string, locale: Locale): string {
   if (!isLocalizableInternalHref(href)) return href
 
@@ -33,6 +50,16 @@ export function localizeHref(href: string, locale: Locale): string {
   const localizedPathname = withLocalePathname(pathname || '/', locale)
 
   return `${localizedPathname}${search}${hash}`
+}
+
+export function localizeAvailableHref(href: string, locale: Locale): string {
+  if (locale !== 'ja' || !isLocalizableInternalHref(href)) return localizeHref(href, locale)
+
+  const [withoutHash] = splitHash(href)
+  const [pathname] = splitSearch(withoutHash)
+  if (!isLocalizedRouteAvailable(pathname || '/', locale)) return href
+
+  return localizeHref(href, locale)
 }
 
 export function equivalentLocaleHref(href: string, locale: Locale): string {
