@@ -39,8 +39,8 @@ jobs:
           jq -e '.schema == "viewloom-deployment-v1" and .environment == "local"' dist/deployment.json > /dev/null
           for file in dist/ja/index.html dist/ja/twitch/index.html dist/ja/kick/index.html; do
             test -f "$file"
-            grep -Eqi '<html[^>]+lang=["'"']ja["'"']' "$file"
-            grep -Eqi '<meta[^>]+name=["'"']robots["'"'][^>]+content=["'"']noindex,follow["'"']|<meta[^>]+content=["'"']noindex,follow["'"'][^>]+name=["'"']robots["'"']' "$file"
+            grep -Eqi '<html[^>]+lang="ja"' "$file"
+            grep -Eqi '<meta[^>]+name="robots"[^>]+content="noindex,follow"|<meta[^>]+content="noindex,follow"[^>]+name="robots"' "$file"
             ! grep -qi 'hreflang=' "$file"
           done
           grep -q '現在のTwitch観測ダッシュボードを表示するにはJavaScriptが必要です。' dist/ja/twitch/index.html
