@@ -76,6 +76,7 @@ jobs:
             '/twitch/'
             '/ja/twitch/'
             '/twitch/heatmap/'
+            '/ja/twitch/heatmap/'
             '/twitch/day-flow/'
             '/twitch/battle-lines/'
             '/twitch/history/'
@@ -86,6 +87,7 @@ jobs:
             '/kick/'
             '/ja/kick/'
             '/kick/heatmap/'
+            '/ja/kick/heatmap/'
             '/kick/day-flow/'
             '/kick/battle-lines/'
             '/kick/history/'
@@ -94,7 +96,7 @@ jobs:
             '/kick/watchlist/'
             '/kick/status/'
           )
-          test "${#routes[@]}" = '30'
+          test "${#routes[@]}" = '32'
           for route in "${routes[@]}"; do
             name="$(echo "$route" | tr '/' '-' | sed 's/^-//;s/-$//')"
             [ -n "$name" ] || name='portal'
@@ -123,13 +125,15 @@ jobs:
           grep -q '<title>Refund Policy — ViewLoom</title>' "$ARTIFACT_DIR/refund-policy.html"
           grep -q '<title>Commercial Disclosure — ViewLoom</title>' "$ARTIFACT_DIR/commercial-disclosure.html"
           grep -q 'googletagmanager.com/gtag/js?id=G-YHX7HS1VBK' "$ARTIFACT_DIR/portal.html"
-      - name: Verify hidden Japanese Home candidates
+      - name: Verify hidden Japanese candidates
         run: |
           set -euo pipefail
           for item in \
             'ja|https://www.viewloom.net/ja/' \
             'ja-twitch|https://www.viewloom.net/ja/twitch/' \
-            'ja-kick|https://www.viewloom.net/ja/kick/'
+            'ja-kick|https://www.viewloom.net/ja/kick/' \
+            'ja-twitch-heatmap|https://www.viewloom.net/ja/twitch/heatmap/' \
+            'ja-kick-heatmap|https://www.viewloom.net/ja/kick/heatmap/'
           do
             name="${item%%|*}"
             canonical="${item#*|}"
@@ -139,6 +143,8 @@ jobs:
             grep -Fqi "$canonical" "$file"
             ! grep -qi 'hreflang=' "$file"
           done
+          grep -Fq '観測日の集計基準はUTCです。' "$ARTIFACT_DIR/ja-twitch-heatmap.html"
+          grep -Fq '観測日の集計基準はUTCです。' "$ARTIFACT_DIR/ja-kick-heatmap.html"
           curl --silent --show-error --fail --max-time 30 "$ORIGIN/sitemap.xml" -o "$ARTIFACT_DIR/sitemap.xml"
           ! grep -q '<loc>https://www.viewloom.net/ja/' "$ARTIFACT_DIR/sitemap.xml"
       - name: Verify Twitch production status
@@ -190,8 +196,8 @@ jobs:
             if [ -f "$ARTIFACT_DIR/deployment.json" ]; then
               echo "- Deployed SHA: \`$(jq -r '.commit_sha // "unavailable"' "$ARTIFACT_DIR/deployment.json")\`"
             fi
-            echo '- Repository-owned HTML routes: 30 checked'
-            echo '- Hidden Japanese Home candidates: 3 checked as noindex/self-canonical/sitemap-excluded'
+            echo '- Repository-owned HTML routes: 32 checked'
+            echo '- Hidden Japanese candidates: 5 checked as noindex/self-canonical/sitemap-excluded'
             echo '- About, Support, Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Changelog, Channel, Watchlist, Twitch Stream Map, and Kick Stream Map ownership: checked'
             echo '- Twitch and Kick status APIs: checked'
             echo '- Separate D1 bindings: checked'

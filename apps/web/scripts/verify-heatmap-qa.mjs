@@ -20,14 +20,38 @@ function forbidPattern(path, source, label, pattern) {
   if (pattern.test(source)) failures.push(`${path}: contains forbidden Heatmap regression: ${label}`)
 }
 
-const heatmapPages = ['twitch/heatmap/index.html', 'kick/heatmap/index.html']
+const heatmapPages = [
+  'twitch/heatmap/index.html',
+  'kick/heatmap/index.html',
+  'ja/twitch/heatmap/index.html',
+  'ja/kick/heatmap/index.html',
+]
+const japaneseHeatmapPages = new Set([
+  'ja/twitch/heatmap/index.html',
+  'ja/kick/heatmap/index.html',
+])
 const productionPath = 'src/live/twitch-heatmap.ts'
+const adapterPath = 'src/features/heatmap-page/data-truth-adapter.ts'
 const scenePath = 'src/features/twitch-heatmap/canvas-scene.ts'
 const cameraPath = 'src/features/twitch-heatmap/interactions/camera-core.mjs'
 const layoutModePath = 'src/features/heatmap-page/layout-mode.ts'
+const localizedControlsPath = 'src/features/heatmap-page/localized-controls.ts'
+const heatmapCatalogPath = 'src/i18n/heatmap.ts'
+const canvasCatalogPath = 'src/i18n/heatmap-canvas.ts'
 const contractPath = 'docs/heatmap-qa-contract.md'
 
-for (const path of [...heatmapPages, productionPath, scenePath, cameraPath, layoutModePath, contractPath]) requireFile(path)
+for (const path of [
+  ...heatmapPages,
+  productionPath,
+  adapterPath,
+  scenePath,
+  cameraPath,
+  layoutModePath,
+  localizedControlsPath,
+  heatmapCatalogPath,
+  canvasCatalogPath,
+  contractPath,
+]) requireFile(path)
 
 for (const path of heatmapPages.filter((path) => existsSync(join(root, path)))) {
   const source = read(path)
@@ -38,6 +62,15 @@ for (const path of heatmapPages.filter((path) => existsSync(join(root, path)))) 
   forbidPattern(path, source, 'legacy static heatmap grid', /class="heatmap-grid"/)
   forbidPattern(path, source, 'static Stream tile labels', /data-name="Stream [A-Z]"|>Stream [A-Z]</)
   forbidPattern(path, source, 'static legacy inspector metrics', /id="heatmap-detail-title"|heatmap-live-detail-grid/)
+
+  if (japaneseHeatmapPages.has(path)) {
+    requireFragment(path, source, '<html lang="ja">')
+    requireFragment(path, source, '<meta name="robots" content="noindex,follow" />')
+    requireFragment(path, source, '観測日の集計基準はUTCです。')
+    forbidPattern(path, source, 'premature hreflang exposure', /hreflang=/i)
+    const provider = path.includes('/twitch/') ? 'twitch' : 'kick'
+    requireFragment(path, source, `<link rel="canonical" href="https://www.viewloom.net/ja/${provider}/heatmap/" />`)
+  }
 }
 
 if (existsSync(join(root, productionPath))) {
@@ -45,9 +78,18 @@ if (existsSync(join(root, productionPath))) {
   requireFragment(productionPath, source, 'destroyCanvasScene')
   requireFragment(productionPath, source, 'renderCanvasScene({')
   requireFragment(productionPath, source, "cache: 'no-store'")
+  requireFragment(productionPath, source, 'localeFromPathname(window.location.pathname)')
+  requireFragment(productionPath, source, 'heatmapText(')
   forbidPattern(productionPath, source, 'legacy renderer switch', /shouldUseCanvasRenderer/)
   forbidPattern(productionPath, source, 'legacy DOM viewport', /createHeatmapViewport|heatmap-viewport-v2/)
   forbidPattern(productionPath, source, 'legacy DOM tiles', /renderHeatmapShell|renderTile\(/)
+}
+
+if (existsSync(join(root, adapterPath))) {
+  const source = read(adapterPath)
+  requireFragment(adapterPath, source, "import { installHeatmapLocalizedControls } from './localized-controls'")
+  requireFragment(adapterPath, source, 'installHeatmapLocalizedControls()')
+  requireFragment(adapterPath, source, 'stopLocalizedControls?.()')
 }
 
 if (existsSync(join(root, scenePath))) {
@@ -71,6 +113,13 @@ if (existsSync(join(root, layoutModePath))) {
   requireFragment(layoutModePath, source, "const resolved: HeatmapLayoutMode = media.matches ? 'wide' : next")
 }
 
+if (existsSync(join(root, localizedControlsPath))) {
+  const source = read(localizedControlsPath)
+  requireFragment(localizedControlsPath, source, "localeFromPathname(window.location.pathname) !== 'ja'")
+  requireFragment(localizedControlsPath, source, 'heatmapCanvasJa')
+  requireFragment(localizedControlsPath, source, 'MutationObserver')
+}
+
 if (existsSync(join(root, contractPath))) {
   const source = read(contractPath)
   requireFragment(contractPath, source, 'Canvas scene')
@@ -85,3 +134,6 @@ if (failures.length > 0) {
 }
 
 console.log(`ViewLoom Heatmap QA verification passed for ${heatmapPages.length} Heatmap pages.`)
+console.log('- English and hidden Japanese Heatmap routes share the same runtime entry and Canvas renderer contract.')
+console.log('- Japanese presentation localization is mounted through the shared Heatmap adapter; renderer/camera ownership is unchanged.')
+console.log('- Japanese Heatmap candidates remain noindex/self-canonical/hreflang-hidden before J10.')

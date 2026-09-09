@@ -4,6 +4,7 @@ import { createHeatmapLoadingTruth, type HeatmapProviderKey } from './data-state
 import { installHeatmapDataTruthDom, renderHeatmapDataTruth } from './data-state-dom'
 import { installHeatmapResponseObserver } from './data-state-source'
 import { installHeatmapLayoutMode } from './layout-mode'
+import { installHeatmapLocalizedControls } from './localized-controls'
 import { installHeatmapMobileInspectorSheet } from './mobile-inspector-sheet'
 import { installHeatmapOverview } from './overview'
 import { installHeatmapSelectedInspector } from './selected-inspector-controller'
@@ -11,6 +12,7 @@ import { installHeatmapSelectedInspector } from './selected-inspector-controller
 let stopDom: (() => void) | null = null
 let stopSource: (() => void) | null = null
 let stopLayout: (() => void) | null = null
+let stopLocalizedControls: (() => void) | null = null
 let stopInspector: (() => void) | null = null
 let stopMobileSheet: (() => void) | null = null
 let stopOverview: (() => void) | null = null
@@ -22,6 +24,7 @@ function providerKey(): HeatmapProviderKey {
 async function hydrateHeatmap(): Promise<void> {
   const provider = providerKey()
   if (!stopLayout) stopLayout = installHeatmapLayoutMode()
+  if (!stopLocalizedControls) stopLocalizedControls = installHeatmapLocalizedControls()
   if (!stopOverview) stopOverview = installHeatmapOverview(provider)
   if (!stopDom) stopDom = installHeatmapDataTruthDom()
   if (!stopInspector) stopInspector = installHeatmapSelectedInspector(provider)
@@ -48,6 +51,8 @@ export const heatmapDataTruthAdapter: HeatmapPageAdapter = {
     stopDom = null
     stopOverview?.()
     stopOverview = null
+    stopLocalizedControls?.()
+    stopLocalizedControls = null
     stopLayout?.()
     stopLayout = null
   },

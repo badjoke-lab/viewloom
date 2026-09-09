@@ -2,6 +2,8 @@ import type {
   HeatmapCategoryFilter,
   HeatmapCategoryOption,
 } from './model'
+import { localeFromPathname } from '../../i18n/locale'
+import { heatmapNumber, heatmapText } from '../../i18n/heatmap'
 
 const PREVIEW_PARAM = 'categoryPreview'
 const CATEGORY_PARAM = 'category'
@@ -54,6 +56,7 @@ export function installCategoryPreviewControls(options: {
     return
   }
 
+  const locale = localeFromPathname(window.location.pathname)
   ensureStyles()
   const dock = document.querySelector<HTMLElement>('.heatmap-control-dock')
   if (!dock) return
@@ -66,20 +69,20 @@ export function installCategoryPreviewControls(options: {
     root.className = 'heatmap-control-dock__group heatmap-category-preview'
     root.dataset.categoryFilter = 'public'
     root.innerHTML = `
-      <span class="heatmap-control-dock__label">Category</span>
+      <span class="heatmap-control-dock__label">${escapeHtml(heatmapText(locale, 'category.label'))}</span>
       <div class="heatmap-category-preview__fields">
         <label>
-          <span>Category</span>
-          <select data-category-preview-select aria-label="${providerLabel} category"></select>
+          <span>${escapeHtml(heatmapText(locale, 'category.label'))}</span>
+          <select data-category-preview-select aria-label="${escapeAttribute(heatmapText(locale, 'category.aria', { provider: providerLabel }))}"></select>
         </label>
         <label>
-          <span>Top</span>
-          <select data-category-preview-top aria-label="${providerLabel} maximum streams">
+          <span>${escapeHtml(heatmapText(locale, 'category.top'))}</span>
+          <select data-category-preview-top aria-label="${escapeAttribute(heatmapText(locale, 'category.topAria', { provider: providerLabel }))}">
             ${TOP_VALUES.map((value) => `<option value="${value}">Top ${value}</option>`).join('')}
           </select>
         </label>
       </div>
-      <span class="heatmap-category-preview__status" role="status" aria-live="polite">Loading category data</span>
+      <span class="heatmap-category-preview__status" role="status" aria-live="polite">${escapeHtml(heatmapText(locale, 'category.loading'))}</span>
     `
     const mapGroup = dock.querySelector('.heatmap-control-dock__map')
     dock.insertBefore(root, mapGroup)
@@ -110,19 +113,20 @@ export function syncCategoryPreviewControls(options: {
   if (!options.state.enabled) return
   const root = document.getElementById(ROOT_ID)
   if (!root) return
+  const locale = localeFromPathname(window.location.pathname)
 
   const categories = options.availableCategories ?? options.filter?.availableCategories ?? []
   const select = root.querySelector<HTMLSelectElement>('[data-category-preview-select]')
   if (select) {
     const current = options.filter?.selectedCategory || options.state.category
     select.innerHTML = [
-      '<option value="all">All categories</option>',
-      ...categories.map((category) => `<option value="${escapeAttribute(category.id)}">${escapeHtml(category.name)} · ${category.streamCount.toLocaleString()} streams</option>`),
+      `<option value="all">${escapeHtml(heatmapText(locale, 'category.all'))}</option>`,
+      ...categories.map((category) => `<option value="${escapeAttribute(category.id)}">${escapeHtml(heatmapText(locale, 'category.option', { name: category.name, count: heatmapNumber(locale, category.streamCount) }))}</option>`),
     ].join('')
     if (!categories.some((category) => category.id === current) && current !== 'all') {
       const unknown = document.createElement('option')
       unknown.value = current
-      unknown.textContent = `Unknown category · ${current}`
+      unknown.textContent = heatmapText(locale, 'category.unknownOption', { id: current })
       select.appendChild(unknown)
     }
     select.value = current
@@ -132,33 +136,43 @@ export function syncCategoryPreviewControls(options: {
   if (!status) return
   const filter = options.filter
   if (!filter) {
-    status.textContent = 'Loading category data'
+    status.textContent = heatmapText(locale, 'category.loading')
     return
   }
   const suffix = filter.coverageState === 'partial'
-    ? ` · partial metadata (${filter.missingItems} missing, ${filter.dictionaryMissingItems} unresolved)`
+    ? heatmapText(locale, 'category.partial', { missing: heatmapNumber(locale, filter.missingItems), unresolved: heatmapNumber(locale, filter.dictionaryMissingItems) })
     : filter.coverageState === 'unavailable'
-      ? ' · category metadata unavailable'
-      : ' · category metadata observed'
-  status.textContent = `${filter.state.replaceAll('_', ' ')}${suffix}`
+      ? heatmapText(locale, 'category.unavailable')
+      : heatmapText(locale, 'category.observed')
+  status.textContent = `${categoryStateLabel(filter.state, locale)} · ${suffix}`
 }
 
 export function categoryPreviewMessage(filter: HeatmapCategoryFilter | undefined, provider: HeatmapProviderKey): { title: string; body: string } | null {
   if (!filter) return null
+  const locale = localeFromPathname(window.location.pathname)
   const providerLabel = provider === 'kick' ? 'Kick' : 'Twitch'
   if (filter.state === 'unknown_category') {
     return {
-      title: `Unknown ${providerLabel} category`,
-      body: `The selected category ID “${filter.selectedCategory}” is not present in the latest provider-specific options.`,
+      title: heatmapText(locale, 'category.unknownTitle', { provider: providerLabel }),
+      body: heatmapText(locale, 'category.unknownBody', { category: filter.selectedCategory }),
     }
   }
   if (filter.state === 'category_unavailable' && filter.selectedCategory !== 'all') {
     return {
-      title: 'Category data unavailable',
-      body: `The latest ${providerLabel} snapshot does not contain usable accepted category metadata. Select All categories to use the unfiltered Heatmap fallback.`,
+      title: heatmapText(locale, 'category.unavailableTitle'),
+      body: heatmapText(locale, 'category.unavailableBody', { provider: providerLabel }),
     }
   }
   return null
+}
+
+function categoryStateLabel(state: string, locale: ReturnType<typeof localeFromPathname>): string {
+  if (locale === 'en') return state.replaceAll('_', ' ')
+  if (state === 'selected') return '選択中'
+  if (state === 'all') return '全カテゴリ'
+  if (state === 'unknown_category') return '不明なカテゴリ'
+  if (state === 'category_unavailable') return 'カテゴリ利用不可'
+  return state.replaceAll('_', ' ')
 }
 
 function updateCategoryUrl(provider: HeatmapProviderKey, next: { category?: string; top?: number }): void {

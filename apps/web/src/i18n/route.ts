@@ -5,7 +5,9 @@ const NON_LOCALIZED_PREFIXES = ['/api/', '/src/', '/assets/', '/og/'] as const
 const JAPANESE_AVAILABLE_PATHNAMES = new Set([
   '/',
   '/twitch/',
+  '/twitch/heatmap/',
   '/kick/',
+  '/kick/heatmap/',
 ])
 
 function splitHash(value: string): [string, string] {

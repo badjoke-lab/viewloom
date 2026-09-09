@@ -9,9 +9,11 @@ const readRepo = (path) => readFileSync(resolve(repoRoot, path), 'utf8')
 const origin = 'https://www.viewloom.net'
 
 const candidates = [
-  { route: '/ja/', source: 'ja/index.html', canonical: `${origin}/ja/`, provider: 'portal' },
-  { route: '/ja/twitch/', source: 'ja/twitch/index.html', canonical: `${origin}/ja/twitch/`, provider: 'twitch' },
-  { route: '/ja/kick/', source: 'ja/kick/index.html', canonical: `${origin}/ja/kick/`, provider: 'kick' },
+  { route: '/ja/', source: 'ja/index.html', canonical: `${origin}/ja/`, provider: 'portal', api: null },
+  { route: '/ja/twitch/', source: 'ja/twitch/index.html', canonical: `${origin}/ja/twitch/`, provider: 'twitch', api: { path: '/api/twitch-home', binding: 'DB_TWITCH_HOT' } },
+  { route: '/ja/twitch/heatmap/', source: 'ja/twitch/heatmap/index.html', canonical: `${origin}/ja/twitch/heatmap/`, provider: 'twitch', api: { path: '/api/twitch-heatmap', binding: 'DB_TWITCH_HOT' } },
+  { route: '/ja/kick/', source: 'ja/kick/index.html', canonical: `${origin}/ja/kick/`, provider: 'kick', api: { path: '/api/kick-home', binding: 'DB_KICK_HOT' } },
+  { route: '/ja/kick/heatmap/', source: 'ja/kick/heatmap/index.html', canonical: `${origin}/ja/kick/heatmap/`, provider: 'kick', api: { path: '/api/kick-heatmap', binding: 'DB_KICK_HOT' } },
 ]
 
 const sitemap = readWeb('public/sitemap.xml')
@@ -21,7 +23,15 @@ const portalRuntime = readWeb('src/portal-page.ts')
 const providerShell = readWeb('src/provider-home-shell.ts')
 const providerMapEntry = readWeb('src/provider-home-stream-map-entry.ts')
 
-assert.match(routeHelper, /const JAPANESE_AVAILABLE_PATHNAMES = new Set\(\[\s*'\/'\s*,\s*'\/twitch\/'\s*,\s*'\/kick\/'\s*,?\s*\]\)/s, 'J3 Japanese availability must contain only Portal/Twitch/Kick Home paths')
+for (const path of ['/', '/twitch/', '/twitch/heatmap/', '/kick/', '/kick/heatmap/']) {
+  assert.match(routeHelper, new RegExp(`["']${escapeRegex(path)}["']`), `Japanese availability missing ${path}`)
+}
+for (const path of [
+  '/twitch/day-flow/', '/twitch/battle-lines/', '/twitch/history/', '/twitch/map/', '/twitch/status/',
+  '/kick/day-flow/', '/kick/battle-lines/', '/kick/history/', '/kick/map/', '/kick/status/',
+]) {
+  assert.doesNotMatch(routeHelper, new RegExp(`["']${escapeRegex(path)}["']`), `unreleased Japanese feature availability exposed: ${path}`)
+}
 assert.match(routeHelper, /export function localizeAvailableHref\(/, 'availability-aware locale route helper missing')
 assert.match(providerShell, /localizeAvailableHref/, 'Provider Home shell must use availability-aware route localization')
 assert.doesNotMatch(providerShell, /const base\s*=\s*localizeHref/, 'Provider Home shell must not build Japanese feature URLs from a localized base')
@@ -46,12 +56,16 @@ assert.match(portalRuntime, /fetch\(`\/api\/\$\{platform\}-home`/, 'Portal runti
 assert.doesNotMatch(portalRuntime, /\/api\/ja(?:\/|-)/i, 'Portal runtime must not introduce localized API paths')
 assert.match(jaPortal, /href=["']\/ja\/twitch\//, '/ja/: localized Twitch Home link missing')
 assert.match(jaPortal, /href=["']\/ja\/kick\//, '/ja/: localized Kick Home link missing')
-assert.doesNotMatch(jaPortal, /href=["']\/ja\/(?:twitch|kick)\/(?:heatmap|day-flow|battle-lines|history|map|status|watchlist|channel)\//, '/ja/: unreleased Japanese feature link exposed')
 
 for (const provider of ['twitch', 'kick']) {
-  const html = readWeb(`ja/${provider}/index.html`)
-  assert.match(html, /src=["']\/src\/provider-home\.ts["']/, `/ja/${provider}/: shared Provider Home runtime must be used`)
-  assert.match(html, /src=["']\/src\/analytics\.ts["']/, `/ja/${provider}/: shared analytics runtime must be used`)
+  const home = readWeb(`ja/${provider}/index.html`)
+  const heatmap = readWeb(`ja/${provider}/heatmap/index.html`)
+  assert.match(home, /src=["']\/src\/provider-home\.ts["']/, `/ja/${provider}/: shared Provider Home runtime must be used`)
+  assert.match(home, /src=["']\/src\/analytics\.ts["']/, `/ja/${provider}/: shared analytics runtime must be used`)
+  assert.match(heatmap, /src=["']\/src\/live\/heatmap-current-shell-entry\.ts["']/, `/ja/${provider}/heatmap/: shared Heatmap runtime must be used`)
+  assert.match(heatmap, /src=["']\/src\/analytics\.ts["']/, `/ja/${provider}/heatmap/: shared analytics runtime must be used`)
+  assert.match(heatmap, /観測/, `/ja/${provider}/heatmap/: Japanese observation copy missing`)
+  assert.doesNotMatch(heatmap, /href=["']\/ja\/(?:twitch|kick)\/(?:day-flow|battle-lines|history|map|status|watchlist|channel)\//, `/ja/${provider}/heatmap/: unreleased Japanese feature link exposed`)
 }
 
 const routeDocs = [
@@ -60,24 +74,22 @@ const routeDocs = [
   'docs/audits/public-surface-routes-kick.json',
 ].flatMap((path) => JSON.parse(readRepo(path)).routes)
 const inventoriedCandidates = routeDocs.filter((route) => route.route.startsWith('/ja/'))
-assert.deepEqual(inventoriedCandidates.map((route) => route.route).sort(), candidates.map((item) => item.route).sort(), 'route inventory must contain exactly the three J3 Japanese candidates')
-for (const route of inventoriedCandidates) {
-  assert.equal(route.robots, 'noindex,follow', `${route.route}: inventory robots mismatch`)
-  assert.equal(route.sitemap, false, `${route.route}: inventory sitemap mismatch`)
-  assert.equal(route.canonical, `${origin}${route.route}`, `${route.route}: inventory canonical mismatch`)
+assert.deepEqual(inventoriedCandidates.map((route) => route.route).sort(), candidates.map((item) => item.route).sort(), 'route inventory must contain exactly the five current Japanese candidates')
+for (const candidate of candidates) {
+  const route = inventoriedCandidates.find((item) => item.route === candidate.route)
+  assert.ok(route, `${candidate.route}: inventory route missing`)
+  assert.equal(route.robots, 'noindex,follow', `${candidate.route}: inventory robots mismatch`)
+  assert.equal(route.sitemap, false, `${candidate.route}: inventory sitemap mismatch`)
+  assert.equal(route.canonical, candidate.canonical, `${candidate.route}: inventory canonical mismatch`)
+  if (candidate.api) assert.deepEqual(route.apis, [candidate.api], `${candidate.route}: provider API/binding ownership mismatch`)
 }
 
-const twitch = inventoriedCandidates.find((route) => route.route === '/ja/twitch/')
-assert.deepEqual(twitch?.apis, [{ path: '/api/twitch-home', binding: 'DB_TWITCH_HOT' }], 'Japanese Twitch Home must reuse Twitch Home API/binding')
-const kick = inventoriedCandidates.find((route) => route.route === '/ja/kick/')
-assert.deepEqual(kick?.apis, [{ path: '/api/kick-home', binding: 'DB_KICK_HOT' }], 'Japanese Kick Home must reuse Kick Home API/binding')
-
-console.log('Japanese Home candidate contract verified.')
-console.log('- candidate routes: /ja/, /ja/twitch/, /ja/kick/')
+console.log('Japanese localization candidate contract verified.')
+console.log('- candidate routes: /ja/, /ja/twitch/, /ja/twitch/heatmap/, /ja/kick/, /ja/kick/heatmap/')
 console.log('- robots: noindex,follow')
 console.log('- sitemap/hreflang/public language switcher: disabled')
-console.log('- unreleased Japanese feature links: blocked by availability-aware routing')
-console.log('- Twitch/Kick API and D1 binding ownership: unchanged')
+console.log('- Heatmap is localized; unreleased Japanese feature routes remain unavailable')
+console.log('- Twitch/Kick Home and Heatmap API/D1 ownership remains provider-separated')
 
 function attr(source, name) {
   return source.match(new RegExp(`\\b${name}=["']([^"']*)["']`, 'i'))?.[1] ?? ''

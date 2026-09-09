@@ -132,14 +132,31 @@ for (const fragment of [
   "data-heatmap-state='partial'",
   "data-heatmap-state='stale'",
   "data-heatmap-state='error'",
-  'Sampled zero',
-  'Unavailable',
-  'Not sampled',
-  'Collection method',
+  'heatmapText',
+  'heatmapReason',
 ]) assert.ok(domSource.includes(fragment), `missing DOM truth fragment: ${fragment}`)
+
+const presentationSource = readFileSync(fileURLToPath(new URL('../src/i18n/heatmap.ts', import.meta.url)), 'utf8')
+for (const fragment of [
+  "'activity.support.available': 'Available: {value}'",
+  "'activity.support.zero': 'Sampled zero: {value}'",
+  "'activity.support.unavailable': 'Unavailable: {value}'",
+  "'activity.support.notSampled': 'Not sampled: {value}'",
+  "'common.unavailable': 'Unavailable'",
+  "'common.notSampled': 'Not sampled'",
+  "'coverage.method': 'Collection method: {method}.'",
+  "'activity.support.available': '利用可能: {value}'",
+  "'activity.support.zero': 'サンプル値0: {value}'",
+  "'activity.support.unavailable': '利用不可: {value}'",
+  "'activity.support.notSampled': '未サンプル: {value}'",
+  "'common.unavailable': '利用不可'",
+  "'common.notSampled': '未サンプル'",
+]) assert.ok(presentationSource.includes(fragment), `missing Heatmap presentation catalog fragment: ${fragment}`)
 
 const runtimeSource = readFileSync(fileURLToPath(new URL('../src/features/heatmap-page/runtime.ts', import.meta.url)), 'utf8')
 assert.match(runtimeSource, /destroyRequested/)
 assert.doesNotMatch(runtimeSource, /state !== 'destroyed'/)
 
 console.log('Heatmap data-state truth verification passed.')
+console.log('- data truth remains locale-neutral')
+console.log('- English/Japanese presentation copy is owned by the Heatmap i18n catalog')

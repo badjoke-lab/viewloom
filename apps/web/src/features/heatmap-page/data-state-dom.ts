@@ -3,6 +3,14 @@ import type {
   HeatmapActivityValue,
   HeatmapDataTruth,
 } from './data-state-core.mjs'
+import { localeFromPathname, type Locale } from '../../i18n/locale'
+import {
+  heatmapDateTime,
+  heatmapNumber,
+  heatmapReason,
+  heatmapStateLabel,
+  heatmapText,
+} from '../../i18n/heatmap'
 
 let currentTruth: HeatmapDataTruth | null = null
 let observer: MutationObserver | null = null
@@ -51,16 +59,22 @@ function applyTruth(truth: HeatmapDataTruth): void {
   updateActivitySurfaces(truth)
 }
 
+function activeLocale(): Locale {
+  return localeFromPathname(window.location.pathname)
+}
+
 function updateHeaderStatus(truth: HeatmapDataTruth): void {
   const status = document.querySelector<HTMLElement>('.status-inline')
   if (!status) return
+  const locale = activeLocale()
+  const stateLabel = heatmapStateLabel(locale, truth.state)
 
   const dot = status.querySelector<HTMLElement>('.dot') ?? document.createElement('span')
   dot.classList.add('dot')
   dot.dataset.heatmapState = truth.state
   dot.setAttribute('aria-hidden', 'true')
 
-  const copy = `${truth.providerLabel} data ${truth.stateLabel} · 5m cadence`
+  const copy = heatmapText(locale, 'header.status', { provider: truth.providerLabel, state: stateLabel })
   const currentCopy = Array.from(status.childNodes)
     .filter((node) => node !== dot)
     .map((node) => node.textContent ?? '')
@@ -71,35 +85,44 @@ function updateHeaderStatus(truth: HeatmapDataTruth): void {
     status.replaceChildren(dot, document.createTextNode(copy))
   }
   status.dataset.heatmapState = truth.state
-  status.setAttribute('aria-label', `${truth.providerLabel} data state: ${truth.stateLabel}`)
+  status.setAttribute('aria-label', heatmapText(locale, 'header.statusAria', { provider: truth.providerLabel, state: stateLabel }))
 }
 
 function updateHeroFacts(truth: HeatmapDataTruth): void {
-  setLabeledValue('.head-facts .fact', 'Observed', truth.state === 'loading' ? '—' : truth.observedRecords.toLocaleString())
-  setLabeledValue('.head-facts .fact', 'State', truth.stateLabel)
+  const locale = activeLocale()
+  setLabeledValue('.head-facts .fact', heatmapText(locale, 'label.observed'), truth.state === 'loading' ? '—' : heatmapNumber(locale, truth.observedRecords))
+  setLabeledValue('.head-facts .fact', heatmapText(locale, 'label.state'), heatmapStateLabel(locale, truth.state))
 }
 
 function updateDataStrip(truth: HeatmapDataTruth): void {
-  setLabeledCell('Updated', truth.updatedAt ? formatLocalTime(truth.updatedAt) : truth.state === 'loading' ? 'Loading' : 'Unavailable')
-  setLabeledCell('Observed', `${truth.observedRecords.toLocaleString()} streams`)
+  const locale = activeLocale()
+  setLabeledCell(
+    heatmapText(locale, 'label.updated'),
+    truth.updatedAt ? heatmapDateTime(locale, truth.updatedAt) : truth.state === 'loading' ? heatmapText(locale, 'common.loading') : heatmapText(locale, 'common.unavailable'),
+  )
+  setLabeledCell(heatmapText(locale, 'label.observed'), heatmapText(locale, 'common.streams', { value: heatmapNumber(locale, truth.observedRecords) }))
 
+  const more = truth.hasMore ? ` · ${heatmapText(locale, 'coverage.moreAvailable')}` : ''
   const coverage = truth.coverageState === 'partial'
-    ? `Partial · ${truth.observedRecords.toLocaleString()} observed${truth.hasMore ? ' · more available' : ''}`
+    ? heatmapText(locale, 'coverage.partial', { count: heatmapNumber(locale, truth.observedRecords), more })
     : truth.coverageState === 'observed'
-      ? `${truth.observedRecords.toLocaleString()} observed · limit ${truth.configuredLimit.toLocaleString()}`
-      : 'Unavailable'
-  setLabeledCell('Coverage', coverage)
+      ? heatmapText(locale, 'coverage.observed', { count: heatmapNumber(locale, truth.observedRecords), limit: heatmapNumber(locale, truth.configuredLimit) })
+      : heatmapText(locale, 'common.unavailable')
+  setLabeledCell(heatmapText(locale, 'label.coverage'), coverage)
 
-  const sourceCell = findLabeledElement('.data-strip__cell', 'Source')
+  const sourceCell = findLabeledElement('.data-strip__cell', heatmapText(locale, 'label.source'))
   if (sourceCell) {
-    setCellValue(sourceCell, truth.sourceLabel)
-    sourceCell.title = `Collection method: ${truth.collectionMethod}`
+    setCellValue(sourceCell, displaySource(locale, truth.sourceMode, truth.sourceLabel))
+    sourceCell.title = heatmapText(locale, 'coverage.method', { method: displayMethod(locale, truth.collectionMethod) })
   }
 }
 
 function updateStatusCards(truth: HeatmapDataTruth): void {
-  const title = `Data: ${truth.stateLabel} · Source: ${truth.sourceLabel}`
-  const body = statusBody(truth)
+  const locale = activeLocale()
+  const stateLabel = heatmapStateLabel(locale, truth.state)
+  const sourceLabel = displaySource(locale, truth.sourceMode, truth.sourceLabel)
+  const title = heatmapText(locale, 'status.title', { state: stateLabel, source: sourceLabel })
+  const body = statusBody(truth, locale)
 
   setText('#heatmap-status-title', title)
   setText('#heatmap-status-body', body)
@@ -115,31 +138,34 @@ function updateStatusCards(truth: HeatmapDataTruth): void {
   }
 
   const coverageLines = [
-    `${truth.observedRecords.toLocaleString()} observed records rendered from the latest snapshot.`,
+    heatmapText(locale, 'coverage.rendered', { count: heatmapNumber(locale, truth.observedRecords) }),
     truth.hasMore === true
-      ? `Collector limit ${truth.configuredLimit.toLocaleString()}; more platform records were reported outside this snapshot.`
-      : `Collector limit ${truth.configuredLimit.toLocaleString()}; every record present in this snapshot is rendered.`,
-    truth.coveredPages === null ? 'Covered pages: unavailable.' : `Covered pages: ${truth.coveredPages.toLocaleString()}.`,
-    `Collection method: ${truth.collectionMethod}.`,
+      ? heatmapText(locale, 'coverage.more', { limit: heatmapNumber(locale, truth.configuredLimit) })
+      : heatmapText(locale, 'coverage.complete', { limit: heatmapNumber(locale, truth.configuredLimit) }),
+    truth.coveredPages === null
+      ? heatmapText(locale, 'coverage.pagesUnavailable')
+      : heatmapText(locale, 'coverage.pages', { count: heatmapNumber(locale, truth.coveredPages) }),
+    heatmapText(locale, 'coverage.method', { method: displayMethod(locale, truth.collectionMethod) }),
   ]
-  if (truth.reasons.length) coverageLines.push(...truth.reasons)
+  if (truth.reasons.length) coverageLines.push(...truth.reasons.map((reason) => heatmapReason(locale, reason)))
   setHtml('#heatmap-support-coverage', renderList(coverageLines))
 }
 
 function updateActivitySurfaces(truth: HeatmapDataTruth): void {
-  const summaryValue = activitySummaryValue(truth.activity.state)
-  const summaryBody = activitySummaryBody(truth)
+  const locale = activeLocale()
+  const summaryValue = activitySummaryValue(truth.activity.state, locale)
+  const summaryBody = activitySummaryBody(truth, locale)
   setText('#heatmap-summary-activity .summary-card__value', summaryValue)
   setText('#heatmap-summary-activity p', summaryBody)
-  setHtml('#heatmap-support-activity', renderList(activitySupportLines(truth)))
+  setHtml('#heatmap-support-activity', renderList(activitySupportLines(truth, locale)))
 
   setText(
     '#heatmap-legend-body',
-    `Area tracks viewers. Tile color tracks momentum. Activity is ${activityLegendCopy(truth.activity.state)}.`,
+    heatmapText(locale, 'activity.legendSentence', { activity: activityLegendCopy(truth.activity.state, locale) }),
   )
 
   const selected = selectedActivity(truth)
-  if (selected) setText('#heatmap-detail-activity', formatActivityValue(selected))
+  if (selected) setText('#heatmap-detail-activity', formatActivityValue(selected, locale))
 }
 
 function selectedActivity(truth: HeatmapDataTruth): HeatmapActivityValue | null {
@@ -157,55 +183,65 @@ function selectedActivity(truth: HeatmapDataTruth): HeatmapActivityValue | null 
   }
 }
 
-function statusBody(truth: HeatmapDataTruth): string {
-  if (truth.state === 'loading') return `Loading the latest ${truth.providerLabel} snapshot.`
-  if (truth.state === 'error') return truth.reasons[0] ?? `${truth.providerLabel} Heatmap data could not be loaded.`
+function statusBody(truth: HeatmapDataTruth, locale: Locale): string {
+  if (truth.state === 'loading') return heatmapText(locale, 'status.loading', { provider: truth.providerLabel })
+  if (truth.state === 'error') {
+    const reason = truth.reasons[0]
+    const localized = reason ? heatmapReason(locale, reason) : ''
+    return locale === 'ja' && localized === reason
+      ? heatmapText(locale, 'status.error', { provider: truth.providerLabel })
+      : localized || heatmapText(locale, 'status.error', { provider: truth.providerLabel })
+  }
 
-  const updated = truth.updatedAt ? formatLocalTime(truth.updatedAt) : 'Update time unavailable'
-  const age = truth.snapshotAgeMinutes === null ? '' : ` · ${formatAge(truth.snapshotAgeMinutes)}`
-  const coverage = truth.coverageState === 'partial' ? 'Partial coverage' : truth.coverageState === 'observed' ? 'Observed coverage' : 'Coverage unavailable'
-  return `${updated}${age} · ${truth.observedRecords.toLocaleString()} observed streams · ${coverage}.`
+  const updated = truth.updatedAt ? heatmapDateTime(locale, truth.updatedAt) : heatmapText(locale, 'status.updateUnavailable')
+  const age = truth.snapshotAgeMinutes === null ? '' : ` · ${formatAge(truth.snapshotAgeMinutes, locale)}`
+  const coverage = truth.coverageState === 'partial'
+    ? heatmapText(locale, 'status.coveragePartial')
+    : truth.coverageState === 'observed'
+      ? heatmapText(locale, 'status.coverageObserved')
+      : heatmapText(locale, 'status.coverageUnavailable')
+  return heatmapText(locale, 'status.body', { updated, age, count: heatmapNumber(locale, truth.observedRecords), coverage })
 }
 
-function activitySummaryValue(state: HeatmapActivityState): string {
-  if (state === 'available') return 'Available'
-  if (state === 'zero') return 'Zero observed'
-  if (state === 'unavailable') return 'Unavailable'
-  return 'Not sampled'
+function activitySummaryValue(state: HeatmapActivityState, locale: Locale): string {
+  if (state === 'available') return heatmapText(locale, 'common.available')
+  if (state === 'zero') return heatmapText(locale, 'common.zeroObserved')
+  if (state === 'unavailable') return heatmapText(locale, 'common.unavailable')
+  return heatmapText(locale, 'common.notSampled')
 }
 
-function activitySummaryBody(truth: HeatmapDataTruth): string {
+function activitySummaryBody(truth: HeatmapDataTruth, locale: Locale): string {
   const counts = truth.activity.counts
   if (truth.activity.state === 'available') {
-    return `${counts.available.toLocaleString()} streams have a sampled activity value; ${counts.zero.toLocaleString()} sampled zero.`
+    return heatmapText(locale, 'activity.summary.available', { available: heatmapNumber(locale, counts.available), zero: heatmapNumber(locale, counts.zero) })
   }
-  if (truth.activity.state === 'zero') return `${counts.zero.toLocaleString()} streams were sampled with zero activity.`
-  if (truth.activity.state === 'unavailable') return 'The current snapshot does not provide a usable activity signal.'
-  return 'Activity was not sampled for this snapshot window.'
+  if (truth.activity.state === 'zero') return heatmapText(locale, 'activity.summary.zero', { zero: heatmapNumber(locale, counts.zero) })
+  if (truth.activity.state === 'unavailable') return heatmapText(locale, 'activity.summary.unavailable')
+  return heatmapText(locale, 'activity.summary.notSampled')
 }
 
-function activitySupportLines(truth: HeatmapDataTruth): string[] {
+function activitySupportLines(truth: HeatmapDataTruth, locale: Locale): string[] {
   const counts = truth.activity.counts
   return [
-    `Available: ${counts.available.toLocaleString()}`,
-    `Sampled zero: ${counts.zero.toLocaleString()}`,
-    `Unavailable: ${counts.unavailable.toLocaleString()}`,
-    `Not sampled: ${counts.not_sampled.toLocaleString()}`,
+    heatmapText(locale, 'activity.support.available', { value: heatmapNumber(locale, counts.available) }),
+    heatmapText(locale, 'activity.support.zero', { value: heatmapNumber(locale, counts.zero) }),
+    heatmapText(locale, 'activity.support.unavailable', { value: heatmapNumber(locale, counts.unavailable) }),
+    heatmapText(locale, 'activity.support.notSampled', { value: heatmapNumber(locale, counts.not_sampled) }),
   ]
 }
 
-function activityLegendCopy(state: HeatmapActivityState): string {
-  if (state === 'available') return 'a sampled secondary signal when present'
-  if (state === 'zero') return 'sampled, with zero observed in this field'
-  if (state === 'unavailable') return 'unavailable in this snapshot'
-  return 'not sampled in this window'
+function activityLegendCopy(state: HeatmapActivityState, locale: Locale): string {
+  if (state === 'available') return heatmapText(locale, 'activity.legend.available')
+  if (state === 'zero') return heatmapText(locale, 'activity.legend.zero')
+  if (state === 'unavailable') return heatmapText(locale, 'activity.legend.unavailable')
+  return heatmapText(locale, 'activity.legend.notSampled')
 }
 
-function formatActivityValue(activity: HeatmapActivityValue): string {
-  if (activity.state === 'unavailable') return 'Unavailable'
-  if (activity.state === 'not_sampled') return 'Not sampled'
-  if (activity.state === 'zero') return '0.0% · sampled zero'
-  if (activity.value === null) return 'Available'
+function formatActivityValue(activity: HeatmapActivityValue, locale: Locale): string {
+  if (activity.state === 'unavailable') return heatmapText(locale, 'common.unavailable')
+  if (activity.state === 'not_sampled') return heatmapText(locale, 'common.notSampled')
+  if (activity.state === 'zero') return heatmapText(locale, 'activity.value.zero')
+  if (activity.value === null) return heatmapText(locale, 'common.available')
   return `${(activity.value * 100).toFixed(1)}%`
 }
 
@@ -255,23 +291,29 @@ function renderList(items: string[]): string {
   return `<ul class="heatmap-live-list">${items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
 }
 
-function formatLocalTime(value: string): string {
-  const date = new Date(value)
-  if (!Number.isFinite(date.getTime())) return 'Unavailable'
-  return new Intl.DateTimeFormat(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZoneName: 'short',
-  }).format(date)
+function formatAge(minutes: number, locale: Locale): string {
+  if (minutes < 1) return heatmapText(locale, 'age.lessMinute')
+  if (minutes < 60) return heatmapText(locale, 'age.minutes', { value: Math.floor(minutes) })
+  return heatmapText(locale, 'age.hours', { value: Math.floor(minutes / 60) })
 }
 
-function formatAge(minutes: number): string {
-  if (minutes < 1) return 'updated less than 1m ago'
-  if (minutes < 60) return `updated ${Math.floor(minutes)}m ago`
-  return `updated ${Math.floor(minutes / 60)}h ago`
+function displaySource(locale: Locale, mode: string, fallback: string): string {
+  if (locale === 'en') return fallback
+  if (mode === 'real') return '実データ'
+  if (mode === 'stale') return '遅延実データ'
+  if (mode === 'demo') return 'デモ'
+  if (mode === 'official-livestreams') return '公式エンドポイント'
+  if (mode === 'registry') return 'レジストリ候補'
+  if (mode === 'seed-list') return 'シードリスト'
+  if (mode === 'public-channel-fallback') return '候補フォールバック'
+  return '不明'
+}
+
+function displayMethod(locale: Locale, method: string): string {
+  if (locale === 'en') return method
+  if (method === 'Authenticated API') return '認証API'
+  if (method === 'Public listing') return '公開リスト'
+  return method
 }
 
 function escapeHtml(value: string): string {

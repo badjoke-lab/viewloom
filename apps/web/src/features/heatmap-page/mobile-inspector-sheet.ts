@@ -1,4 +1,6 @@
 import './mobile-inspector-sheet.css'
+import { localeFromPathname } from '../../i18n/locale'
+import { heatmapText } from '../../i18n/heatmap'
 
 const MOBILE_QUERY = '(max-width: 760px)'
 
@@ -6,10 +8,11 @@ export function installHeatmapMobileInspectorSheet(): () => void {
   const inspector = document.querySelector<HTMLElement>('#heatmap-inspector')
   if (!inspector) return () => undefined
   const inspectorElement: HTMLElement = inspector
+  const locale = localeFromPathname(window.location.pathname)
 
   const media = window.matchMedia(MOBILE_QUERY)
-  const backdrop = ensureBackdrop()
-  const bar = ensureSheetBar(inspectorElement)
+  const backdrop = ensureBackdrop(locale)
+  const bar = ensureSheetBar(inspectorElement, locale)
   const closeButton = bar.querySelector<HTMLButtonElement>('[data-heatmap-sheet-close]')
   let returnFocus: HTMLElement | null = null
   let open = false
@@ -116,26 +119,35 @@ export function installHeatmapMobileInspectorSheet(): () => void {
   }
 }
 
-function ensureBackdrop(): HTMLButtonElement {
+function ensureBackdrop(locale: ReturnType<typeof localeFromPathname>): HTMLButtonElement {
   const existing = document.querySelector<HTMLButtonElement>('[data-heatmap-sheet-backdrop]')
   if (existing) return existing
   const backdrop = document.createElement('button')
   backdrop.type = 'button'
   backdrop.className = 'heatmap-mobile-sheet-backdrop'
   backdrop.dataset.heatmapSheetBackdrop = 'true'
-  backdrop.setAttribute('aria-label', 'Close selected stream details')
+  backdrop.setAttribute('aria-label', heatmapText(locale, 'mobile.close'))
   backdrop.setAttribute('aria-hidden', 'true')
   document.body.appendChild(backdrop)
   return backdrop
 }
 
-function ensureSheetBar(inspector: HTMLElement): HTMLElement {
+function ensureSheetBar(inspector: HTMLElement, locale: ReturnType<typeof localeFromPathname>): HTMLElement {
   const existing = inspector.querySelector<HTMLElement>('[data-heatmap-mobile-sheet-bar]')
   if (existing) return existing
   const bar = document.createElement('div')
   bar.className = 'heatmap-mobile-sheet__bar'
   bar.dataset.heatmapMobileSheetBar = 'true'
-  bar.innerHTML = '<span class="heatmap-mobile-sheet__handle" aria-hidden="true"></span><button class="heatmap-mobile-sheet__close" type="button" data-heatmap-sheet-close aria-label="Close selected stream details">×</button>'
+  const handle = document.createElement('span')
+  handle.className = 'heatmap-mobile-sheet__handle'
+  handle.setAttribute('aria-hidden', 'true')
+  const close = document.createElement('button')
+  close.className = 'heatmap-mobile-sheet__close'
+  close.type = 'button'
+  close.dataset.heatmapSheetClose = 'true'
+  close.setAttribute('aria-label', heatmapText(locale, 'mobile.close'))
+  close.textContent = '×'
+  bar.append(handle, close)
   inspector.prepend(bar)
   return bar
 }

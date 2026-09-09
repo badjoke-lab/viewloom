@@ -1,11 +1,12 @@
 {
   "schema": "viewloom-public-surface-routes-v1",
-  "version": 6,
+  "version": 7,
   "group": "kick",
   "routes": [
     {"id":"kick-home","route":"/kick/","provider":"kick","profile":"provider_home","source":"apps/web/kick/index.html","title":"Kick Live Stream Data, Heatmap & History — ViewLoom","canonical":"https://www.viewloom.net/kick/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-home","binding":"DB_KICK_HOT"}]},
     {"id":"ja-kick-home","route":"/ja/kick/","provider":"kick","profile":"provider_home","source":"apps/web/ja/kick/index.html","title":"Kickデータ — ViewLoom","canonical":"https://www.viewloom.net/ja/kick/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/kick-home","binding":"DB_KICK_HOT"}]},
     {"id":"kick-heatmap","route":"/kick/heatmap/","provider":"kick","profile":"heatmap","source":"apps/web/kick/heatmap/index.html","title":"Kick Heatmap — Live Viewer Activity | ViewLoom","canonical":"https://www.viewloom.net/kick/heatmap/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-heatmap","binding":"DB_KICK_HOT"}]},
+    {"id":"ja-kick-heatmap","route":"/ja/kick/heatmap/","provider":"kick","profile":"heatmap","source":"apps/web/ja/kick/heatmap/index.html","title":"Kick Heatmap — 配信視聴者動向 | ViewLoom","canonical":"https://www.viewloom.net/ja/kick/heatmap/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/kick-heatmap","binding":"DB_KICK_HOT"}]},
     {"id":"kick-day-flow","route":"/kick/day-flow/","provider":"kick","profile":"day_flow","source":"apps/web/kick/day-flow/index.html","title":"Day Flow — ViewLoom","canonical":"https://www.viewloom.net/kick/day-flow/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-day-flow","binding":"DB_KICK_HOT"}]},
     {"id":"kick-battle-lines","route":"/kick/battle-lines/","provider":"kick","profile":"battle_lines","source":"apps/web/kick/battle-lines/index.html","title":"Battle Lines for Kick live streams | ViewLoom","canonical":"https://www.viewloom.net/kick/battle-lines/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-battle-lines","binding":"DB_KICK_HOT"}]},
     {"id":"kick-history","route":"/kick/history/","provider":"kick","profile":"history","source":"apps/web/kick/history/index.html","title":"History & Trends for Kick live streams | ViewLoom","canonical":"https://www.viewloom.net/kick/history/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-history","binding":"DB_KICK_HOT"}]},
