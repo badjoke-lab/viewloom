@@ -30,7 +30,7 @@ const en = {
 export type PortalMessageKey = keyof typeof en
 
 const ja: Record<PortalMessageKey, string> = {
-  'provider.loadError': '{name}データを読み込めませんでした。{message}',
+  'provider.loadError': '{name}データを読み込めませんでした。',
   'provider.unavailable': '利用不可',
   'provider.updateFailed': '更新失敗',
   'provider.noObservedStream': '観測配信なし',
