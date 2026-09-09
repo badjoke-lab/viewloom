@@ -2,6 +2,7 @@ import './dayflow-responsive.css'
 import './features/heatmap-page/layout-mode.css'
 import './kick-coverage-ui'
 import './visualization-grammar-entry'
+import { localeFromPathname } from './i18n/locale'
 import { installSharedShell, setSharedShellStatus } from './shared-shell'
 import { installTwitchStreamMapFeatureTab } from './twitch-stream-map-feature-tab'
 
@@ -38,6 +39,7 @@ type StatusPayload = {
   coverage?: { state?: string }
 }
 
+const locale = localeFromPathname(window.location.pathname)
 const activeProvider = document.body.dataset.provider === 'kick' ? 'kick' : document.body.dataset.provider === 'twitch' ? 'twitch' : null
 const isPortalHome = document.body.hasAttribute('data-portal-home')
 if (!document.body.hasAttribute('data-changelog-state') && !isPortalHome) void hydrateLiveStatus()
@@ -50,10 +52,12 @@ async function hydrateLiveStatus(): Promise<void> {
   const freshCount = states.filter((state) => state === 'fresh').length
   const availableCount = states.filter((state) => state === 'fresh' || state === 'partial' || state === 'empty').length
   const allFresh = freshCount === results.length
-  const text = allFresh ? 'Collectors healthy' : availableCount > 0 ? 'Collectors partially fresh' : 'Collector status unavailable'
+  const text = locale === 'ja'
+    ? allFresh ? 'コレクター正常' : availableCount > 0 ? 'コレクター一部更新' : 'コレクター状態を取得できません'
+    : allFresh ? 'Collectors healthy' : availableCount > 0 ? 'Collectors partially fresh' : 'Collector status unavailable'
   const state = allFresh ? 'fresh' : availableCount > 0 ? 'partial' : 'unavailable'
   document.querySelectorAll<HTMLElement>('.status-inline').forEach((node) => {
-    setSharedShellStatus(node, `${text} · 5m cadence`, state)
+    setSharedShellStatus(node, locale === 'ja' ? `${text} · 5分間隔` : `${text} · 5m cadence`, state)
   })
 }
 
@@ -112,8 +116,10 @@ function setDataStrip(label: string, value: string): void {
   })
 }
 function formatAgo(minutes?: number): string {
-  return typeof minutes === 'number' && Number.isFinite(minutes) ? `${Math.max(0, Math.round(minutes))}m ago` : '—'
+  if (typeof minutes !== 'number' || !Number.isFinite(minutes)) return '—'
+  const rounded = Math.max(0, Math.round(minutes))
+  return locale === 'ja' ? `${rounded}分前` : `${rounded}m ago`
 }
-function formatNumber(value?: number): string { return typeof value === 'number' && Number.isFinite(value) ? new Intl.NumberFormat().format(value) : '—' }
+function formatNumber(value?: number): string { return typeof value === 'number' && Number.isFinite(value) ? new Intl.NumberFormat(locale === 'ja' ? 'ja-JP' : undefined).format(value) : '—' }
 function labelText(value: string): string { return value.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()) }
 function escapeText(value: string): string { const node = document.createElement('span'); node.textContent = value; return node.innerHTML }
