@@ -1,5 +1,5 @@
 name: Public Browser Audit
-# Current candidate contract: 27 routes x 4 required widths = 108 scenarios.
+# Current candidate contract: 30 routes x 4 required widths = 120 scenarios.
 
 on:
   workflow_dispatch:
@@ -71,6 +71,9 @@ jobs:
           pnpm --filter @viewloom/web preview --host 127.0.0.1 --port 4173 > /tmp/public-browser-preview.log 2>&1 &
           for attempt in {1..50}; do
             curl --silent --fail http://127.0.0.1:4173/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/ja/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/ja/twitch/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/ja/kick/ > /dev/null \
               && curl --silent --fail http://127.0.0.1:4173/contact/ > /dev/null \
               && curl --silent --fail http://127.0.0.1:4173/twitch/history/ > /dev/null \
               && curl --silent --fail http://127.0.0.1:4173/kick/history/ > /dev/null \
