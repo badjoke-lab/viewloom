@@ -71,28 +71,49 @@ assert.ok(unavailable.legend.activity.includes('unavailable'))
 
 const read = (relativePath) => readFileSync(fileURLToPath(new URL(relativePath, import.meta.url)), 'utf8')
 const overviewSource = read('../src/features/heatmap-page/overview.ts')
+const catalog = read('../src/i18n/heatmap.ts')
 const adapterSource = read('../src/features/heatmap-page/data-truth-adapter.ts')
 const sourceObserver = read('../src/features/heatmap-page/data-state-source.ts')
 const twitchHtml = read('../twitch/heatmap/index.html')
 const kickHtml = read('../kick/heatmap/index.html')
+const jaTwitchHtml = read('../ja/twitch/heatmap/index.html')
+const jaKickHtml = read('../ja/kick/heatmap/index.html')
 
 for (const fragment of [
-  'Active observed records',
-  'Total observed viewers',
-  'Strongest momentum',
-  'Highest available activity',
+  "heatmapText(locale, 'overview.active')",
+  "heatmapText(locale, 'overview.viewers')",
+  "heatmapText(locale, 'overview.momentum')",
+  "heatmapText(locale, 'overview.activity')",
   'heatmap-final-legend',
   'heatmap-final-coverage',
-  'Auto refresh: On',
-  'Next stored-snapshot check in',
-  'manual Refresh',
-]) assert.ok(overviewSource.includes(fragment), `missing overview fragment: ${fragment}`)
+  "heatmapText(locale, 'overview.refreshOn')",
+  "heatmapText(locale, 'overview.refreshNext'",
+  "heatmapText(locale, 'overview.refreshDefault')",
+  'localeFromPathname(window.location.pathname)',
+]) assert.ok(overviewSource.includes(fragment), `missing overview ownership fragment: ${fragment}`)
+
+for (const fragment of [
+  "'overview.active': 'Active observed records'",
+  "'overview.viewers': 'Total observed viewers'",
+  "'overview.momentum': 'Strongest momentum'",
+  "'overview.activity': 'Highest available activity'",
+  "'overview.refreshOn': 'Auto refresh: On'",
+  "'overview.refreshNext': 'Next stored-snapshot check in {seconds}s'",
+  "'overview.refreshDefault': 'Automatic stored-snapshot refresh is on · 60s cadence · manual Refresh remains available'",
+  "'overview.active': '有効な観測レコード'",
+  "'overview.viewers': '観測視聴者数合計'",
+  "'overview.momentum': '最大モメンタム'",
+  "'overview.refreshOn': '自動更新: オン'",
+]) assert.ok(catalog.includes(fragment), `missing overview catalog fragment: ${fragment}`)
 
 assert.ok(!overviewSource.includes('heatmap-auto-refresh-toggle'))
 assert.ok(adapterSource.includes('installHeatmapOverview(provider)'))
 assert.ok(adapterSource.includes("'summary'"))
 assert.ok(sourceObserver.includes('viewloom:heatmap-response-error'))
-assert.ok(twitchHtml.includes('/src/live/heatmap-current-shell-entry.ts'))
-assert.ok(kickHtml.includes('/src/live/heatmap-current-shell-entry.ts'))
+for (const html of [twitchHtml, kickHtml, jaTwitchHtml, jaKickHtml]) {
+  assert.ok(html.includes('/src/live/heatmap-current-shell-entry.ts'))
+}
 
 console.log('Heatmap summary, legend, coverage, and refresh-state verification passed.')
+console.log('- overview calculation remains locale-neutral')
+console.log('- English/Japanese overview presentation copy is owned by the Heatmap i18n catalog')
