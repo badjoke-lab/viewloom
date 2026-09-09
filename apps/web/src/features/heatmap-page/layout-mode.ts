@@ -1,3 +1,6 @@
+import { localeFromPathname } from '../../i18n/locale'
+import { heatmapText } from '../../i18n/heatmap'
+
 export type HeatmapLayoutMode = 'wide' | 'split'
 
 const STORAGE_KEY = 'viewloom.heatmap.layout'
@@ -9,6 +12,7 @@ export function installHeatmapLayoutMode(): () => void {
   const controls = document.querySelector<HTMLElement>('[data-heatmap-layout-controls]')
   if (!root || !controls) return () => undefined
 
+  const locale = localeFromPathname(window.location.pathname)
   const media = window.matchMedia(MOBILE_WIDE_QUERY)
   let mode = media.matches ? 'wide' : readInitialMode()
   const buttons = Array.from(controls.querySelectorAll<HTMLButtonElement>('[data-heatmap-layout]'))
@@ -36,9 +40,9 @@ export function installHeatmapLayoutMode(): () => void {
     }
 
     document.querySelectorAll<HTMLElement>('.head-facts .fact').forEach((fact) => {
-      if (fact.querySelector('small')?.textContent?.trim().toLowerCase() !== 'view') return
+      if (fact.querySelector('small')?.textContent?.trim().toLowerCase() !== heatmapText(locale, 'label.view').toLowerCase()) return
       const value = fact.querySelector<HTMLElement>('strong')
-      if (value) value.textContent = resolved === 'wide' ? 'Wide' : 'Split'
+      if (value) value.textContent = heatmapText(locale, resolved === 'wide' ? 'layout.wide' : 'layout.split')
     })
 
     if (persist) {
