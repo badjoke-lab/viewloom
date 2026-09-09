@@ -34,6 +34,7 @@ assert.deepEqual(buildInspectorLinks('twitch', 'some_name'), {
 const read = (relativePath) => readFileSync(fileURLToPath(new URL(relativePath, import.meta.url)), 'utf8')
 const boundary = read('../src/features/twitch-heatmap/selected-inspector.ts')
 const inspector = read('../src/features/twitch-heatmap/selected-inspector-impl.ts')
+const catalog = read('../src/i18n/heatmap.ts')
 const controller = read('../src/features/heatmap-page/selected-inspector-controller.ts')
 const adapter = read('../src/features/heatmap-page/data-truth-adapter.ts')
 const source = read('../src/features/heatmap-page/data-state-source.ts')
@@ -41,24 +42,42 @@ const endpoint = read('../functions/api/heatmap-stream-context.ts')
 
 assert.ok(boundary.includes("export * from './selected-inspector-impl'"))
 for (const fragment of [
-  'Observed rank',
-  'Observed share',
-  'Momentum',
-  'Activity',
-  'Observed since',
-  'Observed duration',
-  'Latest observed peak',
-  'Peak time',
-  'Open in Battle Lines',
-  'Review 7-day history',
+  "heatmapText(locale, 'inspector.rank')",
+  "heatmapText(locale, 'inspector.share')",
+  "heatmapText(locale, 'inspector.momentum')",
+  "heatmapText(locale, 'inspector.activity')",
+  "heatmapText(locale, 'inspector.since')",
+  "heatmapText(locale, 'inspector.duration')",
+  "heatmapText(locale, 'inspector.peak')",
+  "heatmapText(locale, 'inspector.peakTime')",
+  "heatmapText(locale, 'inspector.openBattle')",
+  "heatmapText(locale, 'inspector.openHistory')",
   '/api/heatmap-stream-context',
-  'Intl.DateTimeFormat().resolvedOptions().timeZone',
+  'heatmapDateTime',
+  'heatmapMomentumLabel',
   'activityPresentation',
-  'momentumDirection',
+  'localizeAvailableHref',
   'data-heatmap-legacy-selection-bridge',
   'heatmap-inspector-link',
   'heatmap-detail-link',
-]) assert.ok(inspector.includes(fragment), `missing inspector fragment: ${fragment}`)
+]) assert.ok(inspector.includes(fragment), `missing inspector ownership fragment: ${fragment}`)
+
+for (const fragment of [
+  "'inspector.rank': 'Observed rank'",
+  "'inspector.share': 'Observed share'",
+  "'inspector.momentum': 'Momentum'",
+  "'inspector.activity': 'Activity'",
+  "'inspector.since': 'Observed since'",
+  "'inspector.duration': 'Observed duration'",
+  "'inspector.peak': 'Latest observed peak'",
+  "'inspector.peakTime': 'Peak time'",
+  "'inspector.openBattle': 'Open in Battle Lines'",
+  "'inspector.openHistory': 'Review 7-day history'",
+  "'inspector.rank': '観測順位'",
+  "'inspector.share': '観測シェア'",
+  "'inspector.since': '観測開始'",
+  "'inspector.duration': '連続観測時間'",
+]) assert.ok(catalog.includes(fragment), `missing inspector catalog fragment: ${fragment}`)
 
 for (const fragment of [
   'installHeatmapSelectedInspector',
@@ -85,3 +104,5 @@ for (const fragment of [
 ]) assert.ok(endpoint.includes(fragment), `missing stream-context fragment: ${fragment}`)
 
 console.log('Heatmap selected-inspector verification passed.')
+console.log('- selection/context data semantics remain locale-neutral')
+console.log('- English/Japanese inspector presentation copy is owned by the Heatmap i18n catalog')
