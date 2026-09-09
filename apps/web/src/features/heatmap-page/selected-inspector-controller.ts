@@ -10,6 +10,8 @@ import type {
   TwitchHeatmapApiResponse,
 } from '../twitch-heatmap/model'
 import type { HeatmapProviderKey } from './data-state-core.mjs'
+import { localeFromPathname } from '../../i18n/locale'
+import { heatmapText } from '../../i18n/heatmap'
 
 type ResponseDetail = {
   provider?: HeatmapProviderKey
@@ -28,6 +30,7 @@ let queued = false
 let lastRenderKey = ''
 
 export function installHeatmapSelectedInspector(providerKey: HeatmapProviderKey): () => void {
+  const locale = localeFromPathname(window.location.pathname)
   ensureSelectedInspectorShell()
   renderSelectedInspectorPending()
 
@@ -60,7 +63,10 @@ export function installHeatmapSelectedInspector(providerKey: HeatmapProviderKey)
       currentData = null
       lastRenderKey = ''
       rendering = true
-      renderSelectedInspectorUnavailable('No selectable stream', errorMessage(detail?.raw, provider))
+      renderSelectedInspectorUnavailable(
+        heatmapText(locale, 'inspector.noSelectable'),
+        errorMessage(detail?.raw, provider, locale),
+      )
       rendering = false
       return
     }
@@ -238,12 +244,13 @@ function payloadItems(payloadJson: unknown): unknown[] {
   }
 }
 
-function errorMessage(raw: unknown, provider: HeatmapProviderKey): string {
+function errorMessage(raw: unknown, provider: HeatmapProviderKey, locale: ReturnType<typeof localeFromPathname>): string {
+  if (locale === 'ja') return heatmapText(locale, 'inspector.noSelectableBody', { provider: provider === 'kick' ? 'Kick' : 'Twitch' })
   const record = asRecord(raw)
   const error = asRecord(record?.error)
   return stringValue(error?.message)
     || stringValue(record?.coverageNote)
-    || `The latest ${provider === 'kick' ? 'Kick' : 'Twitch'} response contains no selectable stream.`
+    || heatmapText(locale, 'inspector.noSelectableBody', { provider: provider === 'kick' ? 'Kick' : 'Twitch' })
 }
 
 function valueFromNotes(notes: unknown, key: string): string {
