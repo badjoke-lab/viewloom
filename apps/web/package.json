@@ -10,6 +10,7 @@
     "build": "vite build && node scripts/normalize-built-head.mjs",
     "verify:changelog": "node scripts/verify-changelog-qa.mjs",
     "verify:source": "node scripts/verify-production-source.mjs && node scripts/verify-primary-domain-cutover.mjs",
+    "verify:i18n-candidates": "node scripts/verify-japanese-home-candidates.mjs",
     "verify:battle-lines": "node scripts/verify-battle-lines-core.mjs",
     "verify:battle-lines-ui": "node scripts/verify-battle-lines-wide-ui.mjs",
     "verify:heatmap-boundaries": "node scripts/verify-heatmap-boundaries.mjs",
