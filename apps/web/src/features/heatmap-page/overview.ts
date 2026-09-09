@@ -3,10 +3,17 @@ import {
   buildHeatmapOverview,
   formatActivity,
   formatMomentum,
-  momentumLabel,
   type HeatmapOverview,
 } from './summary-legend-core.mjs'
 import type { HeatmapProviderKey } from './data-state-core.mjs'
+import { localeFromPathname, type Locale } from '../../i18n/locale'
+import {
+  heatmapActivityLegend,
+  heatmapMomentumLabel,
+  heatmapNumber,
+  heatmapReason,
+  heatmapText,
+} from '../../i18n/heatmap'
 
 type RefreshPhase = 'starting' | 'waiting' | 'refreshing' | 'error'
 
@@ -29,19 +36,20 @@ let refreshState: RefreshState = {
 let countdownTimer: number | null = null
 
 export function installHeatmapOverview(provider: HeatmapProviderKey): () => void {
-  ensureOverviewShell()
-  ensureRefreshStatus()
-  renderRefreshState()
+  const locale = localeFromPathname(window.location.pathname)
+  ensureOverviewShell(locale)
+  ensureRefreshStatus(locale)
+  renderRefreshState(locale)
 
   const onRequestStart = (): void => {
-    refreshState = { ...refreshState, phase: 'refreshing', message: 'Reading latest stored snapshot…' }
-    renderRefreshState()
+    refreshState = { ...refreshState, phase: 'refreshing', message: heatmapText(locale, 'overview.refreshReading') }
+    renderRefreshState(locale)
   }
   const onResponse = (event: Event): void => {
     const detail = (event as CustomEvent<{ provider?: HeatmapProviderKey; raw?: unknown }>).detail
     if (detail?.provider && detail.provider !== provider) return
     currentOverview = buildHeatmapOverview(detail?.raw, provider)
-    renderOverview(currentOverview)
+    renderOverview(currentOverview, locale)
     const now = Date.now()
     refreshState = {
       ...refreshState,
@@ -50,7 +58,7 @@ export function installHeatmapOverview(provider: HeatmapProviderKey): () => void
       nextRefreshAt: now + refreshState.intervalMs,
       message: undefined,
     }
-    renderRefreshState()
+    renderRefreshState(locale)
   }
   const onResponseError = (event: Event): void => {
     const detail = (event as CustomEvent<{ provider?: HeatmapProviderKey; message?: string }>).detail
@@ -59,15 +67,15 @@ export function installHeatmapOverview(provider: HeatmapProviderKey): () => void
       ...refreshState,
       phase: 'error',
       nextRefreshAt: Date.now() + refreshState.intervalMs,
-      message: detail?.message || 'Latest snapshot check failed.',
+      message: locale === 'ja' ? heatmapText(locale, 'overview.refreshFailed') : detail?.message || heatmapText(locale, 'overview.refreshFailed'),
     }
-    renderRefreshState()
+    renderRefreshState(locale)
   }
 
   window.addEventListener('viewloom:heatmap-request-start', onRequestStart)
   window.addEventListener('viewloom:heatmap-response', onResponse)
   window.addEventListener('viewloom:heatmap-response-error', onResponseError)
-  countdownTimer = window.setInterval(renderRefreshState, 1_000)
+  countdownTimer = window.setInterval(() => renderRefreshState(locale), 1_000)
 
   return () => {
     window.removeEventListener('viewloom:heatmap-request-start', onRequestStart)
@@ -79,7 +87,7 @@ export function installHeatmapOverview(provider: HeatmapProviderKey): () => void
   }
 }
 
-function ensureOverviewShell(): void {
+function ensureOverviewShell(locale: Locale): void {
   const root = document.querySelector<HTMLElement>('#heatmap-layout-root')
   const support = root?.querySelector<HTMLElement>('.support-grid--feature, [data-heatmap-overview-support]')
   if (!root || !support) return
@@ -88,12 +96,12 @@ function ensureOverviewShell(): void {
     const summary = document.createElement('section')
     summary.className = 'heatmap-overview-summary'
     summary.dataset.heatmapOverviewSummary = 'true'
-    summary.setAttribute('aria-label', 'Heatmap snapshot summary')
+    summary.setAttribute('aria-label', heatmapText(locale, 'overview.aria'))
     summary.innerHTML = `
-      ${summaryCard('Active observed records', 'heatmap-overview-streams')}
-      ${summaryCard('Total observed viewers', 'heatmap-overview-viewers')}
-      ${summaryCard('Strongest momentum', 'heatmap-overview-momentum')}
-      ${summaryCard('Highest available activity', 'heatmap-overview-activity')}
+      ${summaryCard(heatmapText(locale, 'overview.active'), 'heatmap-overview-streams', locale)}
+      ${summaryCard(heatmapText(locale, 'overview.viewers'), 'heatmap-overview-viewers', locale)}
+      ${summaryCard(heatmapText(locale, 'overview.momentum'), 'heatmap-overview-momentum', locale)}
+      ${summaryCard(heatmapText(locale, 'overview.activity'), 'heatmap-overview-activity', locale)}
     `
     support.before(summary)
   }
@@ -102,24 +110,24 @@ function ensureOverviewShell(): void {
   support.dataset.heatmapOverviewSupport = 'true'
   support.innerHTML = `
     <article class="heatmap-overview-support__card">
-      <div class="heatmap-overview-support__label">Legend</div>
-      <h2>How to read the field</h2>
-      <div id="heatmap-final-legend">Waiting for the latest snapshot.</div>
+      <div class="heatmap-overview-support__label">${escapeHtml(heatmapText(locale, 'overview.legendLabel'))}</div>
+      <h2>${escapeHtml(heatmapText(locale, 'overview.legendTitle'))}</h2>
+      <div id="heatmap-final-legend">${escapeHtml(heatmapText(locale, 'overview.waiting'))}</div>
     </article>
     <article class="heatmap-overview-support__card">
-      <div class="heatmap-overview-support__label">Snapshot status</div>
-      <h2 id="heatmap-status-title">Loading</h2>
-      <p id="heatmap-status-body">Reading the latest stored snapshot.</p>
+      <div class="heatmap-overview-support__label">${escapeHtml(heatmapText(locale, 'overview.snapshotLabel'))}</div>
+      <h2 id="heatmap-status-title">${escapeHtml(heatmapText(locale, 'common.loading'))}</h2>
+      <p id="heatmap-status-body">${escapeHtml(heatmapText(locale, 'overview.refreshReading'))}</p>
     </article>
     <article class="heatmap-overview-support__card">
-      <div class="heatmap-overview-support__label">Coverage and limitations</div>
-      <h2>What this field represents</h2>
-      <div id="heatmap-final-coverage"><p>Waiting for coverage details.</p></div>
+      <div class="heatmap-overview-support__label">${escapeHtml(heatmapText(locale, 'overview.coverageLabel'))}</div>
+      <h2>${escapeHtml(heatmapText(locale, 'overview.coverageTitle'))}</h2>
+      <div id="heatmap-final-coverage"><p>${escapeHtml(heatmapText(locale, 'overview.waitingCoverage'))}</p></div>
     </article>
   `
 }
 
-function ensureRefreshStatus(): void {
+function ensureRefreshStatus(locale: Locale): void {
   const dock = document.querySelector<HTMLElement>('.heatmap-control-dock__map')
   if (!dock || dock.querySelector('#heatmap-refresh-state')) return
 
@@ -130,75 +138,101 @@ function ensureRefreshStatus(): void {
   status.setAttribute('role', 'status')
   status.setAttribute('aria-live', 'polite')
   status.innerHTML = `
-    <span class="heatmap-map-control" aria-hidden="true">Auto refresh: On</span>
-    <span id="heatmap-auto-refresh-copy" class="heatmap-refresh-state__copy">Starting automatic refresh…</span>
+    <span class="heatmap-map-control" aria-hidden="true">${escapeHtml(heatmapText(locale, 'overview.refreshOn'))}</span>
+    <span id="heatmap-auto-refresh-copy" class="heatmap-refresh-state__copy">${escapeHtml(heatmapText(locale, 'overview.refreshStarting'))}</span>
   `
   dock.appendChild(status)
 }
 
-function renderOverview(overview: HeatmapOverview): void {
-  ensureOverviewShell()
-  setSummary('heatmap-overview-streams', overview.activeRecords.toLocaleString(), 'Every valid record in the current snapshot remains represented in the field.')
-  setSummary('heatmap-overview-viewers', overview.totalViewers.toLocaleString(), `Observed across ${overview.activeRecords.toLocaleString()} live records in this snapshot.`)
+function renderOverview(overview: HeatmapOverview, locale: Locale): void {
+  ensureOverviewShell(locale)
+  setSummary('heatmap-overview-streams', heatmapNumber(locale, overview.activeRecords), heatmapText(locale, 'overview.activeBody'))
+  setSummary('heatmap-overview-viewers', heatmapNumber(locale, overview.totalViewers), heatmapText(locale, 'overview.viewersBody', { count: heatmapNumber(locale, overview.activeRecords) }))
 
   if (overview.strongestMomentum) {
     const item = overview.strongestMomentum
     setSummary(
       'heatmap-overview-momentum',
       item.displayName,
-      `${momentumLabel(item.momentum)} · ${formatMomentum(item.momentum)} · ${item.viewers.toLocaleString()} viewers.`,
+      heatmapText(locale, 'overview.momentumBody', {
+        direction: heatmapMomentumLabel(locale, item.momentum),
+        momentum: formatMomentum(item.momentum),
+        viewers: heatmapNumber(locale, item.viewers),
+      }),
     )
   } else {
-    setSummary('heatmap-overview-momentum', 'Unavailable', 'No valid momentum record is present in this snapshot.')
+    setSummary('heatmap-overview-momentum', heatmapText(locale, 'common.unavailable'), heatmapText(locale, 'overview.momentumUnavailable'))
   }
 
   if (overview.activityState === 'available' && overview.highestActivity) {
     const item = overview.highestActivity
-    setSummary('heatmap-overview-activity', item.displayName, `${formatActivity(item.activity)} sampled activity · ${item.viewers.toLocaleString()} viewers.`)
+    setSummary(
+      'heatmap-overview-activity',
+      item.displayName,
+      heatmapText(locale, 'overview.activityBody', { activity: formatActivity(item.activity), viewers: heatmapNumber(locale, item.viewers) }),
+    )
   } else if (overview.activityState === 'zero') {
-    setSummary('heatmap-overview-activity', 'Zero observed', 'Activity was sampled, but the current field contains no positive activity value.')
+    setSummary('heatmap-overview-activity', heatmapText(locale, 'common.zeroObserved'), heatmapText(locale, 'overview.activityZero'))
   } else if (overview.activityState === 'unavailable') {
-    setSummary('heatmap-overview-activity', 'Unavailable', 'The current snapshot does not provide a usable activity signal.')
+    setSummary('heatmap-overview-activity', heatmapText(locale, 'common.unavailable'), heatmapText(locale, 'overview.activityUnavailable'))
   } else {
-    setSummary('heatmap-overview-activity', 'Not sampled', 'Activity was not sampled in the current observation window.')
+    setSummary('heatmap-overview-activity', heatmapText(locale, 'common.notSampled'), heatmapText(locale, 'overview.activityNotSampled'))
   }
 
-  setHtml('#heatmap-final-legend', renderLegend(overview))
-  setHtml('#heatmap-final-coverage', renderTextList(overview.coverageLines))
+  setHtml('#heatmap-final-legend', renderLegend(overview, locale))
+  setHtml('#heatmap-final-coverage', renderTextList(localizedCoverageLines(overview, locale)))
 }
 
-function renderLegend(overview: HeatmapOverview): string {
+function renderLegend(overview: HeatmapOverview, locale: Locale): string {
   return `<ul class="heatmap-overview-list">
-    ${legendItem('area', overview.legend.area)}
-    ${legendItem('rising', overview.legend.rising)}
-    ${legendItem('falling', overview.legend.falling)}
-    ${legendItem('stable', overview.legend.stable)}
-    ${legendItem('activity', overview.legend.activity)}
+    ${legendItem('area', heatmapText(locale, 'legend.area'))}
+    ${legendItem('rising', heatmapText(locale, 'legend.rising'))}
+    ${legendItem('falling', heatmapText(locale, 'legend.falling'))}
+    ${legendItem('stable', heatmapText(locale, 'legend.stable'))}
+    ${legendItem('activity', heatmapActivityLegend(locale, overview.truth.activity.state))}
   </ul>`
 }
 
-function renderRefreshState(): void {
+function localizedCoverageLines(overview: HeatmapOverview, locale: Locale): string[] {
+  if (locale === 'en') return overview.coverageLines
+  const truth = overview.truth
+  const lines = [
+    heatmapText(locale, 'overview.coverage.records', { count: heatmapNumber(locale, truth.observedRecords) }),
+    heatmapText(locale, 'overview.coverage.limit', { limit: heatmapNumber(locale, truth.configuredLimit) }),
+    truth.hasMore === true ? heatmapText(locale, 'overview.coverage.more') : heatmapText(locale, 'overview.coverage.noMore'),
+    truth.coveredPages === null
+      ? heatmapText(locale, 'overview.coverage.pagesUnavailable')
+      : heatmapText(locale, 'overview.coverage.pages', { count: heatmapNumber(locale, truth.coveredPages) }),
+    heatmapText(locale, 'overview.coverage.source', { source: localizedSource(truth.sourceMode, truth.sourceLabel) }),
+    heatmapText(locale, 'overview.coverage.method', { method: localizedMethod(truth.collectionMethod) }),
+  ]
+  if (truth.snapshotAgeMinutes !== null) lines.push(heatmapText(locale, 'overview.coverage.age', { age: localizedSnapshotAge(truth.snapshotAgeMinutes) }))
+  if (truth.reasons.length) lines.push(...truth.reasons.map((reason) => heatmapReason(locale, reason)))
+  return [...new Set(lines.filter(Boolean))]
+}
+
+function renderRefreshState(locale: Locale): void {
   const root = document.querySelector<HTMLElement>('#heatmap-refresh-state')
   const copy = document.querySelector<HTMLElement>('#heatmap-auto-refresh-copy')
   if (!root || !copy) return
 
   root.dataset.phase = refreshState.phase
   if (refreshState.phase === 'refreshing') {
-    copy.textContent = refreshState.message || 'Reading latest stored snapshot…'
+    copy.textContent = refreshState.message || heatmapText(locale, 'overview.refreshReading')
   } else if (refreshState.phase === 'error') {
-    copy.textContent = `${refreshState.message || 'Last snapshot check failed'} · automatic retry remains on`
+    copy.textContent = heatmapText(locale, 'overview.refreshRetry', { message: refreshState.message || heatmapText(locale, 'overview.refreshFailed') })
   } else if (refreshState.nextRefreshAt) {
     const seconds = Math.max(0, Math.ceil((refreshState.nextRefreshAt - Date.now()) / 1_000))
     copy.textContent = seconds > 0
-      ? `Next stored-snapshot check in ${seconds}s`
-      : 'Waiting for the next visible-tab snapshot check'
+      ? heatmapText(locale, 'overview.refreshNext', { seconds })
+      : heatmapText(locale, 'overview.refreshVisible')
   } else {
-    copy.textContent = 'Automatic stored-snapshot refresh is on · 60s cadence · manual Refresh remains available'
+    copy.textContent = heatmapText(locale, 'overview.refreshDefault')
   }
 }
 
-function summaryCard(label: string, id: string): string {
-  return `<article id="${id}" class="heatmap-overview-card"><div class="heatmap-overview-card__label">${escapeHtml(label)}</div><div class="heatmap-overview-card__value">—</div><p>Waiting for the latest snapshot.</p></article>`
+function summaryCard(label: string, id: string, locale: Locale): string {
+  return `<article id="${id}" class="heatmap-overview-card"><div class="heatmap-overview-card__label">${escapeHtml(label)}</div><div class="heatmap-overview-card__value">—</div><p>${escapeHtml(heatmapText(locale, 'overview.waiting'))}</p></article>`
 }
 
 function setSummary(id: string, value: string, body: string): void {
@@ -220,6 +254,31 @@ function renderTextList(lines: string[]): string {
 function setHtml(selector: string, value: string): void {
   const element = document.querySelector<HTMLElement>(selector)
   if (element) element.innerHTML = value
+}
+
+function localizedSource(mode: string, fallback: string): string {
+  if (mode === 'real') return '実データ'
+  if (mode === 'stale') return '遅延実データ'
+  if (mode === 'demo') return 'デモ'
+  if (mode === 'official-livestreams') return '公式エンドポイント'
+  if (mode === 'registry') return 'レジストリ候補'
+  if (mode === 'seed-list') return 'シードリスト'
+  if (mode === 'public-channel-fallback') return '候補フォールバック'
+  return fallback === 'Unknown' ? '不明' : fallback
+}
+
+function localizedMethod(method: string): string {
+  if (method === 'Authenticated API') return '認証API'
+  if (method === 'Public listing') return '公開リスト'
+  return method
+}
+
+function localizedSnapshotAge(minutes: number): string {
+  if (minutes < 1) return '1分未満'
+  if (minutes < 60) return `${Math.floor(minutes)}分`
+  const hours = Math.floor(minutes / 60)
+  const remainder = Math.floor(minutes % 60)
+  return remainder ? `${hours}時間${remainder}分` : `${hours}時間`
 }
 
 function escapeHtml(value: string): string {
