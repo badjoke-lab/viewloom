@@ -14,7 +14,7 @@ const t = (key: Parameters<typeof providerHomeText>[1], params: Record<string, s
 
 if (platform === 'twitch' || platform === 'kick') {
   mountProviderHome(platform, locale)
-  installProviderHomeStreamMapEntry(platform)
+  installProviderHomeStreamMapEntry(platform, locale)
   installSharedShell()
 
   const observer = new MutationObserver(syncPresentation)
