@@ -8,16 +8,30 @@ const contracts = [
   {
     path: 'src/live/twitch-heatmap.ts',
     required: [
-      'No ${provider.label} snapshot yet',
-      'No live records in this snapshot',
-      'Failed to load ${provider.label} Heatmap',
+      'localeFromPathname(window.location.pathname)',
+      "heatmapText(locale, 'runtime.noSnapshotTitle'",
+      "heatmapText(locale, 'runtime.emptyTitle')",
+      "heatmapText(locale, 'runtime.failedTitle'",
+      "heatmapText(locale, 'runtime.emptyBody')",
       'renderRuntimeState',
-      'The data path responded successfully',
       "cache: 'no-store'",
       'destroyCanvasScene',
       'renderCanvasScene({',
     ],
     forbiddenText: ['Stream A', '118.4K', 'renderHeatmapShell', 'createHeatmapViewport'],
+  },
+  {
+    path: 'src/i18n/heatmap.ts',
+    required: [
+      "'runtime.noSnapshotTitle': 'No {provider} snapshot yet'",
+      "'runtime.emptyTitle': 'No live records in this snapshot'",
+      "'runtime.failedTitle': 'Failed to load {provider} Heatmap'",
+      "'runtime.emptyBody': 'The data path responded successfully, but the latest stored snapshot contains no valid live stream records.'",
+      "'runtime.noSnapshotTitle': '{provider}のスナップショットはまだありません'",
+      "'runtime.emptyTitle': 'このスナップショットにライブ配信レコードはありません'",
+      'export function heatmapText',
+    ],
+    forbiddenText: ['Stream A', '118.4K'],
   },
   {
     path: 'src/live/day-flow-current-shell-entry.ts',
@@ -76,6 +90,8 @@ const contracts = [
 const publicPages = [
   'twitch/heatmap/index.html',
   'kick/heatmap/index.html',
+  'ja/twitch/heatmap/index.html',
+  'ja/kick/heatmap/index.html',
   'twitch/day-flow/index.html',
   'kick/day-flow/index.html',
   'twitch/battle-lines/index.html',
@@ -131,4 +147,5 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`ViewLoom state QA verification passed for ${contracts.length} live entries and ${publicPages.length} public feature pages.`)
+console.log(`ViewLoom state QA verification passed for ${contracts.length} state owners and ${publicPages.length} public/candidate feature pages.`)
+console.log('- Heatmap empty/error state semantics remain English-compatible and Japanese-localized through the shared catalog.')
