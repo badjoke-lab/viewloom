@@ -1,16 +1,18 @@
+import type { Locale } from './i18n/locale'
+import { localizeHref } from './i18n/route'
+import { translate } from './i18n/messages'
 import type { Platform } from './provider-home/types'
 
-const TWITCH_STREAM_MAP_HREF = '/twitch/map/'
-
-export function installProviderHomeStreamMapEntry(platform: Platform): void {
+export function installProviderHomeStreamMapEntry(platform: Platform, locale: Locale = 'en'): void {
   if (platform !== 'twitch') return
 
+  const href = localizeHref('/twitch/map/', locale)
   const directory = document.querySelector<HTMLElement>('.feature-directory')
-  if (!directory || directory.querySelector(`a[href="${TWITCH_STREAM_MAP_HREF}"]`)) return
+  if (!directory || directory.querySelector(`a[href="${href}"]`)) return
 
   const link = document.createElement('a')
   link.className = 'feature-item'
-  link.href = TWITCH_STREAM_MAP_HREF
+  link.href = href
   link.dataset.providerHomeStreamMap = 'twitch'
 
   const number = document.createElement('span')
@@ -18,14 +20,14 @@ export function installProviderHomeStreamMapEntry(platform: Platform): void {
   number.textContent = '05 · WHERE'
 
   const title = document.createElement('h3')
-  title.textContent = 'Stream Map'
+  title.textContent = translate(locale, 'feature.streamMap')
 
   const copy = document.createElement('p')
-  copy.textContent = 'Explore accepted Country and City geography for the current observed Twitch population.'
+  copy.textContent = translate(locale, 'map.twitchHomeCopy')
 
   const fact = document.createElement('div')
   fact.className = 'feature-item__fact'
-  fact.textContent = 'Country + City · evidence-backed'
+  fact.textContent = translate(locale, 'map.countryCityEvidence')
 
   link.append(number, title, copy, fact)
   directory.append(link)
