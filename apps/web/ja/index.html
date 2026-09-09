@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ViewLoom — Twitch / Kick ライブ配信データ観測</title>
+  <meta name="description" content="ViewLoomは、TwitchとKickを分離したまま、Heatmap、Day Flow、Battle Lines、Historyなどでライブ配信の観測データを読み解く非公式ツールです。" />
+  <meta name="robots" content="noindex,follow" />
+  <link rel="canonical" href="https://www.viewloom.net/ja/" />
+  <meta property="og:site_name" content="ViewLoom" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.viewloom.net/ja/" />
+  <meta property="og:title" content="ViewLoom — Twitch / Kick ライブ配信データ観測" />
+  <meta property="og:description" content="TwitchとKickを混ぜずに、現在の勢力、1日の動き、競り合い、履歴を観測します。" />
+  <meta property="og:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <meta name="twitter:title" content="ViewLoom — Twitch / Kick ライブ配信データ観測" />
+  <meta name="twitter:description" content="TwitchとKickを混ぜずに、現在の勢力、1日の動き、競り合い、履歴を観測します。" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YHX7HS1VBK"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-YHX7HS1VBK');
+  </script>
+  <link rel="stylesheet" href="/src/mock-site.css" />
+  <link rel="stylesheet" href="/src/portal-page.css" />
+</head>
+<body data-provider="portal" data-portal-home data-portal-state="loading">
+  <div class="site-frame">
+    <header class="masthead">
+      <div class="masthead__inner">
+        <a class="brand" href="/ja/"><span class="brand-mark">VL</span><span>ViewLoom<small>ライブ配信データ観測</small></span></a>
+        <nav class="global-nav" id="portal-nav" aria-label="グローバルナビゲーション"><a href="/ja/" aria-current="page">ポータル</a><a href="/ja/twitch/">Twitchデータ</a><a href="/ja/kick/">Kickデータ</a><a href="/changelog/">更新履歴</a><a href="/about/">このサイトについて</a><a href="/support/">サポート</a></nav>
+        <div class="portal-health" aria-label="配信プラットフォームの収集状態" aria-live="polite">
+          <span class="portal-health__pill portal-health__pill--twitch" id="portal-health-twitch" data-state="loading"><i aria-hidden="true"></i><span>Twitch · 読み込み中</span></span>
+          <span class="portal-health__pill portal-health__pill--kick" id="portal-health-kick" data-state="loading"><i aria-hidden="true"></i><span>Kick · 読み込み中</span></span>
+          <span class="portal-health__cadence">5分間隔</span>
+        </div>
+        <button class="mobile-menu mobile-only" data-mobile-menu aria-label="ナビゲーションを開く" aria-controls="portal-nav" aria-expanded="false">メニュー</button>
+      </div>
+    </header>
+
+    <main class="page portal-page">
+      <div class="breadcrumb">ViewLoom / ポータル</div>
+
+      <section class="page-head portal-hero">
+        <div>
+          <div class="kicker">プラットフォーム別のライブ配信データ</div>
+          <h1>いまの勢力を見る。<br />その動きを追う。</h1>
+          <p class="lede">いま誰が大きいかを見て、1日の視聴動向、競り合う配信、蓄積された傾向を追います。TwitchとKickの観測データは常に分離して扱います。</p>
+        </div>
+        <div class="portal-facts" aria-label="ViewLoomの運用モデル">
+          <div class="portal-fact"><span class="portal-fact__icon" aria-hidden="true">◷</span><span><small>収集間隔</small><strong>5分</strong></span></div>
+          <div class="portal-fact"><span class="portal-fact__icon" aria-hidden="true">▣</span><span><small>集計保持</small><strong>最大180日</strong></span></div>
+          <div class="portal-fact"><span class="portal-fact__icon" aria-hidden="true">◇</span><span><small>観測プラットフォーム</small><strong>Twitch / Kick</strong></span></div>
+          <div class="portal-fact"><span class="portal-fact__icon" aria-hidden="true">◎</span><span><small>データモデル</small><strong>プラットフォーム分離</strong></span></div>
+        </div>
+      </section>
+
+      <section class="portal-provider-grid" aria-label="観測するプラットフォームを選ぶ">
+        <article class="portal-provider-card portal-provider-card--twitch" data-portal-provider="twitch" data-state="loading">
+          <div class="portal-provider-card__head">
+            <div class="kicker">Twitchデータ</div>
+            <h2>Twitch</h2>
+            <p>設定されたTop 300範囲をHelixで観測します。</p>
+          </div>
+          <div class="portal-provider-stats" aria-live="polite">
+            <div><small>状態</small><strong id="portal-twitch-status">読み込み中</strong></div>
+            <div><small>更新</small><strong id="portal-twitch-updated">読み込み中…</strong></div>
+            <div><small>観測配信</small><strong id="portal-twitch-observed">読み込み中…</strong></div>
+            <div><small>観測視聴者</small><strong id="portal-twitch-viewers">読み込み中…</strong></div>
+            <div><small>現在の最大観測</small><strong id="portal-twitch-largest">読み込み中…</strong></div>
+          </div>
+          <a class="portal-provider-next" id="portal-twitch-next" href="/twitch/heatmap/">Heatmapで現在の勢力を見る <span aria-hidden="true">→</span></a>
+          <p class="portal-provider-note" id="portal-twitch-note">Top 300の観測範囲です。これより多くのライブ配信が存在する場合があります。</p>
+          <div class="portal-provider-card__actions"><a class="button" href="/ja/twitch/">Twitchデータを開く <span aria-hidden="true">↗</span></a><a class="portal-status-link" href="/twitch/status/">Data Status</a></div>
+        </article>
+
+        <article class="portal-provider-card portal-provider-card--kick" data-portal-provider="kick" data-state="loading">
+          <div class="portal-provider-card__head">
+            <div class="kicker">Kickデータ</div>
+            <h2>Kick</h2>
+            <p>設定されたregistryまたはseed listを基に候補チャンネルを観測します。</p>
+          </div>
+          <div class="portal-provider-stats" aria-live="polite">
+            <div><small>状態</small><strong id="portal-kick-status">読み込み中</strong></div>
+            <div><small>更新</small><strong id="portal-kick-updated">読み込み中…</strong></div>
+            <div><small>観測候補</small><strong id="portal-kick-observed">読み込み中…</strong></div>
+            <div><small>観測視聴者</small><strong id="portal-kick-viewers">読み込み中…</strong></div>
+            <div><small>現在の最大観測</small><strong id="portal-kick-largest">読み込み中…</strong></div>
+          </div>
+          <a class="portal-provider-next" id="portal-kick-next" href="/kick/heatmap/">Heatmapで現在の勢力を見る <span aria-hidden="true">→</span></a>
+          <p class="portal-provider-note" id="portal-kick-note">Top 100の観測候補です。プラットフォーム全体のディレクトリ網羅を意味しません。</p>
+          <div class="portal-provider-card__actions"><a class="button" href="/ja/kick/">Kickデータを開く <span aria-hidden="true">↗</span></a><a class="portal-status-link" href="/kick/status/">Data Status</a></div>
+        </article>
+      </section>
+
+      <section class="portal-views" aria-labelledby="portal-views-title">
+        <div class="portal-section-head"><div><h2 id="portal-views-title">表示を選ぶ</h2><p>知りたいことから始めて、TwitchまたはKickの表示を開きます。</p></div></div>
+        <div class="portal-view-grid">
+          <article class="portal-view-card portal-view-card--heatmap">
+            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">▦</span><div><h3>Heatmap</h3><p>いま誰が大きいか、伸びているか、活動しているかを見る。</p></div></div>
+            <div class="portal-view-card__links"><a href="/twitch/heatmap/">Twitchを開く <span aria-hidden="true">→</span></a><a href="/kick/heatmap/">Kickを開く <span aria-hidden="true">→</span></a></div>
+          </article>
+          <article class="portal-view-card portal-view-card--dayflow">
+            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">∿</span><div><h3>Day Flow</h3><p>UTCの1日の中で観測視聴者がどう動いたかを見る。</p></div></div>
+            <div class="portal-view-card__links"><a href="/twitch/day-flow/">Twitchを開く <span aria-hidden="true">→</span></a><a href="/kick/day-flow/">Kickを開く <span aria-hidden="true">→</span></a></div>
+          </article>
+          <article class="portal-view-card portal-view-card--battle">
+            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">×</span><div><h3>Battle Lines</h3><p>競り合う配信の差が縮んだ場所、急伸、順位逆転を追う。</p></div></div>
+            <div class="portal-view-card__links"><a href="/twitch/battle-lines/">Twitchを開く <span aria-hidden="true">→</span></a><a href="/kick/battle-lines/">Kickを開く <span aria-hidden="true">→</span></a></div>
+          </article>
+          <article class="portal-view-card portal-view-card--history">
+            <div class="portal-view-card__heading"><span class="portal-view-card__icon" aria-hidden="true">▤</span><div><h3>History</h3><p>ピーク、順位、視聴量が時間とともにどう変わったかを見る。</p></div></div>
+            <div class="portal-view-card__links"><a href="/twitch/history/">Twitchを開く <span aria-hidden="true">→</span></a><a href="/kick/history/">Kickを開く <span aria-hidden="true">→</span></a></div>
+          </article>
+        </div>
+      </section>
+
+      <aside class="portal-boundaries">
+        <div class="portal-boundaries__icon" aria-hidden="true">◇</div>
+        <div><div class="kicker">プラットフォーム分離ポリシー</div><h2>プラットフォームは混ぜません</h2><p>TwitchとKickは、collector、観測範囲モデル、route、保持データ、rankingを分離しています。視聴者数の合算やプラットフォーム横断rankingは表示しません。Kickの候補ベース観測は、プラットフォーム全体のディレクトリ網羅を意味しません。</p></div>
+      </aside>
+    </main>
+
+    <footer class="footer"><div>ViewLoom · 公開ライブ配信データを独立・非公式に観測するサイトです。</div><nav><a href="/changelog/">更新履歴</a><a href="/about/">方法と制約</a><a href="/support/">サポート</a><a href="https://docs.google.com/forms/d/e/1FAIpQLSdhreuxEz7w0eSjslTyVLL-axV6IJdTp5RU5VXCM3ApIz35-Q/viewform?usp=dialog" target="_blank" rel="noreferrer">お問い合わせ</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
+  </div>
+  <script type="module" src="/src/mock-site.ts"></script>
+  <script type="module" src="/src/portal-page.ts"></script>
+  <script type="module" src="/src/analytics.ts"></script>
+</body>
+</html>
