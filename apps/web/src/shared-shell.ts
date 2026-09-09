@@ -1,25 +1,26 @@
 import './shared-shell.css'
 import './quality-u10e-responsive.css'
+import { localeFromPathname, stripLocalePrefix, type Locale } from './i18n/locale'
+import { localizeAvailableHref } from './i18n/route'
+import { sharedShellText, type SharedShellMessageKey } from './i18n/shared-shell'
 
 type ShellProvider = 'portal' | 'twitch' | 'kick'
 type ShellStatusState = 'loading' | 'fresh' | 'partial' | 'unavailable'
 
 type NavItem = {
   href: string
-  label: string
+  label: SharedShellMessageKey
   current: (path: string, provider: ShellProvider) => boolean
 }
 
 const navItems: NavItem[] = [
-  { href: '/', label: 'Portal', current: (path, provider) => path === '/' && provider === 'portal' },
-  { href: '/twitch/', label: 'Twitch data', current: (_path, provider) => provider === 'twitch' },
-  { href: '/kick/', label: 'Kick data', current: (_path, provider) => provider === 'kick' },
-  { href: '/changelog/', label: 'Changelog', current: (path) => path.startsWith('/changelog/') },
-  { href: '/about/', label: 'About', current: (path) => path.startsWith('/about/') },
-  { href: '/support/', label: 'Support', current: (path) => path.startsWith('/support/') },
+  { href: '/', label: 'nav.portal', current: (path, provider) => path === '/' && provider === 'portal' },
+  { href: '/twitch/', label: 'nav.twitch', current: (_path, provider) => provider === 'twitch' },
+  { href: '/kick/', label: 'nav.kick', current: (_path, provider) => provider === 'kick' },
+  { href: '/changelog/', label: 'nav.changelog', current: (path) => path.startsWith('/changelog/') },
+  { href: '/about/', label: 'nav.about', current: (path) => path.startsWith('/about/') },
+  { href: '/support/', label: 'nav.support', current: (path) => path.startsWith('/support/') },
 ]
-
-const footerDisclaimer = 'ViewLoom is independent and unofficial. It is not affiliated with, endorsed by, or sponsored by Twitch or Kick. Twitch and Kick are trademarks of their respective owners.'
 
 export function installSharedShell(): void {
   const frame = document.querySelector<HTMLElement>('.site-frame')
@@ -28,15 +29,16 @@ export function installSharedShell(): void {
   const footer = document.querySelector<HTMLElement>('.footer')
   if (!frame || !masthead || !nav || !footer) return
 
+  const locale = localeFromPathname(window.location.pathname)
   const provider = shellProvider()
-  const path = normalizedPath(window.location.pathname)
+  const path = normalizedPath(stripLocalePrefix(window.location.pathname))
   document.body.dataset.sharedShellReady = 'true'
   masthead.dataset.shellProvider = provider
-  normalizeBrand(provider)
-  normalizeNavigation(nav, provider, path)
-  normalizeMobileNavigation(masthead, nav)
+  normalizeBrand(provider, locale)
+  normalizeNavigation(nav, provider, path, locale)
+  normalizeMobileNavigation(masthead, nav, locale)
   normalizeStatus(document.querySelector<HTMLElement>('.status-inline'))
-  normalizeFooter(footer)
+  normalizeFooter(footer, locale)
 }
 
 export function setSharedShellStatus(status: HTMLElement | null, text: string, state: ShellStatusState): void {
@@ -68,35 +70,31 @@ function normalizedPath(path: string): string {
   return path.endsWith('/') ? path : `${path}/`
 }
 
-function normalizeBrand(provider: ShellProvider): void {
+function normalizeBrand(provider: ShellProvider, locale: Locale): void {
   const brand = document.querySelector<HTMLAnchorElement>('.brand')
   if (!brand) return
-  brand.href = '/'
-  brand.setAttribute('aria-label', 'ViewLoom Portal')
+  brand.href = localizeAvailableHref('/', locale)
+  brand.setAttribute('aria-label', sharedShellText(locale, 'aria.portal'))
   const context = brand.querySelector<HTMLElement>('small')
   if (!context) return
-  context.textContent = provider === 'twitch'
-    ? 'Twitch observation'
-    : provider === 'kick'
-      ? 'Kick observation'
-      : 'Platform-separated observatory'
+  context.textContent = sharedShellText(locale, provider === 'twitch' ? 'brand.twitch' : provider === 'kick' ? 'brand.kick' : 'brand.portal')
 }
 
-function normalizeNavigation(nav: HTMLElement, provider: ShellProvider, path: string): void {
+function normalizeNavigation(nav: HTMLElement, provider: ShellProvider, path: string, locale: Locale): void {
   nav.id = 'viewloom-global-navigation'
-  nav.setAttribute('aria-label', 'Global navigation')
+  nav.setAttribute('aria-label', sharedShellText(locale, 'aria.globalNav'))
   const fragment = document.createDocumentFragment()
   for (const item of navItems) {
     const link = document.createElement('a')
-    link.href = item.href
-    link.textContent = item.label
+    link.href = localizeAvailableHref(item.href, locale)
+    link.textContent = sharedShellText(locale, item.label)
     if (item.current(path, provider)) link.setAttribute('aria-current', 'page')
     fragment.append(link)
   }
   nav.replaceChildren(fragment)
 }
 
-function normalizeMobileNavigation(masthead: HTMLElement, nav: HTMLElement): void {
+function normalizeMobileNavigation(masthead: HTMLElement, nav: HTMLElement, locale: Locale): void {
   const original = masthead.querySelector<HTMLButtonElement>('[data-mobile-menu]')
   if (!original) return
   const menu = original.cloneNode(true) as HTMLButtonElement
@@ -107,7 +105,7 @@ function normalizeMobileNavigation(masthead: HTMLElement, nav: HTMLElement): voi
   const setOpen = (open: boolean) => {
     nav.classList.toggle('is-open', open)
     menu.setAttribute('aria-expanded', String(open))
-    menu.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation')
+    menu.setAttribute('aria-label', sharedShellText(locale, open ? 'aria.closeNav' : 'aria.openNav'))
   }
 
   setOpen(false)
@@ -139,48 +137,58 @@ function normalizeStatus(status: HTMLElement | null): void {
 
 function inferStatusState(text: string): ShellStatusState {
   const normalized = text.toLowerCase()
-  if (normalized.includes('loading')) return 'loading'
+  if (normalized.includes('loading') || normalized.includes('読み込')) return 'loading'
   if (
     normalized.includes('partial')
     || normalized.includes('stale')
     || normalized.includes('limited')
     || normalized.includes('no data')
+    || normalized.includes('一部取得')
+    || normalized.includes('更新遅延')
+    || normalized.includes('データなし')
   ) return 'partial'
-  if (normalized.includes('unavailable') || normalized.includes('failed') || normalized.includes('error')) return 'unavailable'
+  if (
+    normalized.includes('unavailable')
+    || normalized.includes('failed')
+    || normalized.includes('error')
+    || normalized.includes('利用不可')
+    || normalized.includes('失敗')
+    || normalized.includes('エラー')
+  ) return 'unavailable'
   return 'fresh'
 }
 
-function normalizeFooter(footer: HTMLElement): void {
+function normalizeFooter(footer: HTMLElement, locale: Locale): void {
   let disclaimer = footer.querySelector<HTMLElement>('.footer__disclaimer')
   if (!disclaimer) {
     disclaimer = document.createElement('div')
     disclaimer.className = 'footer__disclaimer'
     footer.prepend(disclaimer)
   }
-  disclaimer.textContent = footerDisclaimer
+  disclaimer.textContent = sharedShellText(locale, 'footer.disclaimer')
 
   let nav = footer.querySelector<HTMLElement>('nav')
   if (!nav) {
     nav = document.createElement('nav')
     footer.append(nav)
   }
-  nav.setAttribute('aria-label', 'Footer navigation')
+  nav.setAttribute('aria-label', sharedShellText(locale, 'aria.footerNav'))
   nav.replaceChildren(
-    footerLink('/changelog/', 'Changelog'),
-    footerLink('/about/', 'Method & limits'),
-    footerLink('/support/', 'Support'),
-    footerLink('/contact/', 'Contact'),
-    footerLink('/terms/', 'Terms'),
-    footerLink('/privacy/', 'Privacy'),
-    footerLink('/refund-policy/', 'Refund policy'),
-    footerLink('/commercial-disclosure/', 'Commercial disclosure'),
-    footerLink('https://github.com/badjoke-lab/viewloom', 'GitHub', true),
+    footerLink('/changelog/', sharedShellText(locale, 'nav.changelog'), locale),
+    footerLink('/about/', sharedShellText(locale, 'footer.method'), locale),
+    footerLink('/support/', sharedShellText(locale, 'nav.support'), locale),
+    footerLink('/contact/', sharedShellText(locale, 'footer.contact'), locale),
+    footerLink('/terms/', sharedShellText(locale, 'footer.terms'), locale),
+    footerLink('/privacy/', sharedShellText(locale, 'footer.privacy'), locale),
+    footerLink('/refund-policy/', sharedShellText(locale, 'footer.refund'), locale),
+    footerLink('/commercial-disclosure/', sharedShellText(locale, 'footer.commercial'), locale),
+    footerLink('https://github.com/badjoke-lab/viewloom', 'GitHub', locale, true),
   )
 }
 
-function footerLink(href: string, label: string, external = false): HTMLAnchorElement {
+function footerLink(href: string, label: string, locale: Locale, external = false): HTMLAnchorElement {
   const link = document.createElement('a')
-  link.href = href
+  link.href = external ? href : localizeAvailableHref(href, locale)
   link.textContent = label
   if (external) {
     link.target = '_blank'
