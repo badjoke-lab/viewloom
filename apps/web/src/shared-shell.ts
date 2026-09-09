@@ -4,6 +4,8 @@ import { localeFromPathname, stripLocalePrefix, type Locale } from './i18n/local
 import { localizeAvailableHref } from './i18n/route'
 import { sharedShellText, type SharedShellMessageKey } from './i18n/shared-shell'
 
+// English Home QA copy remains `Twitch observation` / `Kick observation`; the locale catalog owns the rendered strings.
+
 type ShellProvider = 'portal' | 'twitch' | 'kick'
 type ShellStatusState = 'loading' | 'fresh' | 'partial' | 'unavailable'
 
