@@ -11,6 +11,12 @@ const REDIRECT_HOSTS = new Set(['viewloom.net', 'vl.badjoke-lab.com'])
 const HISTORY_ROUTES = new Set(['/api/history'])
 const KICK_FEATURE_ROUTES = new Set(['/api/kick-heatmap', '/api/kick-day-flow', '/api/kick-battle-lines'])
 const TWITCH_FEATURE_ROUTES = new Set(['/api/twitch-heatmap', '/api/day-flow', '/api/battle-lines', '/api/history'])
+const SEARCH_STATE_PAGE_ROUTES = new Set([
+  '/twitch/day-flow',
+  '/kick/day-flow',
+  '/twitch/battle-lines',
+  '/kick/battle-lines',
+])
 
 export const onRequest: PagesFunction<Env> = async ({ request, next, env }) => {
   const url = new URL(request.url)
@@ -23,6 +29,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, next, env }) => {
 
   const response = await next()
   const pathname = url.pathname.replace(/\/$/, '')
+  if (SEARCH_STATE_PAGE_ROUTES.has(pathname) && url.search) return noindexSearchState(response)
   if (KICK_FEATURE_ROUTES.has(pathname)) return enrichKickFeatureResponse(env, response)
   if (TWITCH_FEATURE_ROUTES.has(pathname)) {
     const coveredResponse = await enrichTwitchFeatureResponse(env, response)
@@ -30,6 +37,19 @@ export const onRequest: PagesFunction<Env> = async ({ request, next, env }) => {
   }
   if (pathname.endsWith('/kick-history')) return enrichHistoryResponse(response)
   return response
+}
+
+function noindexSearchState(response: Response): Response {
+  if (!response.ok) return response
+  const contentType = response.headers.get('content-type')?.toLowerCase() ?? ''
+  if (!contentType.includes('text/html')) return response
+  const headers = new Headers(response.headers)
+  headers.set('X-Robots-Tag', 'noindex, follow')
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  })
 }
 
 async function enrichHistoryResponse(response: Response): Promise<Response> {
