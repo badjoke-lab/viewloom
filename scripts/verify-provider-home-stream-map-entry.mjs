@@ -18,9 +18,9 @@ assert.equal(existsSync('apps/web/twitch/map/index.html'), true, 'public Twitch 
 assert.equal(existsSync('apps/web/kick/map/index.html'), true, 'authorized K4 must create the public Kick Stream Map page')
 
 assert.equal(entrySource.includes("import type { Locale } from './i18n/locale'"), true)
-assert.equal(entrySource.includes("import { localizeHref } from './i18n/route'"), true)
+assert.equal(entrySource.includes("import { localizeAvailableHref } from './i18n/route'"), true, 'Stream Map Home entry must respect staged locale route availability')
 assert.equal(entrySource.includes("installProviderHomeStreamMapEntry(platform: Platform, locale: Locale = 'en')"), true)
-assert.equal(entrySource.includes("const href = localizeHref('/twitch/map/', locale)"), true)
+assert.equal(entrySource.includes("const href = localizeAvailableHref('/twitch/map/', locale)"), true)
 assert.equal(entrySource.includes("if (platform !== 'twitch') return"), true, 'legacy Twitch Home helper must remain Twitch-only')
 assert.equal(entrySource.includes("link.dataset.providerHomeStreamMap = 'twitch'"), true)
 assert.equal(entrySource.includes("number.textContent = '05 · WHERE'"), true)
@@ -34,6 +34,9 @@ assert.equal(homeSource.includes('installProviderHomeStreamMapEntry(platform, lo
 assert.equal(homeSource.includes('localeFromPathname(window.location.pathname)'), true)
 assert.equal(localeSource.includes("export const JAPANESE_PATH_PREFIX = '/ja'"), true)
 assert.equal(routeSource.includes('withLocalePathname'), true)
+assert.equal(routeSource.includes('localizeAvailableHref'), true, 'availability-aware locale routing must be present')
+assert.equal(routeSource.includes("'/twitch/'"), true, 'Japanese Twitch Home must remain an available localized route')
+assert.equal(routeSource.includes("'/twitch/map/'"), false, 'Japanese Twitch Map must not be treated as available before its localized route exists')
 assert.equal(messagesSource.includes("'feature.streamMap': 'Stream Map'"), true)
 assert.equal(shellSource.includes("'05 · WHERE'"), true, 'shared provider Home shell must expose authorized Kick Map card')
 assert.equal(shellSource.includes("'Stream Map'"), true, 'Kick Home Stream Map label missing')
@@ -44,17 +47,21 @@ assert.equal(viteSource.includes("twitchMap: 'twitch/map/index.html'"), true, 'T
 assert.equal(viteSource.includes("kickMap: 'kick/map/index.html'"), true, 'authorized Kick Map must be a production Vite input')
 assert.equal(sitemapSource.includes('https://www.viewloom.net/twitch/map/'), true, 'Twitch Map must remain in the sitemap')
 assert.equal(sitemapSource.includes('https://www.viewloom.net/kick/map/'), true, 'authorized Kick Map must be in the sitemap')
+assert.equal(sitemapSource.includes('https://www.viewloom.net/ja/twitch/map/'), false, 'unreleased Japanese Twitch Map must stay out of the sitemap')
+assert.equal(sitemapSource.includes('https://www.viewloom.net/ja/kick/map/'), false, 'unreleased Japanese Kick Map must stay out of the sitemap')
 assert.equal(twitchSurfaceSource.includes('/twitch/map/'), true, 'Twitch Map must remain in the permanent public-surface inventory')
 assert.equal(kickSurfaceSource.includes('/kick/map/'), true, 'Kick Map must enter the permanent public-surface inventory after K4')
 
 console.log(JSON.stringify({
   ok: true,
   twitchHomeStreamMapEntry: '/twitch/map/',
-  japaneseTwitchHomeStreamMapEntry: '/ja/twitch/map/',
+  japaneseTwitchHomeStreamMapEntry: '/twitch/map/',
+  japaneseTwitchHomeFallbackUntilLocalizedMapExists: true,
   kickHomeStreamMapEntry: '/kick/map/',
   providerSeparated: true,
   localeAwareHomeEntry: true,
   twitchMapPublic: true,
   kickMapPublic: true,
+  japaneseMapRoutesPublic: false,
   k4Authorized: true,
 }, null, 2))

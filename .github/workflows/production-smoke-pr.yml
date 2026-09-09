@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'apps/web/public/404.html'
+      - 'apps/web/ja/**'
       - 'apps/web/scripts/normalize-built-head.mjs'
       - 'apps/web/docs/not-found-and-deployment-contract.md'
       - 'scripts/build-phase11-monitoring-evidence.mjs'
@@ -36,10 +37,21 @@ jobs:
           grep -q 'data-viewloom-not-found="v1"' dist/404.html
           test -f dist/deployment.json
           jq -e '.schema == "viewloom-deployment-v1" and .environment == "local"' dist/deployment.json > /dev/null
+          for file in dist/ja/index.html dist/ja/twitch/index.html dist/ja/kick/index.html; do
+            test -f "$file"
+            grep -Eqi '<html[^>]+lang="ja"' "$file"
+            grep -Eqi '<meta[^>]+name="robots"[^>]+content="noindex,follow"|<meta[^>]+content="noindex,follow"[^>]+name="robots"' "$file"
+            ! grep -qi 'hreflang=' "$file"
+          done
+          grep -q '現在のTwitch観測ダッシュボードを表示するにはJavaScriptが必要です。' dist/ja/twitch/index.html
+          grep -q '現在のKick観測ダッシュボードを表示するにはJavaScriptが必要です。' dist/ja/kick/index.html
+          ! grep -q '<loc>https://www.viewloom.net/ja/' dist/sitemap.xml
       - name: Verify production smoke workflow contract
         run: |
           set -euo pipefail
           grep -q 'Wait for the matching production deployment' .github/workflows/production-smoke.yml
+          grep -q 'Verify hidden Japanese Home candidates' .github/workflows/production-smoke.yml
+          grep -q "test \"\${#routes\[@\]}\" = '30'" .github/workflows/production-smoke.yml
           grep -q 'Verify Twitch production status' .github/workflows/production-smoke.yml
           grep -q 'Verify Kick production status' .github/workflows/production-smoke.yml
           grep -q 'Build Phase 11 monitoring evidence' .github/workflows/production-smoke.yml

@@ -21,11 +21,13 @@ check(manifest.provider_invariants?.twitch_binding === 'DB_TWITCH_HOT', 'Twitch 
 check(manifest.provider_invariants?.kick_binding === 'DB_KICK_HOT', 'Kick binding mismatch')
 check(manifest.provider_invariants?.combined_totals_allowed === false, 'combined totals must remain forbidden')
 check(manifest.provider_invariants?.combined_rankings_allowed === false, 'combined rankings must remain forbidden')
-check(manifest.counts?.vite_html_inputs === 27, 'expected 27 Vite HTML routes')
-check(manifest.counts?.inventory_entries === 28, 'expected 28 inventory entries')
-check(manifest.counts?.current_browser_scenarios === 108, 'expected 108 current browser scenarios')
-check(manifest.counts?.public_readiness_configured_pages === 27, 'Public Readiness route count mismatch')
-check(manifest.counts?.production_smoke_page_routes === 27, 'Production Smoke route count mismatch')
+check(manifest.counts?.vite_html_inputs === 30, 'expected 30 Vite HTML routes')
+check(manifest.counts?.inventory_entries === 31, 'expected 31 inventory entries')
+check(manifest.counts?.indexable_routes === 23, 'expected 23 indexable routes')
+check(manifest.counts?.noindex_routes === 7, 'expected 7 noindex routes')
+check(manifest.counts?.current_browser_scenarios === 120, 'expected 120 current browser scenarios')
+check(manifest.counts?.public_readiness_configured_pages === 30, 'Public Readiness route count mismatch')
+check(manifest.counts?.production_smoke_page_routes === 30, 'Production Smoke route count mismatch')
 
 const gates = {}
 const profiles = {}
@@ -53,14 +55,29 @@ for (const path of manifest.route_files ?? []) {
   routes.push(...(doc.routes ?? []))
 }
 
-check(routes.length === 28, `expected 28 routes, found ${routes.length}`)
-check(routes.filter((route) => route.source !== 'apps/web/public/404.html').length === 27, 'Vite route count mismatch')
+check(routes.length === 31, `expected 31 routes, found ${routes.length}`)
+check(routes.filter((route) => route.source !== 'apps/web/public/404.html').length === 30, 'Vite route count mismatch')
 check(new Set(routes.map((route) => route.id)).size === routes.length, 'duplicate route id')
 check(new Set(routes.map((route) => route.route)).size === routes.length, 'duplicate route path')
 check(routes.filter((route) => route.profile === 'watchlist').length === 2, 'both Watchlist routes must remain inventoried')
 check(routes.filter((route) => route.profile === 'static_legal').length === 5, 'five static legal routes required')
 check(routes.some((route) => route.id === 'twitch-map' && route.route === '/twitch/map/' && route.profile === 'stream_map'), 'public Twitch Stream Map must remain inventoried')
-check(routes.some((route) => route.id === 'kick-map' && route.route === '/kick/map/' && route.profile === 'stream_map'), 'public Kick Stream Map must be inventoried after K4 authorization')
+check(routes.some((route) => route.id === 'kick-map' && route.route === '/kick/map/' && route.profile === 'stream_map'), 'public Kick Stream Map must remain inventoried after K4 authorization')
+
+const japaneseCandidates = routes.filter((route) => route.route.startsWith('/ja/'))
+check(japaneseCandidates.length === 3, `expected 3 Japanese candidate routes, found ${japaneseCandidates.length}`)
+for (const expected of ['/ja/', '/ja/twitch/', '/ja/kick/']) {
+  const candidate = japaneseCandidates.find((route) => route.route === expected)
+  check(candidate, `Japanese candidate route missing: ${expected}`)
+  if (!candidate) continue
+  check(candidate.robots === 'noindex,follow', `${expected}: Japanese candidate must remain noindex,follow before J10`)
+  check(candidate.sitemap === false, `${expected}: Japanese candidate must remain outside sitemap before J10`)
+  check(candidate.canonical === `${primaryOrigin}${expected}`, `${expected}: Japanese candidate must self-canonicalize`)
+}
+const jaTwitch = japaneseCandidates.find((route) => route.route === '/ja/twitch/')
+const jaKick = japaneseCandidates.find((route) => route.route === '/ja/kick/')
+check(jaTwitch?.apis?.length === 1 && jaTwitch.apis[0].path === '/api/twitch-home' && jaTwitch.apis[0].binding === 'DB_TWITCH_HOT', 'Japanese Twitch Home must reuse the Twitch Home API/binding')
+check(jaKick?.apis?.length === 1 && jaKick.apis[0].path === '/api/kick-home' && jaKick.apis[0].binding === 'DB_KICK_HOT', 'Japanese Kick Home must reuse the Kick Home API/binding')
 
 const vite = readFileSync(join(root, 'apps/web/vite.config.ts'), 'utf8')
 const sitemap = readFileSync(join(root, 'apps/web/public/sitemap.xml'), 'utf8')
@@ -85,6 +102,10 @@ for (const route of routes) {
     const robots = meta(html, 'name', 'robots') || 'index,follow'
     check(robots.toLowerCase() === route.robots, `${route.id}: robots mismatch`)
     check(route.sitemap === sitemapRoutes.has(route.route), `${route.id}: sitemap mismatch`)
+    if (route.route.startsWith('/ja/')) {
+      check(attr(html.match(/<html\b[^>]*>/i)?.[0] ?? '', 'lang') === 'ja', `${route.id}: html lang must be ja`)
+      check(!/hreflang=/i.test(html), `${route.id}: hreflang must remain hidden before J10`)
+    }
   }
   for (const api of route.apis ?? []) {
     if (route.provider === 'twitch') check(api.binding === 'DB_TWITCH_HOT' && !api.path.includes('kick'), `${route.id}: Twitch API boundary mismatch`)
@@ -93,6 +114,7 @@ for (const route of routes) {
 }
 
 check(sitemapRoutes.size === 23, `expected 23 sitemap routes, found ${sitemapRoutes.size}`)
+check(![...sitemapRoutes].some((route) => route.startsWith('/ja/')), 'Japanese candidates must remain absent from sitemap before J10')
 check(profiles.history?.assessment === 'known_p1_defects', 'historical History profile changed')
 check(profiles.watchlist?.assessment === 'complete_for_v1_contract', 'Watchlist assessment changed')
 check(profiles.static_legal?.assessment === 'complete_current_contract', 'static_legal must remain accepted')
@@ -129,7 +151,8 @@ if (failures.length) {
 
 console.log(`Public surface inventory verified: ${routes.length} routes, ${Object.keys(profiles).length} profiles, ${Object.keys(gates).length} gate groups.`)
 console.log('- active program is Phase 12A Analytics Capture Foundation')
-console.log('- current build: 27 HTML routes plus explicit 404')
+console.log('- current candidate build: 30 HTML routes plus explicit 404')
+console.log('- three Japanese Home candidates remain noindex, self-canonical, and outside sitemap/hreflang before J10')
 console.log('- historical Phase 12 exact-SHA production acceptance remains preserved at its accepted route counts')
 console.log('- five R12A legal/support routes remain production accepted and resolved')
 console.log('- Twitch and Kick bindings remain separate')

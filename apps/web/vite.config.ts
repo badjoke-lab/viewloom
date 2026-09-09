@@ -68,6 +68,7 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       input: {
         portal: 'index.html',
+        jaPortal: 'ja/index.html',
         about: 'about/index.html',
         support: 'support/index.html',
         changelog: 'changelog/index.html',
@@ -77,6 +78,7 @@ export default defineConfig(({ mode }) => ({
         refundPolicy: 'refund-policy/index.html',
         commercialDisclosure: 'commercial-disclosure/index.html',
         twitch: 'twitch/index.html',
+        jaTwitch: 'ja/twitch/index.html',
         twitchHeatmap: 'twitch/heatmap/index.html',
         twitchDayFlow: 'twitch/day-flow/index.html',
         twitchBattleLines: 'twitch/battle-lines/index.html',
@@ -86,6 +88,7 @@ export default defineConfig(({ mode }) => ({
         twitchStatus: 'twitch/status/index.html',
         twitchWatchlist: 'twitch/watchlist/index.html',
         kick: 'kick/index.html',
+        jaKick: 'ja/kick/index.html',
         kickHeatmap: 'kick/heatmap/index.html',
         kickDayFlow: 'kick/day-flow/index.html',
         kickBattleLines: 'kick/battle-lines/index.html',

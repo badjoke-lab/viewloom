@@ -1,3 +1,8 @@
+import { formatCompactNumber, formatInteger } from './i18n/format'
+import { localeFromPathname } from './i18n/locale'
+import { portalText } from './i18n/portal'
+import { localizeAvailableHref } from './i18n/route'
+
 type Platform = 'twitch' | 'kick'
 type HomeState = 'fresh' | 'partial' | 'stale' | 'empty' | 'demo' | 'error'
 
@@ -25,6 +30,8 @@ type HomePayload = {
   }
 }
 
+const locale = localeFromPathname(window.location.pathname)
+const t = (key: Parameters<typeof portalText>[1], params: Record<string, string | number> = {}) => portalText(locale, key, params)
 const settled = new Set<Platform>()
 
 void loadProvider('twitch')
@@ -56,7 +63,7 @@ function renderProvider(payload: HomePayload): void {
   if (card) card.dataset.state = visibleState
 
   setText(`portal-${platform}-status`, stateLabel(visibleState))
-  setText(`portal-${platform}-updated`, payload.updatedAt ? ago(payload.updatedAt) : 'Unavailable')
+  setText(`portal-${platform}-updated`, payload.updatedAt ? ago(payload.updatedAt) : t('provider.unavailable'))
   setText(`portal-${platform}-observed`, number(payload.now.observedStreams))
   setText(`portal-${platform}-viewers`, compact(payload.now.observedViewers))
   setText(
@@ -64,8 +71,8 @@ function renderProvider(payload: HomePayload): void {
     payload.now.largestStream
       ? `${payload.now.largestStream.displayName} · ${compact(payload.now.largestStream.viewers)}`
       : visibleState === 'empty'
-        ? 'No observed stream'
-        : 'Unavailable',
+        ? t('provider.noObservedStream')
+        : t('provider.unavailable'),
   )
   setText(`portal-${platform}-note`, coverageNote(payload))
   renderProviderNext(platform, visibleState, payload.now.largestStream !== null)
@@ -76,12 +83,12 @@ function renderProviderError(platform: Platform, message: string): void {
   const card = document.querySelector<HTMLElement>(`[data-portal-provider="${platform}"]`)
   if (card) card.dataset.state = 'error'
 
-  setText(`portal-${platform}-status`, 'Unavailable')
-  setText(`portal-${platform}-updated`, 'Update failed')
-  setText(`portal-${platform}-observed`, 'Unavailable')
-  setText(`portal-${platform}-viewers`, 'Unavailable')
-  setText(`portal-${platform}-largest`, 'Unavailable')
-  setText(`portal-${platform}-note`, `${platformLabel(platform)} data could not be loaded. ${message}`)
+  setText(`portal-${platform}-status`, t('provider.unavailable'))
+  setText(`portal-${platform}-updated`, t('provider.updateFailed'))
+  setText(`portal-${platform}-observed`, t('provider.unavailable'))
+  setText(`portal-${platform}-viewers`, t('provider.unavailable'))
+  setText(`portal-${platform}-largest`, t('provider.unavailable'))
+  setText(`portal-${platform}-note`, t('provider.loadError', { name: platformLabel(platform), message }))
   renderProviderNext(platform, 'error', false)
   renderHeaderPill(platform, 'error', null)
 }
@@ -92,9 +99,13 @@ function presentationState(payload: HomePayload): HomeState {
 }
 
 function coverageNote(payload: HomePayload): string {
-  if (payload.state === 'error') return `${platformLabel(payload.platform)} data is unavailable. Open Status for details.`
-  if (payload.platform === 'twitch') return payload.coverage.note || 'Top 300 observed window. More live streams may exist beyond it.'
-  return payload.coverage.note || 'Top 100 observed candidates. Not provider-wide directory coverage.'
+  if (payload.state === 'error') return t('coverage.error', { name: platformLabel(payload.platform) })
+  if (payload.platform === 'twitch') {
+    if (locale === 'en' && payload.coverage.note) return payload.coverage.note
+    return t('coverage.twitchFallback')
+  }
+  if (locale === 'en' && payload.coverage.note) return payload.coverage.note
+  return t('coverage.kickFallback')
 }
 
 function renderProviderNext(platform: Platform, state: HomeState, hasLargest: boolean): void {
@@ -107,8 +118,8 @@ function renderProviderNext(platform: Platform, state: HomeState, hasLargest: bo
   }
 
   link.hidden = false
-  link.href = `/${platform}/heatmap/`
-  link.innerHTML = 'Explore the current field in Heatmap <span aria-hidden="true">→</span>'
+  link.href = localizeAvailableHref(`/${platform}/heatmap/`, locale)
+  link.innerHTML = `${t('next.heatmap')} <span aria-hidden="true">→</span>`
 }
 
 function renderHeaderPill(platform: Platform, state: HomeState, updatedAt: string | null): void {
@@ -125,15 +136,7 @@ function renderHeaderPill(platform: Platform, state: HomeState, updatedAt: strin
 }
 
 function stateLabel(state: HomeState): string {
-  const labels: Record<HomeState, string> = {
-    fresh: 'Fresh',
-    partial: 'Limited',
-    stale: 'Delayed',
-    empty: 'No data',
-    demo: 'Demo',
-    error: 'Unavailable',
-  }
-  return labels[state]
+  return t(`state.${state}` as Parameters<typeof portalText>[1])
 }
 
 function setText(id: string, value: string): void {
@@ -146,33 +149,31 @@ function platformLabel(platform: Platform): string {
 }
 
 function number(value: number): string {
-  return Number.isFinite(value) ? new Intl.NumberFormat('en-US').format(Math.max(0, value)) : 'Unavailable'
+  return Number.isFinite(value) ? formatInteger(Math.max(0, value), locale) : t('provider.unavailable')
 }
 
 function compact(value: number): string {
-  return Number.isFinite(value)
-    ? new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(Math.max(0, value))
-    : 'Unavailable'
+  return Number.isFinite(value) ? formatCompactNumber(Math.max(0, value), locale) : t('provider.unavailable')
 }
 
 function ago(value: string): string {
   const milliseconds = Date.now() - Date.parse(value)
-  if (!Number.isFinite(milliseconds)) return 'Unavailable'
+  if (!Number.isFinite(milliseconds)) return t('provider.unavailable')
   const minutes = Math.max(0, Math.floor(milliseconds / 60000))
-  if (minutes < 1) return 'Just now'
-  if (minutes < 60) return `${minutes}m ago`
+  if (minutes < 1) return t('time.justNow')
+  if (minutes < 60) return t('time.minutesAgo', { value: minutes })
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  return `${Math.floor(hours / 24)}d ago`
+  if (hours < 24) return t('time.hoursAgo', { value: hours })
+  return t('time.daysAgo', { value: Math.floor(hours / 24) })
 }
 
 function shortAge(value: string): string | null {
   const milliseconds = Date.now() - Date.parse(value)
   if (!Number.isFinite(milliseconds)) return null
   const minutes = Math.max(0, Math.floor(milliseconds / 60000))
-  if (minutes < 1) return 'now'
-  if (minutes < 60) return `${minutes}m`
+  if (minutes < 1) return t('time.nowShort')
+  if (minutes < 60) return t('time.minutesShort', { value: minutes })
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h`
-  return `${Math.floor(hours / 24)}d`
+  if (hours < 24) return t('time.hoursShort', { value: hours })
+  return t('time.daysShort', { value: Math.floor(hours / 24) })
 }

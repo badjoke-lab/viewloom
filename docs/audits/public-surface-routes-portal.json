@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-routes-v1",
-  "version": 4,
+  "version": 5,
   "group": "portal",
   "routes": [
     {
@@ -13,6 +13,21 @@
       "canonical": "https://www.viewloom.net/",
       "robots": "index,follow",
       "sitemap": true,
+      "apis": [
+        { "path": "/api/twitch-home", "binding": "DB_TWITCH_HOT" },
+        { "path": "/api/kick-home", "binding": "DB_KICK_HOT" }
+      ]
+    },
+    {
+      "id": "ja-portal",
+      "route": "/ja/",
+      "provider": "portal",
+      "profile": "portal",
+      "source": "apps/web/ja/index.html",
+      "title": "ViewLoom — Twitch / Kick ライブ配信データ観測",
+      "canonical": "https://www.viewloom.net/ja/",
+      "robots": "noindex,follow",
+      "sitemap": false,
       "apis": [
         { "path": "/api/twitch-home", "binding": "DB_TWITCH_HOT" },
         { "path": "/api/kick-home", "binding": "DB_KICK_HOT" }

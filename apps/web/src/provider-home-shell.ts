@@ -1,4 +1,4 @@
-import { localizeHref } from './i18n/route'
+import { localizeAvailableHref } from './i18n/route'
 import type { Locale } from './i18n/locale'
 import { providerHomeCoverage, providerHomeLede, providerHomeText } from './i18n/provider-home'
 import type { Platform } from './provider-home/types'
@@ -8,8 +8,7 @@ export function mountProviderHome(platform: Platform, locale: Locale = 'en'): vo
   if (!root) throw new Error('Provider Home root is missing.')
 
   const name = platform === 'twitch' ? 'Twitch' : 'Kick'
-  const base = localizeHref(`/${platform}/`, locale)
-  const route = (href: string) => localizeHref(href, locale)
+  const route = (href: string) => localizeAvailableHref(href, locale)
   const t = (key: Parameters<typeof providerHomeText>[1], params: Record<string, string | number> = {}) => providerHomeText(locale, key, params)
   const topLimit = providerHomeCoverage(locale, platform)
   const lede = providerHomeLede(locale, platform)
@@ -78,16 +77,16 @@ export function mountProviderHome(platform: Platform, locale: Locale = 'en'): vo
         <div class="data-strip__cell"><small>${t('status.observed')}</small><span id="home-strip-observed">${t('loading.ellipsis')}</span></div>
         <div class="data-strip__cell"><small>${t('status.coverage')}</small><span id="home-strip-coverage">${topLimit}</span></div>
         <div class="data-strip__cell"><small>${t('status.source')}</small><span id="home-strip-source">${t('loading.ellipsis')}</span></div>
-        <a class="provider-home-status__link" href="${base}status/">${t('status.open')}</a>
+        <a class="provider-home-status__link" href="${route(`/${platform}/status/`)}">${t('status.open')}</a>
         <div class="provider-home-status__note" id="home-status-note">${t('status.loadingNote', { name })}</div>
       </section>
 
       <section class="feature-directory" aria-label="${t('analysis.label', { name })}">
-        ${featureCards.map(([num, title, copy, slug, id, fallback]) => `<a class="feature-item" href="${base}${slug}/"><span class="num">${num}</span><h3>${title}</h3><p>${copy}</p><div class="feature-item__fact" id="${id}">${fallback}</div></a>`).join('')}
+        ${featureCards.map(([num, title, copy, slug, id, fallback]) => `<a class="feature-item" href="${route(`/${platform}/${slug}/`)}"><span class="num">${num}</span><h3>${title}</h3><p>${copy}</p><div class="feature-item__fact" id="${id}">${fallback}</div></a>`).join('')}
       </section>
 
       <section class="provider-utility" aria-label="${t('utility.label', { name })}">
-        <a class="provider-utility__item" href="${base}watchlist/">
+        <a class="provider-utility__item" href="${route(`/${platform}/watchlist/`)}">
           <span class="provider-utility__mark">${t('utility.mark')}</span>
           <div><h2>${t('utility.title')}</h2><p>${t('utility.copy', { name })}</p></div>
           <strong>${t('utility.open')}</strong>
@@ -103,7 +102,7 @@ export function mountProviderHome(platform: Platform, locale: Locale = 'en'): vo
               <thead><tr><th scope="col">${t('table.rank')}</th><th scope="col">${t('table.channel')}</th><th scope="col" class="home-live-context">${t('table.context')}</th><th scope="col" class="num">${t('table.viewers')}</th><th scope="col" class="num">${t('table.movement')}</th></tr></thead>
               <tbody>${liveRows}</tbody>
             </table>
-            <div class="home-table-foot"><span id="home-live-caption">${t('live.loadingRanking')}</span><a href="${base}heatmap/">${t('live.openHeatmap')}</a></div>
+            <div class="home-table-foot"><span id="home-live-caption">${t('live.loadingRanking')}</span><a href="${route(`/${platform}/heatmap/`)}">${t('live.openHeatmap')}</a></div>
           </div>
         </section>
 
@@ -117,7 +116,7 @@ export function mountProviderHome(platform: Platform, locale: Locale = 'en'): vo
         <div class="rule-title"><h2>${t('today.title')}</h2><span>${t('today.subtitle')}</span></div>
         <div class="home-today-grid">
           <div class="surface surface--dark">
-            <div class="surface__head"><strong>${t('today.overview')}</strong><a class="text-link" href="${base}day-flow/">${t('today.openDayFlow')}</a></div>
+            <div class="surface__head"><strong>${t('today.overview')}</strong><a class="text-link" href="${route(`/${platform}/day-flow/`)}">${t('today.openDayFlow')}</a></div>
             <div class="home-stat-grid">
               <div class="home-stat"><small>${t('today.observedPeak')}</small><strong id="home-today-peak">${t('loading.ellipsis')}</strong></div>
               <div class="home-stat"><small>${t('today.peakTime')}</small><strong id="home-today-time">${t('loading.ellipsis')}</strong></div>
@@ -131,7 +130,7 @@ export function mountProviderHome(platform: Platform, locale: Locale = 'en'): vo
           </div>
 
           <aside class="surface surface--dark">
-            <div class="surface__head"><strong>${t('today.motion')}</strong><a class="text-link" href="${base}battle-lines/">${t('today.openBattleLines')}</a></div>
+            <div class="surface__head"><strong>${t('today.motion')}</strong><a class="text-link" href="${route(`/${platform}/battle-lines/`)}">${t('today.openBattleLines')}</a></div>
             <div class="home-motion">
               <div class="home-motion__item"><small>${t('today.reversalReview')}</small><strong id="home-today-reversal">${t('loading.ellipsis')}</strong></div>
               <div class="home-motion__item"><small>${t('today.closestPair')}</small><strong id="home-today-battle">${t('loading.ellipsis')}</strong></div>
@@ -143,7 +142,7 @@ export function mountProviderHome(platform: Platform, locale: Locale = 'en'): vo
       <section>
         <div class="rule-title"><h2>${t('recent.title')}</h2><span>${t('recent.subtitle')}</span></div>
         <div class="surface surface--dark">
-          <div class="surface__head"><strong>${t('recent.briefing')}</strong><a class="text-link" href="${base}history/">${t('recent.openHistory')}</a></div>
+          <div class="surface__head"><strong>${t('recent.briefing')}</strong><a class="text-link" href="${route(`/${platform}/history/`)}">${t('recent.openHistory')}</a></div>
           <div class="surface__body home-recent-grid">
             <div class="home-recent-stats">
               <div class="home-recent-stat"><small>${t('recent.latestDay')}</small><strong id="home-recent-day">${t('loading.ellipsis')}</strong></div>

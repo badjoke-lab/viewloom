@@ -80,6 +80,17 @@ Work:
 - temporary Japanese noindex;
 - route-switch preservation.
 
+Current implementation state (2026-09-10):
+
+- `/ja/`, `/ja/twitch/`, and `/ja/kick/` are implemented as hidden candidates;
+- all three self-canonicalize and remain `noindex,follow`;
+- they are excluded from sitemap, public hreflang, and the public language switcher;
+- only these three Japanese paths are currently considered available by locale-aware routing;
+- links to unreleased Japanese features deliberately fall back to the existing English routes instead of creating dead `/ja/*` URLs;
+- Twitch and Kick provider homes reuse the same provider Home renderer and existing provider-specific APIs/D1 bindings;
+- the current candidate inventory is 30 HTML routes plus explicit 404, with 120 browser scenarios across four required viewports;
+- production exposure of the language switcher/indexing remains forbidden until J10.
+
 Outcome:
 
 The Japanese entry hierarchy is complete but not publicly advertised.
