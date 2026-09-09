@@ -20,12 +20,14 @@ const pages = [
   { path: 'twitch/day-flow/index.html', url: `${origin}/twitch/day-flow/`, type: 'article' },
   { path: 'twitch/battle-lines/index.html', url: `${origin}/twitch/battle-lines/`, type: 'article' },
   { path: 'twitch/history/index.html', url: `${origin}/twitch/history/`, type: 'article' },
+  { path: 'twitch/map/index.html', url: `${origin}/twitch/map/`, type: 'website' },
   { path: 'twitch/status/index.html', url: `${origin}/twitch/status/`, type: 'article' },
   { path: 'kick/index.html', url: `${origin}/kick/`, type: 'website' },
   { path: 'kick/heatmap/index.html', url: `${origin}/kick/heatmap/`, type: 'article' },
   { path: 'kick/day-flow/index.html', url: `${origin}/kick/day-flow/`, type: 'article' },
   { path: 'kick/battle-lines/index.html', url: `${origin}/kick/battle-lines/`, type: 'article' },
   { path: 'kick/history/index.html', url: `${origin}/kick/history/`, type: 'article' },
+  { path: 'kick/map/index.html', url: `${origin}/kick/map/`, type: 'website' },
   { path: 'kick/status/index.html', url: `${origin}/kick/status/`, type: 'article' },
 ]
 
@@ -90,6 +92,24 @@ for (const page of pages) {
   requireFragment(path, source, '<meta property="og:image" content="https://www.viewloom.net/og/viewloom.svg"')
   requireFragment(path, source, '<meta name="twitter:card" content="summary_large_image"')
   requireFragment(path, source, '<meta name="twitter:image" content="https://www.viewloom.net/og/viewloom.svg"')
+  requireFragment(path, source, '<script type="module" src="/src/analytics.ts"></script>')
+}
+
+const analyticsPath = 'src/analytics.ts'
+if (!existsSync(join(root, analyticsPath))) {
+  failures.push(`${analyticsPath}: missing shared GA4 entry`)
+} else {
+  const analytics = read(analyticsPath)
+  for (const fragment of [
+    "const GA4_MEASUREMENT_ID = 'G-YHX7HS1VBK'",
+    'googletagmanager.com/gtag/js?id=',
+    'window.dataLayer',
+    'window.gtag',
+    "window.gtag('config', GA4_MEASUREMENT_ID)",
+    'ensureGa4()',
+  ]) {
+    if (!analytics.includes(fragment)) failures.push(`${analyticsPath}: missing GA4 bootstrap contract: ${fragment}`)
+  }
 }
 
 const middlewarePath = 'functions/_middleware.ts'
@@ -115,4 +135,4 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`ViewLoom SEO QA verification passed for ${pages.length} public pages and the Day Flow/Battle Lines search-state index policy.`)
+console.log(`ViewLoom SEO QA verification passed for ${pages.length} public pages, shared GA4 bootstrap, and the Day Flow/Battle Lines search-state index policy.`)
