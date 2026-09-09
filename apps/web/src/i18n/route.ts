@@ -1,5 +1,5 @@
 import type { Locale } from './locale'
-import { stripLocalePathname, withLocalePathname } from './locale'
+import { stripLocalePrefix, withLocalePathname } from './locale'
 
 const NON_LOCALIZED_PREFIXES = ['/api/', '/src/', '/assets/', '/og/'] as const
 const JAPANESE_AVAILABLE_PATHNAMES = new Set([
@@ -38,7 +38,7 @@ export function isLocalizableInternalHref(href: string): boolean {
 
 export function isLocalizedRouteAvailable(pathname: string, locale: Locale): boolean {
   if (locale === 'en') return true
-  const englishPathname = normalizePathname(stripLocalePathname(pathname || '/'))
+  const englishPathname = normalizePathname(stripLocalePrefix(pathname || '/'))
   return JAPANESE_AVAILABLE_PATHNAMES.has(englishPathname)
 }
 
