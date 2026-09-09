@@ -1,7 +1,7 @@
 {
   "schema": "viewloom-public-surface-inventory-v1",
-  "version": 8,
-  "updated_at": "2026-09-07",
+  "version": 9,
+  "updated_at": "2026-09-10",
   "source": {
     "branch": "main",
     "accepted_main_sha": "952f0008209363f4fd5b22587975ac247ee8d6f2",
@@ -12,18 +12,18 @@
     "current_browser_audit": "apps/web/scripts/public-current-browser-audit.mjs",
     "production_smoke": ".github/workflows/production-smoke.yml"
   },
-  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. The current build owns 27 HTML routes plus an explicit 404; historical Phase 12/R12A acceptance evidence remains separately preserved.",
+  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. The current candidate build owns 30 HTML routes plus an explicit 404. Three Japanese Home candidates are noindex and excluded from sitemap/hreflang/public language switching until the coordinated Japanese release gate; historical Phase 12/R12A acceptance evidence remains separately preserved.",
   "counts": {
-    "vite_html_inputs": 27,
+    "vite_html_inputs": 30,
     "explicit_not_found_pages": 1,
-    "inventory_entries": 28,
+    "inventory_entries": 31,
     "indexable_routes": 23,
-    "noindex_routes": 4,
+    "noindex_routes": 7,
     "sitemap_routes": 23,
-    "public_readiness_configured_pages": 27,
-    "production_smoke_page_routes": 27,
+    "public_readiness_configured_pages": 30,
+    "production_smoke_page_routes": 30,
     "current_browser_required_viewports": 4,
-    "current_browser_scenarios": 108
+    "current_browser_scenarios": 120
   },
   "provider_invariants": {
     "separate_routes": true,
