@@ -200,13 +200,15 @@ function verifyProviderHome() {
   for (const fragment of [
     "t('utility.title')",
     "t('utility.copy', { name })",
-    '${base}watchlist/',
+    "href=\"${route(`/${platform}/watchlist/`)}\"",
     'provider-utility__item',
   ]) assert.ok(homeShell.includes(fragment), `Provider Home utility wiring missing: ${fragment}`)
 
+  assert.ok(homeShell.includes("const route = (href: string) => localizeAvailableHref(href, locale)"), 'Provider Home utility must use staged locale availability routing.')
+
   for (const fragment of [
     "'utility.title': 'Local Watchlist'",
-    "'utility.copy': 'Saved channels in this browser.",
+    "'utility.copy': 'Saved channels in this browser.'",
     "'utility.open': 'Open Local Watchlist →'",
     "'utility.title': 'Local Watchlist'",
     "'utility.open': 'Local Watchlistを開く →'",
