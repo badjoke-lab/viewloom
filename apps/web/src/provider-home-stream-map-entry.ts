@@ -1,12 +1,12 @@
 import type { Locale } from './i18n/locale'
-import { localizeHref } from './i18n/route'
+import { localizeAvailableHref } from './i18n/route'
 import { translate } from './i18n/messages'
 import type { Platform } from './provider-home/types'
 
 export function installProviderHomeStreamMapEntry(platform: Platform, locale: Locale = 'en'): void {
   if (platform !== 'twitch') return
 
-  const href = localizeHref('/twitch/map/', locale)
+  const href = localizeAvailableHref('/twitch/map/', locale)
   const directory = document.querySelector<HTMLElement>('.feature-directory')
   if (!directory || directory.querySelector(`a[href="${href}"]`)) return
 
