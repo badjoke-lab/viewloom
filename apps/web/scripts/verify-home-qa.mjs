@@ -16,7 +16,7 @@ const forbid = (path, source, label, pattern) => {
 
 const files = [
   'index.html', 'twitch/index.html', 'kick/index.html',
-  'src/portal-page.ts', 'src/portal-page.css',
+  'src/portal-page.ts', 'src/portal-page.css', 'src/i18n/portal.ts',
   'src/provider-home.ts', 'src/provider-home-shell.ts', 'src/provider-home-data.ts', 'src/provider-home.css',
   'src/provider-home-stream-map-entry.ts',
   'src/i18n/locale.ts', 'src/i18n/route.ts', 'src/i18n/provider-home.ts',
@@ -54,6 +54,9 @@ if (existsSync(join(root, 'index.html'))) {
 if (existsSync(join(root, 'src/portal-page.ts'))) {
   const source = read('src/portal-page.ts')
   for (const fragment of [
+    "import { localeFromPathname } from './i18n/locale'",
+    "import { portalText } from './i18n/portal'",
+    "import { localizeAvailableHref } from './i18n/route'",
     "void loadProvider('twitch')",
     "void loadProvider('kick')",
     'fetch(`/api/${platform}-home`',
@@ -61,15 +64,34 @@ if (existsSync(join(root, 'src/portal-page.ts'))) {
     'validatePayload(payload, platform)',
     'renderProviderError',
     'presentationState(payload)',
-    'Top 300 observed window',
-    'Top 100 observed candidates',
+    'localeFromPathname(window.location.pathname)',
+    'portalText(locale, key, params)',
+    "t('coverage.twitchFallback')",
+    "t('coverage.kickFallback')",
     'renderProviderNext',
+    'localizeAvailableHref(`/${platform}/heatmap/`, locale)',
+    "t('next.heatmap')",
+    'formatInteger(Math.max(0, value), locale)',
+    'formatCompactNumber(Math.max(0, value), locale)',
     'shortAge',
-    'Explore the current field in Heatmap',
     "state === 'error' || state === 'demo' || state === 'empty'",
   ]) need('src/portal-page.ts', source, fragment)
   forbid('src/portal-page.ts', source, 'combined platform arithmetic', /twitch[^\n]*(?:\+|sum)[^\n]*kick|kick[^\n]*(?:\+|sum)[^\n]*twitch/i)
   forbid('src/portal-page.ts', source, 'demo substitution', /fixture|fake count|Stream A/i)
+}
+
+if (existsSync(join(root, 'src/i18n/portal.ts'))) {
+  const source = read('src/i18n/portal.ts')
+  for (const fragment of [
+    "'coverage.twitchFallback': 'Top 300 observed window. More live streams may exist beyond it.'",
+    "'coverage.kickFallback': 'Top 100 observed candidates. Not provider-wide directory coverage.'",
+    "'next.heatmap': 'Explore the current field in Heatmap'",
+    "'coverage.twitchFallback': 'Top 300の観測範囲です。これより多くのライブ配信が存在する場合があります。'",
+    "'coverage.kickFallback': 'Top 100の観測候補です。プラットフォーム全体のディレクトリ網羅を意味しません。'",
+    "'next.heatmap': 'Heatmapで現在の勢力を見る'",
+    'const ja: Record<PortalMessageKey, string>',
+    'export function portalText',
+  ]) need('src/i18n/portal.ts', source, fragment)
 }
 
 if (existsSync(join(root, 'src/portal-page.css'))) {
@@ -111,7 +133,7 @@ if (existsSync(join(root, 'src/provider-home-shell.ts'))) {
   for (const fragment of [
     "mountProviderHome(platform: Platform, locale: Locale = 'en')",
     'providerHomeCoverage, providerHomeLede, providerHomeText',
-    'localizeHref(href, locale)',
+    'localizeAvailableHref(href, locale)',
     "['01 · NOW', 'Heatmap'",
     "['02 · TODAY', 'Day Flow'",
     "['03 · RIVALRY', 'Battle Lines'",
@@ -123,6 +145,7 @@ if (existsSync(join(root, 'src/provider-home-shell.ts'))) {
     'aria-controls="provider-home-nav"',
     'aria-live="polite"',
   ]) need('src/provider-home-shell.ts', source, fragment)
+  forbid('src/provider-home-shell.ts', source, 'blind localized-base feature routing', /const\s+base\s*=\s*localizeHref/)
   forbid('src/provider-home-shell.ts', source, 'internal provider signal section', /Latest provider signals/)
   forbid('src/provider-home-shell.ts', source, 'internal update section', /ViewLoom updates/)
   forbid('src/provider-home-shell.ts', source, 'duplicate coverage footer', /coverage note/i)
@@ -188,11 +211,20 @@ if (existsSync(join(root, 'src/i18n/locale.ts'))) {
   ]) need('src/i18n/locale.ts', source, fragment)
 }
 
+if (existsSync(join(root, 'src/i18n/route.ts'))) {
+  const source = read('src/i18n/route.ts')
+  for (const fragment of [
+    'JAPANESE_AVAILABLE_PATHNAMES',
+    'export function localizeAvailableHref',
+    'return localizeHref(href, locale)',
+  ]) need('src/i18n/route.ts', source, fragment)
+}
+
 if (existsSync(join(root, 'src/provider-home-stream-map-entry.ts'))) {
   const source = read('src/provider-home-stream-map-entry.ts')
   for (const fragment of [
     "installProviderHomeStreamMapEntry(platform: Platform, locale: Locale = 'en')",
-    "localizeHref('/twitch/map/', locale)",
+    "localizeAvailableHref('/twitch/map/', locale)",
     "translate(locale, 'feature.streamMap')",
     "translate(locale, 'map.twitchHomeCopy')",
   ]) need('src/provider-home-stream-map-entry.ts', source, fragment)
