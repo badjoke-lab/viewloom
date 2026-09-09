@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-inventory-v1",
-  "version": 9,
+  "version": 10,
   "updated_at": "2026-09-10",
   "source": {
     "branch": "main",
@@ -12,18 +12,18 @@
     "current_browser_audit": "apps/web/scripts/public-current-browser-audit.mjs",
     "production_smoke": ".github/workflows/production-smoke.yml"
   },
-  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. The current candidate build owns 30 HTML routes plus an explicit 404. Three Japanese Home candidates are noindex and excluded from sitemap/hreflang/public language switching until the coordinated Japanese release gate; historical Phase 12/R12A acceptance evidence remains separately preserved.",
+  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. The current candidate build owns 32 HTML routes plus an explicit 404. Five Japanese candidates (Portal, Twitch Home, Kick Home, Twitch Heatmap, Kick Heatmap) are noindex and excluded from sitemap/hreflang/public language switching until the coordinated Japanese release gate; historical Phase 12/R12A acceptance evidence remains separately preserved.",
   "counts": {
-    "vite_html_inputs": 30,
+    "vite_html_inputs": 32,
     "explicit_not_found_pages": 1,
-    "inventory_entries": 31,
+    "inventory_entries": 33,
     "indexable_routes": 23,
-    "noindex_routes": 7,
+    "noindex_routes": 9,
     "sitemap_routes": 23,
-    "public_readiness_configured_pages": 30,
-    "production_smoke_page_routes": 30,
+    "public_readiness_configured_pages": 32,
+    "production_smoke_page_routes": 32,
     "current_browser_required_viewports": 4,
-    "current_browser_scenarios": 120
+    "current_browser_scenarios": 128
   },
   "provider_invariants": {
     "separate_routes": true,
