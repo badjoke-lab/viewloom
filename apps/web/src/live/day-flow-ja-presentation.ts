@@ -7,8 +7,14 @@ if (localeFromPathname(window.location.pathname) === 'ja') {
 function installJapaneseDayFlowPresentation(): void {
   translateDocument()
 
+  let scheduled = false
   const observer = new MutationObserver(() => {
-    window.requestAnimationFrame(translateDocument)
+    if (scheduled) return
+    scheduled = true
+    window.requestAnimationFrame(() => {
+      scheduled = false
+      translateDocument()
+    })
   })
   observer.observe(document.body, { childList: true, subtree: true, characterData: true })
 }
@@ -94,6 +100,14 @@ const EXACT_TEXT = new Map<string, string>([
   ['Method & limits', '方法と制約'],
 ])
 
+function setText(node: Node, next: string): void {
+  if (node.textContent !== next) node.textContent = next
+}
+
+function setAttribute(node: Element, name: string, next: string): void {
+  if (node.getAttribute(name) !== next) node.setAttribute(name, next)
+}
+
 function translateExactText(root: ParentNode): void {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
   const nodes: Text[] = []
@@ -103,7 +117,8 @@ function translateExactText(root: ParentNode): void {
     const trimmed = original.trim()
     const replacement = EXACT_TEXT.get(trimmed)
     if (!replacement) continue
-    node.nodeValue = original.replace(trimmed, replacement)
+    const next = original.replace(trimmed, replacement)
+    if (next !== original) node.nodeValue = next
   }
 }
 
@@ -123,44 +138,49 @@ function translateDynamicPatterns(): void {
   replaceText('[data-dayflow-coverage]', /^Coverage unavailable$/, '観測範囲を利用できません')
 
   document.querySelectorAll<HTMLElement>('.head-facts .fact strong').forEach((node) => {
-    node.textContent = translateValue(node.textContent ?? '')
+    setText(node, translateValue(node.textContent ?? ''))
   })
 
   document.querySelectorAll<HTMLElement>('.data-strip__cell').forEach((cell) => {
     for (const node of [...cell.childNodes]) {
       if (node.nodeType !== Node.TEXT_NODE) continue
       const value = node.nodeValue ?? ''
-      node.nodeValue = translateValue(value)
+      const next = translateValue(value)
+      if (next !== value) node.nodeValue = next
     }
   })
 
   document.querySelectorAll<HTMLElement>('.time-focus-row span').forEach((node) => {
-    if ((node.textContent ?? '').trim() === 'new') node.textContent = '新規'
+    if ((node.textContent ?? '').trim() === 'new') setText(node, '新規')
   })
 
   document.querySelectorAll<HTMLElement>('.stream-detail-head p').forEach((node) => {
-    if ((node.textContent ?? '').trim() === 'No observed title') node.textContent = '観測タイトルなし'
+    if ((node.textContent ?? '').trim() === 'No observed title') setText(node, '観測タイトルなし')
   })
 
   document.querySelectorAll<HTMLElement>('.stream-detail-now span').forEach((node) => {
-    node.textContent = (node.textContent ?? '')
-      .replace(/^viewers · /, '視聴者 · ')
-      .replace(/ global share$/, ' 全体シェア')
+    const current = node.textContent ?? ''
+    const next = current.replace(/^viewers · /, '視聴者 · ').replace(/ global share$/, ' 全体シェア')
+    setText(node, next)
   })
 
   document.querySelectorAll<HTMLElement>('[data-dayflow-coverage] span').forEach((node) => {
-    node.textContent = (node.textContent ?? '')
+    const current = node.textContent ?? ''
+    const next = current
       .replace(/^(\d+)\/(\d+) buckets · Twitch data$/, '$1/$2 バケット · Twitchデータ')
       .replace(/^(\d+)\/(\d+) buckets · Kick data$/, '$1/$2 バケット · Kickデータ')
+    setText(node, next)
   })
 
   document.querySelectorAll<HTMLElement>('[data-dayflow-coverage] strong').forEach((node) => {
-    node.textContent = (node.textContent ?? '').replace(/^Coverage: /, '観測範囲: ').replace(/Complete$/, '完全').replace(/Observed$/, '観測').replace(/Partial$/, '一部').replace(/Stale$/, '更新遅延').replace(/Empty$/, 'データなし').replace(/Error$/, 'エラー')
+    const current = node.textContent ?? ''
+    const next = current.replace(/^Coverage: /, '観測範囲: ').replace(/Complete$/, '完全').replace(/Observed$/, '観測').replace(/Partial$/, '一部').replace(/Stale$/, '更新遅延').replace(/Empty$/, 'データなし').replace(/Error$/, 'エラー')
+    setText(node, next)
   })
 
   document.querySelectorAll<HTMLElement>('.notice--error').forEach((node) => {
     const text = node.textContent ?? ''
-    if (text.startsWith('Day Flow API unavailable:')) node.textContent = text.replace('Day Flow API unavailable:', 'Day Flow APIを利用できません:')
+    if (text.startsWith('Day Flow API unavailable:')) setText(node, text.replace('Day Flow API unavailable:', 'Day Flow APIを利用できません:'))
   })
 }
 
@@ -168,23 +188,24 @@ function translateCategoryChrome(): void {
   const root = document.getElementById('dayflow-category-preview-controls')
   if (!root) return
   const label = root.querySelector<HTMLLabelElement>('label')
-  if (label) label.textContent = 'カテゴリ'
+  if (label) setText(label, 'カテゴリ')
   const select = root.querySelector<HTMLSelectElement>('select')
   if (select) {
-    select.setAttribute('aria-label', `${document.body.dataset.provider === 'kick' ? 'Kick' : 'Twitch'} Day Flow カテゴリ`)
+    setAttribute(select, 'aria-label', `${document.body.dataset.provider === 'kick' ? 'Kick' : 'Twitch'} Day Flow カテゴリ`)
     for (const option of select.options) {
-      if (option.value === 'all') option.textContent = 'すべてのカテゴリ'
-      else if (option.textContent?.startsWith('Unknown category · ')) option.textContent = option.textContent.replace('Unknown category · ', '不明なカテゴリ · ')
-      else if (option.textContent?.startsWith('Unavailable category · ')) option.textContent = option.textContent.replace('Unavailable category · ', '利用できないカテゴリ · ')
-      else option.textContent = option.textContent?.replace(/ viewer-min$/, ' 視聴者・分') ?? ''
+      const current = option.textContent ?? ''
+      let next = current
+      if (option.value === 'all') next = 'すべてのカテゴリ'
+      else if (current.startsWith('Unknown category · ')) next = current.replace('Unknown category · ', '不明なカテゴリ · ')
+      else if (current.startsWith('Unavailable category · ')) next = current.replace('Unavailable category · ', '利用できないカテゴリ · ')
+      else next = current.replace(/ viewer-min$/, ' 視聴者・分')
+      setText(option, next)
     }
   }
   const status = root.querySelector<HTMLElement>('.dayflow-category-preview__status')
-  if (status) {
-    status.textContent = translateCategoryStatus(status.textContent ?? '')
-  }
+  if (status) setText(status, translateCategoryStatus(status.textContent ?? ''))
   const strip = document.querySelector<HTMLElement>('.dayflow-category-coverage-strip')
-  if (strip) strip.setAttribute('aria-label', 'Day Flowバケットごとのカテゴリメタデータ観測範囲')
+  if (strip) setAttribute(strip, 'aria-label', 'Day Flowバケットごとのカテゴリメタデータ観測範囲')
 }
 
 function translateCategoryStatus(value: string): string {
@@ -198,17 +219,19 @@ function translateCategoryStatus(value: string): string {
 
 function translateChartAccessibility(): void {
   const chart = document.querySelector<SVGSVGElement>('[data-dayflow-chart]')
-  if (chart) chart.setAttribute('aria-label', 'Day Flow 視聴者推移の積み上げ表示')
+  if (chart) setAttribute(chart, 'aria-label', 'Day Flow 視聴者推移の積み上げ表示')
   document.querySelectorAll<SVGElement>('[data-dayflow-band][aria-label]').forEach((band) => {
     const label = band.getAttribute('aria-label') ?? ''
-    if (label.startsWith('Select ')) band.setAttribute('aria-label', `選択 ${label.slice('Select '.length)}`)
+    if (label.startsWith('Select ')) setAttribute(band, 'aria-label', `選択 ${label.slice('Select '.length)}`)
   })
 }
 
 function replaceText(selector: string, pattern: RegExp, replacement: string): void {
   document.querySelectorAll<HTMLElement>(selector).forEach((node) => {
     const current = node.textContent ?? ''
-    if (pattern.test(current)) node.textContent = current.replace(pattern, replacement)
+    if (!pattern.test(current)) return
+    const next = current.replace(pattern, replacement)
+    setText(node, next)
   })
 }
 
