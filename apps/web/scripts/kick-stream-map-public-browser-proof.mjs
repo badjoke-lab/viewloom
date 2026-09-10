@@ -102,7 +102,7 @@ async function audit(viewport) {
   const country = await readFacts(page)
 
   if (response?.status() !== 200) violations.push(`public route returned ${response?.status() ?? 'null'}`)
-  if (country.title !== 'Stream Map for Kick live streams | ViewLoom') violations.push(`unexpected title: ${country.title}`)
+  if (country.title !== 'Kick Stream Map — Geography & Viewer Counts | ViewLoom') violations.push(`unexpected title: ${country.title}`)
   if (country.h1 !== 'Stream Map') violations.push(`unexpected h1: ${country.h1}`)
   if (country.state !== 'Ready') violations.push(`Country state ${country.state}`)
   if (country.mapState !== 'basemap-ready') violations.push(`Country map state ${country.mapState}`)
