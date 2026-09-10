@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-inventory-v1",
-  "version": 11,
+  "version": 10,
   "updated_at": "2026-09-10",
   "source": {
     "branch": "main",
