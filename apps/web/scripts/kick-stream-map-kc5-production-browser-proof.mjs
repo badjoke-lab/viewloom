@@ -151,7 +151,7 @@ async function auditCity(viewport, api) {
 
   const violations = []
   if (response?.status() !== 200) violations.push(`route returned ${response?.status() ?? 'null'}`)
-  if (facts.title !== 'Stream Map for Kick live streams | ViewLoom') violations.push(`title ${facts.title}`)
+  if (facts.title !== 'Kick Stream Map — Geography & Viewer Counts | ViewLoom') violations.push(`title ${facts.title}`)
   if (facts.h1 !== 'Stream Map') violations.push(`h1 ${facts.h1}`)
   if (facts.state !== (facts.observed === 0 ? 'Empty' : 'Ready')) violations.push(`state ${facts.state} for observed ${facts.observed}`)
   if (facts.cityButtonDisabled !== false || facts.cityPressed !== 'true') violations.push(`City control disabled/pressed ${facts.cityButtonDisabled}/${facts.cityPressed}`)
