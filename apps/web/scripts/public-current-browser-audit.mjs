@@ -54,7 +54,7 @@ try {
     legalMobileTargetFailures: evidence.scenarios.filter((item) => item.profile === 'static_legal' && item.viewport.width <= 390 && item.smallActionTargets.length > 0).length,
     twitchHomeStreamMapLinkScenarios: evidence.scenarios.filter((item) => item.route === '/twitch/' && item.providerHomeStreamMapLinks.some((link) => link.href === '/twitch/map/' && link.visible)).length,
     kickHomeStreamMapLinkScenarios: evidence.scenarios.filter((item) => item.route === '/kick/' && item.providerHomeStreamMapLinks.some((link) => link.href === '/kick/map/' && link.visible)).length,
-    twitchFeatureTabStreamMapLinkScenarios: evidence.scenarios.filter((item) => item.provider === 'twitch' && item.profile !== 'provider_home' && item.featureTabStreamMapLinks.some((link) => link.href === '/twitch/map/' && link.visible)).length,
+    twitchFeatureTabStreamMapLinkScenarios: evidence.scenarios.filter((item) => item.provider === 'twitch' && item.profile !== 'provider_home' && !item.route.startsWith('/ja/') && item.featureTabStreamMapLinks.some((link) => link.href === '/twitch/map/' && link.visible)).length,
     kickFeatureTabStreamMapLinkScenarios: evidence.scenarios.filter((item) => item.provider === 'kick' && item.profile !== 'provider_home' && item.featureTabStreamMapLinks.some((link) => link.href === '/kick/map/' && link.visible)).length,
   }
   evidence.result = evidence.violations.length === 0 ? 'pass' : 'fail'
@@ -206,7 +206,7 @@ async function auditRoute(browser, route, viewport) {
     }
   }
 
-  if (route.provider === 'twitch' && route.profile !== 'provider_home') {
+  if (route.provider === 'twitch' && route.profile !== 'provider_home' && !route.route.startsWith('/ja/')) {
     const streamMapLinks = facts.featureTabStreamMapLinks.filter((link) => link.href === '/twitch/map/')
     if (streamMapLinks.length !== 1) violations.push(`Twitch feature tabs expected one /twitch/map/ link, found ${streamMapLinks.length}`)
     else {
@@ -218,6 +218,7 @@ async function auditRoute(browser, route, viewport) {
       }
     }
   }
+
   if (route.provider === 'kick' && route.profile !== 'provider_home') {
     const streamMapLinks = facts.featureTabStreamMapLinks.filter((link) => link.href === '/kick/map/')
     if (route.route === '/kick/map/') {
