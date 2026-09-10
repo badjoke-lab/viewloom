@@ -6,8 +6,10 @@ const JAPANESE_AVAILABLE_PATHNAMES = new Set([
   '/',
   '/twitch/',
   '/twitch/heatmap/',
+  '/twitch/day-flow/',
   '/kick/',
   '/kick/heatmap/',
+  '/kick/day-flow/',
 ])
 
 function splitHash(value: string): [string, string] {

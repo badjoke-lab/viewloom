@@ -236,7 +236,7 @@ jobs:
 
               const violations = []
               if (response?.status() !== 200) violations.push(`route returned ${response?.status() ?? 'null'}`)
-              if (facts.title !== 'Stream Map for Kick live streams | ViewLoom') violations.push(`title ${facts.title}`)
+              if (facts.title !== 'Kick Stream Map — Geography & Viewer Counts | ViewLoom') violations.push(`title ${facts.title}`)
               if (facts.h1 !== 'Stream Map') violations.push(`h1 ${facts.h1}`)
               if (facts.state !== 'Ready') violations.push(`state ${facts.state}`)
               if (facts.observed <= 0) violations.push(`observed ${facts.observed}`)

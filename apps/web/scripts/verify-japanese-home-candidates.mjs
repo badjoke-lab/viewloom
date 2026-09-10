@@ -12,8 +12,10 @@ const candidates = [
   { route: '/ja/', source: 'ja/index.html', canonical: `${origin}/ja/`, provider: 'portal', api: null },
   { route: '/ja/twitch/', source: 'ja/twitch/index.html', canonical: `${origin}/ja/twitch/`, provider: 'twitch', api: { path: '/api/twitch-home', binding: 'DB_TWITCH_HOT' } },
   { route: '/ja/twitch/heatmap/', source: 'ja/twitch/heatmap/index.html', canonical: `${origin}/ja/twitch/heatmap/`, provider: 'twitch', api: { path: '/api/twitch-heatmap', binding: 'DB_TWITCH_HOT' } },
+  { route: '/ja/twitch/day-flow/', source: 'ja/twitch/day-flow/index.html', canonical: `${origin}/ja/twitch/day-flow/`, provider: 'twitch', api: { path: '/api/day-flow', binding: 'DB_TWITCH_HOT' } },
   { route: '/ja/kick/', source: 'ja/kick/index.html', canonical: `${origin}/ja/kick/`, provider: 'kick', api: { path: '/api/kick-home', binding: 'DB_KICK_HOT' } },
   { route: '/ja/kick/heatmap/', source: 'ja/kick/heatmap/index.html', canonical: `${origin}/ja/kick/heatmap/`, provider: 'kick', api: { path: '/api/kick-heatmap', binding: 'DB_KICK_HOT' } },
+  { route: '/ja/kick/day-flow/', source: 'ja/kick/day-flow/index.html', canonical: `${origin}/ja/kick/day-flow/`, provider: 'kick', api: { path: '/api/kick-day-flow', binding: 'DB_KICK_HOT' } },
 ]
 
 const sitemap = readWeb('public/sitemap.xml')
@@ -22,13 +24,17 @@ const routeHelper = readWeb('src/i18n/route.ts')
 const portalRuntime = readWeb('src/portal-page.ts')
 const providerShell = readWeb('src/provider-home-shell.ts')
 const providerMapEntry = readWeb('src/provider-home-stream-map-entry.ts')
+const jaPresentation = readWeb('src/live/day-flow-ja-presentation.ts')
+const jaTwitchDayFlowEntry = readWeb('src/live/day-flow-ja-twitch-entry.ts')
+const jaKickDayFlowEntry = readWeb('src/live/day-flow-ja-kick-entry.ts')
+const sharedDayFlowController = readWeb('src/live/day-flow-current-shell-entry.ts')
 
-for (const path of ['/', '/twitch/', '/twitch/heatmap/', '/kick/', '/kick/heatmap/']) {
+for (const path of ['/', '/twitch/', '/twitch/heatmap/', '/twitch/day-flow/', '/kick/', '/kick/heatmap/', '/kick/day-flow/']) {
   assert.match(routeHelper, new RegExp(`["']${escapeRegex(path)}["']`), `Japanese availability missing ${path}`)
 }
 for (const path of [
-  '/twitch/day-flow/', '/twitch/battle-lines/', '/twitch/history/', '/twitch/map/', '/twitch/status/',
-  '/kick/day-flow/', '/kick/battle-lines/', '/kick/history/', '/kick/map/', '/kick/status/',
+  '/twitch/battle-lines/', '/twitch/history/', '/twitch/map/', '/twitch/status/',
+  '/kick/battle-lines/', '/kick/history/', '/kick/map/', '/kick/status/',
 ]) {
   assert.doesNotMatch(routeHelper, new RegExp(`["']${escapeRegex(path)}["']`), `unreleased Japanese feature availability exposed: ${path}`)
 }
@@ -60,13 +66,34 @@ assert.match(jaPortal, /href=["']\/ja\/kick\//, '/ja/: localized Kick Home link 
 for (const provider of ['twitch', 'kick']) {
   const home = readWeb(`ja/${provider}/index.html`)
   const heatmap = readWeb(`ja/${provider}/heatmap/index.html`)
+  const dayFlow = readWeb(`ja/${provider}/day-flow/index.html`)
   assert.match(home, /src=["']\/src\/provider-home\.ts["']/, `/ja/${provider}/: shared Provider Home runtime must be used`)
   assert.match(home, /src=["']\/src\/analytics\.ts["']/, `/ja/${provider}/: shared analytics runtime must be used`)
   assert.match(heatmap, /src=["']\/src\/live\/heatmap-current-shell-entry\.ts["']/, `/ja/${provider}/heatmap/: shared Heatmap runtime must be used`)
   assert.match(heatmap, /src=["']\/src\/analytics\.ts["']/, `/ja/${provider}/heatmap/: shared analytics runtime must be used`)
   assert.match(heatmap, /観測/, `/ja/${provider}/heatmap/: Japanese observation copy missing`)
-  assert.doesNotMatch(heatmap, /href=["']\/ja\/(?:twitch|kick)\/(?:day-flow|battle-lines|history|map|status|watchlist|channel)\//, `/ja/${provider}/heatmap/: unreleased Japanese feature link exposed`)
+  assert.match(heatmap, new RegExp(`href=["']/ja/${provider}/day-flow/["']`), `/ja/${provider}/heatmap/: localized Day Flow link missing`)
+  assert.doesNotMatch(heatmap, new RegExp(`href=["']/ja/${provider}/(?:battle-lines|history|map|status|watchlist|channel)/`), `/ja/${provider}/heatmap/: unreleased Japanese feature link exposed`)
+
+  const expectedEntry = provider === 'twitch' ? 'day-flow-ja-twitch-entry.ts' : 'day-flow-ja-kick-entry.ts'
+  assert.match(dayFlow, new RegExp(`src=["']/src/live/${escapeRegex(expectedEntry)}["']`), `/ja/${provider}/day-flow/: Japanese presentation entry missing`)
+  assert.match(dayFlow, /src=["']\/src\/analytics\.ts["']/, `/ja/${provider}/day-flow/: shared analytics runtime must be used`)
+  assert.match(dayFlow, /UTC/, `/ja/${provider}/day-flow/: explicit UTC semantics copy missing`)
+  assert.match(dayFlow, new RegExp(`href=["']/ja/${provider}/heatmap/["']`), `/ja/${provider}/day-flow/: localized Heatmap link missing`)
+  assert.doesNotMatch(dayFlow, new RegExp(`href=["']/ja/${provider}/(?:battle-lines|history|map|status|watchlist|channel)/`), `/ja/${provider}/day-flow/: unreleased Japanese feature link exposed`)
 }
+
+assert.match(jaTwitchDayFlowEntry, /import '\.\/day-flow-ja-presentation'/, 'Japanese Twitch Day Flow must install the shared Japanese presentation adapter')
+assert.match(jaTwitchDayFlowEntry, /import '\.\/day-flow-twitch-entry'/, 'Japanese Twitch Day Flow must reuse the Twitch Day Flow entry')
+assert.match(jaKickDayFlowEntry, /import '\.\/day-flow-ja-presentation'/, 'Japanese Kick Day Flow must install the shared Japanese presentation adapter')
+assert.match(jaKickDayFlowEntry, /import '\.\/day-flow-kick-entry'/, 'Japanese Kick Day Flow must reuse the Kick Day Flow entry')
+assert.match(jaPresentation, /localeFromPathname/, 'Japanese Day Flow presentation must be locale-gated')
+assert.match(jaPresentation, /localeFromPathname\(window\.location\.pathname\) === 'ja'/, 'Japanese Day Flow presentation must activate only on Japanese routes')
+assert.match(jaPresentation, /観測範囲/, 'Japanese Day Flow presentation must contain localized observation copy')
+assert.match(jaPresentation, /カテゴリ/, 'Japanese Day Flow presentation must contain localized category chrome')
+assert.doesNotMatch(jaPresentation, /\/api\//, 'Japanese Day Flow presentation must not own or rewrite API paths')
+assert.match(sharedDayFlowController, /provider === 'kick' \? '\/api\/kick-day-flow' : '\/api\/day-flow'/, 'Day Flow API ownership must remain in the shared controller')
+assert.equal((sharedDayFlowController.match(/\bfetch\(/g) ?? []).length, 1, 'Day Flow feature request must remain single-owner')
 
 const routeDocs = [
   'docs/audits/public-surface-routes-portal.json',
@@ -74,7 +101,7 @@ const routeDocs = [
   'docs/audits/public-surface-routes-kick.json',
 ].flatMap((path) => JSON.parse(readRepo(path)).routes)
 const inventoriedCandidates = routeDocs.filter((route) => route.route.startsWith('/ja/'))
-assert.deepEqual(inventoriedCandidates.map((route) => route.route).sort(), candidates.map((item) => item.route).sort(), 'route inventory must contain exactly the five current Japanese candidates')
+assert.deepEqual(inventoriedCandidates.map((route) => route.route).sort(), candidates.map((item) => item.route).sort(), 'route inventory must contain exactly the seven current Japanese candidates')
 for (const candidate of candidates) {
   const route = inventoriedCandidates.find((item) => item.route === candidate.route)
   assert.ok(route, `${candidate.route}: inventory route missing`)
@@ -85,11 +112,12 @@ for (const candidate of candidates) {
 }
 
 console.log('Japanese localization candidate contract verified.')
-console.log('- candidate routes: /ja/, /ja/twitch/, /ja/twitch/heatmap/, /ja/kick/, /ja/kick/heatmap/')
+console.log('- candidate routes: /ja/, /ja/twitch/, /ja/twitch/heatmap/, /ja/twitch/day-flow/, /ja/kick/, /ja/kick/heatmap/, /ja/kick/day-flow/')
 console.log('- robots: noindex,follow')
 console.log('- sitemap/hreflang/public language switcher: disabled')
-console.log('- Heatmap is localized; unreleased Japanese feature routes remain unavailable')
-console.log('- Twitch/Kick Home and Heatmap API/D1 ownership remains provider-separated')
+console.log('- Heatmap and Day Flow are localized; later Japanese feature routes remain unavailable')
+console.log('- Day Flow keeps shared provider entries, one request owner, and UTC semantics')
+console.log('- Twitch/Kick Home, Heatmap, and Day Flow API/D1 ownership remains provider-separated')
 
 function attr(source, name) {
   return source.match(new RegExp(`\\b${name}=["']([^"']*)["']`, 'i'))?.[1] ?? ''
