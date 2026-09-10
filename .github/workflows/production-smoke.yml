@@ -112,9 +112,9 @@ jobs:
             fi
           done
           grep -q '<title>History & Trends for Twitch live streams | ViewLoom</title>' "$ARTIFACT_DIR/twitch-history.html"
-          grep -q '<title>Stream Map — ViewLoom</title>' "$ARTIFACT_DIR/twitch-map.html"
+          grep -Fq '<title>Twitch Stream Map — Geography & Viewer Counts | ViewLoom</title>' "$ARTIFACT_DIR/twitch-map.html"
           grep -q '<title>History & Trends for Kick live streams | ViewLoom</title>' "$ARTIFACT_DIR/kick-history.html"
-          grep -q '<title>Stream Map for Kick live streams | ViewLoom</title>' "$ARTIFACT_DIR/kick-map.html"
+          grep -Fq '<title>Kick Stream Map — Geography & Viewer Counts | ViewLoom</title>' "$ARTIFACT_DIR/kick-map.html"
           grep -q '<title>Twitch channel history' "$ARTIFACT_DIR/twitch-channel.html"
           grep -q '<title>Kick channel history' "$ARTIFACT_DIR/kick-channel.html"
           grep -q '<title>Twitch Local Watchlist' "$ARTIFACT_DIR/twitch-watchlist.html"
