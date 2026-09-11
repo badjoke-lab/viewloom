@@ -88,6 +88,7 @@ jobs:
             '/twitch/channel/'
             '/ja/twitch/channel/'
             '/twitch/watchlist/'
+            '/ja/twitch/watchlist/'
             '/twitch/status/'
             '/ja/twitch/status/'
             '/kick/'
@@ -105,10 +106,11 @@ jobs:
             '/kick/channel/'
             '/ja/kick/channel/'
             '/kick/watchlist/'
+            '/ja/kick/watchlist/'
             '/kick/status/'
             '/ja/kick/status/'
           )
-          test "${#routes[@]}" = '44'
+          test "${#routes[@]}" = '46'
           for route in "${routes[@]}"; do
             name="$(echo "$route" | tr '/' '-' | sed 's/^-//;s/-$//')"
             [ -n "$name" ] || name='portal'
@@ -151,7 +153,9 @@ jobs:
             'ja-twitch-status|https://www.viewloom.net/ja/twitch/status/' \
             'ja-kick-status|https://www.viewloom.net/ja/kick/status/' \
             'ja-twitch-channel|https://www.viewloom.net/ja/twitch/channel/' \
-            'ja-kick-channel|https://www.viewloom.net/ja/kick/channel/'
+            'ja-kick-channel|https://www.viewloom.net/ja/kick/channel/' \
+            'ja-twitch-watchlist|https://www.viewloom.net/ja/twitch/watchlist/' \
+            'ja-kick-watchlist|https://www.viewloom.net/ja/kick/watchlist/'
           do
             name="${item%%|*}"
             canonical="${item#*|}"
@@ -175,12 +179,16 @@ jobs:
           grep -Fq '鮮度' "$ARTIFACT_DIR/ja-kick-status.html"
           grep -Fq '保持ランキング履歴' "$ARTIFACT_DIR/ja-twitch-channel.html"
           grep -Fq '保持ランキング履歴' "$ARTIFACT_DIR/ja-kick-channel.html"
+          grep -Fq 'このブラウザだけに保存' "$ARTIFACT_DIR/ja-twitch-watchlist.html"
+          grep -Fq 'このブラウザだけに保存' "$ARTIFACT_DIR/ja-kick-watchlist.html"
           grep -Fq '/src/features/twitch-stream-map/maplibre-bootstrap.ts' "$ARTIFACT_DIR/ja-twitch-map.html"
           grep -Fq '/src/features/kick-stream-map/public-entry.ts' "$ARTIFACT_DIR/ja-kick-map.html"
           grep -Fq '/src/live/status-current-shell-entry.ts' "$ARTIFACT_DIR/ja-twitch-status.html"
           grep -Fq '/src/live/status-current-shell-entry.ts' "$ARTIFACT_DIR/ja-kick-status.html"
           grep -Fq '/src/live/channel-profile.ts' "$ARTIFACT_DIR/ja-twitch-channel.html"
           grep -Fq '/src/live/channel-profile.ts' "$ARTIFACT_DIR/ja-kick-channel.html"
+          grep -Fq '/src/live/watchlist-page.ts' "$ARTIFACT_DIR/ja-twitch-watchlist.html"
+          grep -Fq '/src/live/watchlist-page.ts' "$ARTIFACT_DIR/ja-kick-watchlist.html"
           curl --silent --show-error --fail --max-time 30 "$ORIGIN/sitemap.xml" -o "$ARTIFACT_DIR/sitemap.xml"
           ! grep -q '<loc>https://www.viewloom.net/ja/' "$ARTIFACT_DIR/sitemap.xml"
       - name: Verify Twitch production status
@@ -214,9 +222,9 @@ jobs:
             echo '## ViewLoom Production Smoke'
             echo "- Expected main SHA: \`$GITHUB_SHA\`"
             if [ -f "$ARTIFACT_DIR/deployment.json" ]; then echo "- Deployed SHA: \`$(jq -r '.commit_sha // "unavailable"' "$ARTIFACT_DIR/deployment.json")\`"; fi
-            echo '- Repository-owned HTML routes: 44 checked'
-            echo '- Hidden Japanese candidates: 17 checked as noindex/self-canonical/sitemap-excluded'
-            echo '- About, Support, Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Changelog, English/Japanese Channel, Watchlist, English/Japanese Data Status, and English/Japanese Twitch/Kick Stream Map ownership: checked'
+            echo '- Repository-owned HTML routes: 46 checked'
+            echo '- Hidden Japanese candidates: 19 checked as noindex/self-canonical/sitemap-excluded'
+            echo '- About, Support, Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Changelog, English/Japanese Channel, English/Japanese Watchlist, English/Japanese Data Status, and English/Japanese Twitch/Kick Stream Map ownership: checked'
             echo '- Twitch and Kick status APIs: checked'
             echo '- Separate D1 bindings: checked'
             echo '- Collector freshness: checked'
