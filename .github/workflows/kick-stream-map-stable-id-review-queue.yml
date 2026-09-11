@@ -211,7 +211,7 @@ jobs:
             .source.type == "production_kick_stream_map_snapshot" and
             .source.ordering == "viewer_count_desc" and
             .reviewedCityCatalog.version == "viewloom-kick-reviewed-city-runtime-data-v0.1" and
-            .reviewedCityCatalog.identities >= 12 and
+            .reviewedCityCatalog.identities >= 107 and
             .population.inputRows >= .population.stableIdentityReadyRows and
             .population.stableIdentityReadyRows == (.population.alreadyReviewedRows + .population.queueRows) and
             .population.queueRows == (.queue | length) and
