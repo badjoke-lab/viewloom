@@ -11,6 +11,7 @@ import {
 
 assert.equal(KICK_REVIEWED_CITY_RUNTIME_DATA_VERSION, 'viewloom-kick-reviewed-city-runtime-data-v0.1')
 assert.deepEqual(KICK_REVIEWED_CITY_RUNTIME_DATA, KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA)
+assert.equal(KICK_REVIEWED_CITY_RUNTIME_DATA.length, 12)
 
 const snapshotItems = [
   { slug: 'absi', displayName: 'Absi', viewer_count: 10, broadcaster_user_id: '27894320' },
@@ -20,13 +21,18 @@ const snapshotItems = [
   { slug: 'beenielol', displayName: 'Beenie', viewer_count: 300, broadcaster_user_id: '75943919' },
   { slug: '8bitheadflicker', displayName: '8bit', viewer_count: 400, broadcaster_user_id: '106756949' },
   { slug: 'binks69', displayName: 'Binks', viewer_count: 500, broadcaster_user_id: '106763992' },
+  { slug: 'deenthegreat', displayName: 'DeenTheGreat', viewer_count: 31, broadcaster_user_id: '5508767' },
+  { slug: 'lospollostv', displayName: 'LosPollosTV', viewer_count: 32, broadcaster_user_id: '35467' },
+  { slug: 'fissure_cs_a', displayName: 'fissure_cs_a', viewer_count: 33, broadcaster_user_id: '68312242' },
+  { slug: 'agusneta', displayName: 'agusneta', viewer_count: 34, broadcaster_user_id: '31377709' },
+  { slug: 'gaules', displayName: 'Gaules', viewer_count: 35, broadcaster_user_id: '68422390' },
   { slug: 'unreviewed', displayName: 'Unreviewed', viewer_count: 30, broadcaster_user_id: '999999999' },
   { slug: 'missing-id', displayName: 'Missing', viewer_count: 40 },
 ]
 
 const response = buildKickStreamMapCityRuntime({
   snapshotItems,
-  updatedAt: '2026-09-07T00:00:00Z',
+  updatedAt: '2026-09-11T00:00:00Z',
   sourceMode: 'fixture',
 })
 
@@ -43,34 +49,39 @@ assert.deepEqual(response.activation.blockers, [
   'public_city_activation_not_authorized',
 ])
 
-assert.equal(response.coverage.observedStreams, 9)
-assert.equal(response.coverage.stableIdentityStreams, 8)
-assert.equal(response.coverage.reviewedEvidenceCatalogSize, 7)
-assert.equal(response.coverage.reviewedIdentityStreams, 7)
+assert.equal(response.coverage.observedStreams, 14)
+assert.equal(response.coverage.stableIdentityStreams, 13)
+assert.equal(response.coverage.reviewedEvidenceCatalogSize, KICK_REVIEWED_CITY_RUNTIME_DATA.length)
+assert.equal(response.coverage.reviewedIdentityStreams, 12)
 assert.equal(response.coverage.unreviewedStableIdentityStreams, 1)
 assert.equal(response.coverage.mappedStreams, 5)
-assert.equal(response.coverage.unmappedStreams, 4)
-assert.equal(response.coverage.excludedStreams, 0)
+assert.equal(response.coverage.unmappedStreams, 8)
+assert.equal(response.coverage.excludedStreams, 1)
 assert.equal(response.coverage.conflictStreams, 0)
 assert.equal(response.coverage.mappedViewers, 1500)
-assert.equal(response.coverage.unmappedViewers, 100)
+assert.equal(response.coverage.unmappedViewers, 232)
+assert.equal(response.coverage.excludedViewers, 33)
 assert.equal(response.coverage.mappedCityAggregateCount, 5)
 assert.equal(response.coverage.referenceGeometryAggregates, 0)
 assert.equal(response.coverage.listOnlyAggregates, 5)
-assert.equal(response.coverage.reconciliation.selectedPopulation, 9)
-assert.equal(response.coverage.reconciliation.reconciledPopulation, 9)
+assert.equal(response.coverage.reconciliation.selectedPopulation, 14)
+assert.equal(response.coverage.reconciliation.reconciledPopulation, 14)
 assert.equal(response.coverage.reconciliation.passes, true)
-assert.equal(response.coverage.unmappedReasons.no_qualifying_reviewed_city, 2)
+assert.equal(response.coverage.unmappedReasons.no_qualifying_reviewed_city, 6)
 assert.equal(response.coverage.unmappedReasons.no_reviewed_kick_city_evidence, 1)
 assert.equal(response.coverage.unmappedReasons.stable_identity_unavailable, 1)
 
+const excludedBySlug = new Map(response.excludedStreams.map((row) => [row.slug, row]))
+assert.equal(excludedBySlug.get('fissure_cs_a')?.geography?.state, 'excluded')
+assert.equal(excludedBySlug.get('fissure_cs_a')?.geography?.reason, 'reviewed_nonperson_exclusion')
+
 const stableComplete = buildKickStreamMapCityRuntime({
   snapshotItems: snapshotItems.filter((row) => row.broadcaster_user_id),
-  updatedAt: '2026-09-07T00:00:00Z',
+  updatedAt: '2026-09-11T00:00:00Z',
   sourceMode: 'fixture',
 })
-assert.equal(stableComplete.coverage.observedStreams, 8)
-assert.equal(stableComplete.coverage.stableIdentityStreams, 8)
+assert.equal(stableComplete.coverage.observedStreams, 13)
+assert.equal(stableComplete.coverage.stableIdentityStreams, 13)
 assert.equal(stableComplete.activation.publicCityActivationReady, true)
 assert.equal(stableComplete.publicCityActivationAuthorized, false)
 assert.equal(stableComplete.state, 'blocked_public_activation')
@@ -78,7 +89,7 @@ assert.deepEqual(stableComplete.activation.blockers, ['public_city_activation_no
 
 const kc5Authorized = buildKickStreamMapCityRuntime({
   snapshotItems: snapshotItems.filter((row) => row.broadcaster_user_id),
-  updatedAt: '2026-09-07T00:00:00Z',
+  updatedAt: '2026-09-11T00:00:00Z',
   sourceMode: 'fixture',
   publicCityActivationAuthorized: true,
 })
@@ -162,6 +173,7 @@ console.log(JSON.stringify({
   reviewedCatalog: response.coverage.reviewedEvidenceCatalogSize,
   observedStreams: response.coverage.observedStreams,
   mappedStreams: response.coverage.mappedStreams,
+  excludedStreams: response.coverage.excludedStreams,
   mappedCityAggregates: response.coverage.mappedCityAggregateCount,
   referenceGeometryAggregates: response.coverage.referenceGeometryAggregates,
   listOnlyAggregates: response.coverage.listOnlyAggregates,
