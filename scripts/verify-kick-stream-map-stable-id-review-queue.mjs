@@ -12,11 +12,12 @@ const wrangler = fs.readFileSync(wranglerPath, 'utf8')
 const workflow = fs.readFileSync(workflowPath, 'utf8')
 const contract = JSON.parse(fs.readFileSync(contractPath, 'utf8'))
 
-assert.equal(contract.schemaVersion, 'viewloom-kick-stream-map-stable-id-review-queue-contract-v0.2')
+assert.equal(contract.schemaVersion, 'viewloom-kick-stream-map-stable-id-review-queue-contract-v0.3')
 assert.equal(contract.provider, 'kick')
 assert.equal(contract.mode, 'read_only_preview')
 assert.equal(contract.population.source, 'production_kick_stream_map_snapshot')
 assert.equal(contract.population.productionUrl, 'https://www.viewloom.net/api/kick-stream-map')
+assert.equal(contract.population.productionResponseVersion, 'viewloom-kick-stream-map-country-runtime-v0.1')
 assert.equal(contract.population.maxRows, 100)
 assert.equal(contract.population.ordering, 'viewer_count_desc')
 assert.equal(contract.population.stableIdentity, 'broadcaster_user_id')
@@ -38,10 +39,12 @@ assert.equal(contract.execution.triggerPath, triggerPath)
 for (const required of [
   "const PRODUCTION_ORIGIN = 'https://www.viewloom.net'",
   "const PRODUCTION_MAP_PATH = '/api/kick-stream-map'",
+  "const PRODUCTION_MAP_VERSION = 'viewloom-kick-stream-map-country-runtime-v0.1'",
   "const POPULATION_MAX = 100",
   "const CHANNEL_BATCH_SIZE = 50",
   "const CHANNEL_REQUEST_MAX = 2",
   "new URL(PRODUCTION_MAP_PATH, PRODUCTION_ORIGIN)",
+  "snapshot.version !== PRODUCTION_MAP_VERSION",
   "new URL('https://api.kick.com/public/v1/channels')",
   "channelUrl.searchParams.append('slug', slug)",
   "row?.broadcaster_user_id",
@@ -58,6 +61,7 @@ for (const required of [
   "twitchEvidenceCopied: false",
 ]) assert.ok(worker.includes(required), `missing queue boundary: ${required}`)
 
+assert.equal(worker.includes('viewloom-kick-stream-map-public-adapter-v0.1'), false, 'retired public-adapter response version must not gate the queue')
 assert.equal(worker.includes('https://api.kick.com/public/v2/livestreams'), false, 'v2 oldest-first livestreams must not define the Top100 queue population')
 assert.equal(worker.includes('kick.com/api/v2/channels'), false, 'legacy Kick endpoint is forbidden')
 assert.equal(/\b(?:DB_KICK|DB_TWITCH|D1Database)\b/.test(worker), false, 'preview queue must have no D1 binding/use')
@@ -86,6 +90,7 @@ console.log(JSON.stringify({
   provider: 'kick',
   mode: 'read_only_preview',
   populationSource: 'production_kick_stream_map_snapshot',
+  productionResponseVersion: 'viewloom-kick-stream-map-country-runtime-v0.1',
   maxPopulation: 100,
   viewerOrdering: 'desc',
   maxProductionSnapshotRequests: 1,
