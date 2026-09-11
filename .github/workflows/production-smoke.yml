@@ -66,9 +66,13 @@ jobs:
             '/'
             '/ja/'
             '/about/'
+            '/ja/about/'
             '/support/'
+            '/ja/support/'
             '/changelog/'
+            '/ja/changelog/'
             '/contact/'
+            '/ja/contact/'
             '/terms/'
             '/privacy/'
             '/refund-policy/'
@@ -110,7 +114,7 @@ jobs:
             '/kick/status/'
             '/ja/kick/status/'
           )
-          test "${#routes[@]}" = '46'
+          test "${#routes[@]}" = '50'
           for route in "${routes[@]}"; do
             name="$(echo "$route" | tr '/' '-' | sed 's/^-//;s/-$//')"
             [ -n "$name" ] || name='portal'
@@ -138,6 +142,10 @@ jobs:
           set -euo pipefail
           for item in \
             'ja|https://www.viewloom.net/ja/' \
+            'ja-about|https://www.viewloom.net/ja/about/' \
+            'ja-support|https://www.viewloom.net/ja/support/' \
+            'ja-contact|https://www.viewloom.net/ja/contact/' \
+            'ja-changelog|https://www.viewloom.net/ja/changelog/' \
             'ja-twitch|https://www.viewloom.net/ja/twitch/' \
             'ja-kick|https://www.viewloom.net/ja/kick/' \
             'ja-twitch-heatmap|https://www.viewloom.net/ja/twitch/heatmap/' \
@@ -165,6 +173,10 @@ jobs:
             grep -Fqi "$canonical" "$file"
             ! grep -qi 'hreflang=' "$file"
           done
+          grep -Fq '異なる問いを、異なる画面で見るための観測ツールです。' "$ARTIFACT_DIR/ja-about.html"
+          grep -Fq '観測を継続するための支援です。' "$ARTIFACT_DIR/ja-support.html"
+          grep -Fq 'ViewLoomで確認した内容をお知らせください。' "$ARTIFACT_DIR/ja-contact.html"
+          grep -Fq 'レビュー済みのViewLoom主要マイルストーン' "$ARTIFACT_DIR/ja-changelog.html"
           grep -Fq '観測日の集計基準はUTCです。' "$ARTIFACT_DIR/ja-twitch-heatmap.html"
           grep -Fq '観測日の集計基準はUTCです。' "$ARTIFACT_DIR/ja-kick-heatmap.html"
           grep -Fq 'UTCの実時間をたどり' "$ARTIFACT_DIR/ja-twitch-day-flow.html"
@@ -189,6 +201,10 @@ jobs:
           grep -Fq '/src/live/channel-profile.ts' "$ARTIFACT_DIR/ja-kick-channel.html"
           grep -Fq '/src/live/watchlist-page.ts' "$ARTIFACT_DIR/ja-twitch-watchlist.html"
           grep -Fq '/src/live/watchlist-page.ts' "$ARTIFACT_DIR/ja-kick-watchlist.html"
+          grep -Fq '/src/static-page.ts' "$ARTIFACT_DIR/ja-about.html"
+          grep -Fq '/src/static-page.ts' "$ARTIFACT_DIR/ja-support.html"
+          grep -Fq '/src/static-page.ts' "$ARTIFACT_DIR/ja-contact.html"
+          grep -Fq '/src/changelog-page.ts' "$ARTIFACT_DIR/ja-changelog.html"
           curl --silent --show-error --fail --max-time 30 "$ORIGIN/sitemap.xml" -o "$ARTIFACT_DIR/sitemap.xml"
           ! grep -q '<loc>https://www.viewloom.net/ja/' "$ARTIFACT_DIR/sitemap.xml"
       - name: Verify Twitch production status
@@ -222,9 +238,9 @@ jobs:
             echo '## ViewLoom Production Smoke'
             echo "- Expected main SHA: \`$GITHUB_SHA\`"
             if [ -f "$ARTIFACT_DIR/deployment.json" ]; then echo "- Deployed SHA: \`$(jq -r '.commit_sha // "unavailable"' "$ARTIFACT_DIR/deployment.json")\`"; fi
-            echo '- Repository-owned HTML routes: 46 checked'
-            echo '- Hidden Japanese candidates: 19 checked as noindex/self-canonical/sitemap-excluded'
-            echo '- About, Support, Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Changelog, English/Japanese Channel, English/Japanese Watchlist, English/Japanese Data Status, and English/Japanese Twitch/Kick Stream Map ownership: checked'
+            echo '- Repository-owned HTML routes: 50 checked'
+            echo '- Hidden Japanese candidates: 23 checked as noindex/self-canonical/sitemap-excluded'
+            echo '- J7a Japanese About, Support, Contact, Changelog plus existing English/legal and English/Japanese product ownership: checked'
             echo '- Twitch and Kick status APIs: checked'
             echo '- Separate D1 bindings: checked'
             echo '- Collector freshness: checked'
