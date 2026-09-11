@@ -2,6 +2,7 @@ const HEALTH_PATH = '/health'
 const QUEUE_PATH = '/audit/kick-map-stable-id-review-queue'
 const PRODUCTION_ORIGIN = 'https://www.viewloom.net'
 const PRODUCTION_MAP_PATH = '/api/kick-stream-map'
+const PRODUCTION_MAP_VERSION = 'viewloom-kick-stream-map-country-runtime-v0.1'
 const POPULATION_MAX = 100
 const CHANNEL_BATCH_SIZE = 50
 const CHANNEL_REQUEST_MAX = 2
@@ -158,7 +159,7 @@ async function buildQueue(env) {
 
 function validateProductionSnapshot(snapshot) {
   if (!isRecord(snapshot)) throw new Error('production_kick_map_invalid_json')
-  if (snapshot.version !== 'viewloom-kick-stream-map-public-adapter-v0.1') throw new Error('production_kick_map_version_mismatch')
+  if (snapshot.version !== PRODUCTION_MAP_VERSION) throw new Error('production_kick_map_version_mismatch')
   if (snapshot.platform !== 'kick' || snapshot.provider !== 'kick') throw new Error('production_kick_map_provider_mismatch')
   if (snapshot.source !== 'real') throw new Error('production_kick_map_not_real')
   if (snapshot.geographyMode !== 'country') throw new Error('production_kick_map_geography_mismatch')
