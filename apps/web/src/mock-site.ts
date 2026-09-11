@@ -3,12 +3,14 @@ import './features/heatmap-page/layout-mode.css'
 import './kick-coverage-ui'
 import './visualization-grammar-entry'
 import { localeFromPathname } from './i18n/locale'
+import { localizeAvailableHref } from './i18n/route'
 import { installSharedShell, setSharedShellStatus } from './shared-shell'
 import { installTwitchStreamMapFeatureTab } from './twitch-stream-map-feature-tab'
 
 (() => {
   installSharedShell()
   installTwitchStreamMapFeatureTab()
+  localizeJapaneseAvailableLinks()
 
   document.querySelectorAll('[data-toggle-group]').forEach(group => {
     group.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
@@ -43,6 +45,15 @@ const locale = localeFromPathname(window.location.pathname)
 const activeProvider = document.body.dataset.provider === 'kick' ? 'kick' : document.body.dataset.provider === 'twitch' ? 'twitch' : null
 const isPortalHome = document.body.hasAttribute('data-portal-home')
 if (!document.body.hasAttribute('data-changelog-state') && !isPortalHome) void hydrateLiveStatus()
+
+function localizeJapaneseAvailableLinks(): void {
+  if (localeFromPathname(window.location.pathname) !== 'ja') return
+  document.querySelectorAll<HTMLAnchorElement>('a[href]').forEach((anchor) => {
+    const href = anchor.getAttribute('href') ?? ''
+    const localized = localizeAvailableHref(href, 'ja')
+    if (localized !== href) anchor.setAttribute('href', localized)
+  })
+}
 
 async function hydrateLiveStatus(): Promise<void> {
   const providers: Array<'twitch' | 'kick'> = activeProvider ? [activeProvider] : ['twitch', 'kick']
