@@ -1,5 +1,5 @@
 name: Public Browser Audit
-# Current candidate contract: 50 routes x 4 required widths = 200 scenarios.
+# Current candidate contract: 54 routes x 4 required widths = 216 scenarios.
 
 on:
   workflow_dispatch:
@@ -68,6 +68,10 @@ jobs:
               && curl --silent --fail http://127.0.0.1:4173/ja/support/ > /dev/null \
               && curl --silent --fail http://127.0.0.1:4173/ja/contact/ > /dev/null \
               && curl --silent --fail http://127.0.0.1:4173/ja/changelog/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/ja/terms/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/ja/privacy/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/ja/refund-policy/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/ja/commercial-disclosure/ > /dev/null \
               && curl --silent --fail http://127.0.0.1:4173/ja/twitch/ > /dev/null \
               && curl --silent --fail http://127.0.0.1:4173/ja/kick/ > /dev/null \
               && curl --silent --fail http://127.0.0.1:4173/ja/twitch/heatmap/ > /dev/null \
