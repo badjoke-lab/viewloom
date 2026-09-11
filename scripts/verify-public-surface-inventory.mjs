@@ -21,13 +21,13 @@ check(manifest.provider_invariants?.twitch_binding === 'DB_TWITCH_HOT', 'Twitch 
 check(manifest.provider_invariants?.kick_binding === 'DB_KICK_HOT', 'Kick binding mismatch')
 check(manifest.provider_invariants?.combined_totals_allowed === false, 'combined totals must remain forbidden')
 check(manifest.provider_invariants?.combined_rankings_allowed === false, 'combined rankings must remain forbidden')
-check(manifest.counts?.vite_html_inputs === 34, 'expected 34 Vite HTML routes')
-check(manifest.counts?.inventory_entries === 35, 'expected 35 inventory entries')
+check(manifest.counts?.vite_html_inputs === 36, 'expected 36 Vite HTML routes')
+check(manifest.counts?.inventory_entries === 37, 'expected 37 inventory entries')
 check(manifest.counts?.indexable_routes === 23, 'expected 23 indexable routes')
-check(manifest.counts?.noindex_routes === 11, 'expected 11 noindex routes')
-check(manifest.counts?.current_browser_scenarios === 136, 'expected 136 current browser scenarios')
-check(manifest.counts?.public_readiness_configured_pages === 34, 'Public Readiness route count mismatch')
-check(manifest.counts?.production_smoke_page_routes === 34, 'Production Smoke route count mismatch')
+check(manifest.counts?.noindex_routes === 13, 'expected 13 noindex routes')
+check(manifest.counts?.current_browser_scenarios === 144, 'expected 144 current browser scenarios')
+check(manifest.counts?.public_readiness_configured_pages === 36, 'Public Readiness route count mismatch')
+check(manifest.counts?.production_smoke_page_routes === 36, 'Production Smoke route count mismatch')
 
 const gates = {}
 const profiles = {}
@@ -55,8 +55,8 @@ for (const path of manifest.route_files ?? []) {
   routes.push(...(doc.routes ?? []))
 }
 
-check(routes.length === 35, `expected 35 routes, found ${routes.length}`)
-check(routes.filter((route) => route.source !== 'apps/web/public/404.html').length === 34, 'Vite route count mismatch')
+check(routes.length === 37, `expected 37 routes, found ${routes.length}`)
+check(routes.filter((route) => route.source !== 'apps/web/public/404.html').length === 36, 'Vite route count mismatch')
 check(new Set(routes.map((route) => route.id)).size === routes.length, 'duplicate route id')
 check(new Set(routes.map((route) => route.route)).size === routes.length, 'duplicate route path')
 check(routes.filter((route) => route.profile === 'watchlist').length === 2, 'both Watchlist routes must remain inventoried')
@@ -73,6 +73,8 @@ const expectedJapaneseCandidates = [
   '/ja/kick/heatmap/',
   '/ja/twitch/day-flow/',
   '/ja/kick/day-flow/',
+  '/ja/twitch/battle-lines/',
+  '/ja/kick/battle-lines/',
 ]
 check(japaneseCandidates.length === expectedJapaneseCandidates.length, `expected ${expectedJapaneseCandidates.length} Japanese candidate routes, found ${japaneseCandidates.length}`)
 for (const expected of expectedJapaneseCandidates) {
@@ -89,12 +91,16 @@ const jaTwitchHeatmap = japaneseCandidates.find((route) => route.route === '/ja/
 const jaKickHeatmap = japaneseCandidates.find((route) => route.route === '/ja/kick/heatmap/')
 const jaTwitchDayFlow = japaneseCandidates.find((route) => route.route === '/ja/twitch/day-flow/')
 const jaKickDayFlow = japaneseCandidates.find((route) => route.route === '/ja/kick/day-flow/')
+const jaTwitchBattleLines = japaneseCandidates.find((route) => route.route === '/ja/twitch/battle-lines/')
+const jaKickBattleLines = japaneseCandidates.find((route) => route.route === '/ja/kick/battle-lines/')
 check(jaTwitch?.apis?.length === 1 && jaTwitch.apis[0].path === '/api/twitch-home' && jaTwitch.apis[0].binding === 'DB_TWITCH_HOT', 'Japanese Twitch Home must reuse the Twitch Home API/binding')
 check(jaKick?.apis?.length === 1 && jaKick.apis[0].path === '/api/kick-home' && jaKick.apis[0].binding === 'DB_KICK_HOT', 'Japanese Kick Home must reuse the Kick Home API/binding')
 check(jaTwitchHeatmap?.apis?.length === 1 && jaTwitchHeatmap.apis[0].path === '/api/twitch-heatmap' && jaTwitchHeatmap.apis[0].binding === 'DB_TWITCH_HOT', 'Japanese Twitch Heatmap must reuse the Twitch Heatmap API/binding')
 check(jaKickHeatmap?.apis?.length === 1 && jaKickHeatmap.apis[0].path === '/api/kick-heatmap' && jaKickHeatmap.apis[0].binding === 'DB_KICK_HOT', 'Japanese Kick Heatmap must reuse the Kick Heatmap API/binding')
 check(jaTwitchDayFlow?.apis?.length === 1 && jaTwitchDayFlow.apis[0].path === '/api/day-flow' && jaTwitchDayFlow.apis[0].binding === 'DB_TWITCH_HOT', 'Japanese Twitch Day Flow must reuse the Twitch Day Flow API/binding')
 check(jaKickDayFlow?.apis?.length === 1 && jaKickDayFlow.apis[0].path === '/api/kick-day-flow' && jaKickDayFlow.apis[0].binding === 'DB_KICK_HOT', 'Japanese Kick Day Flow must reuse the Kick Day Flow API/binding')
+check(jaTwitchBattleLines?.apis?.length === 1 && jaTwitchBattleLines.apis[0].path === '/api/battle-lines' && jaTwitchBattleLines.apis[0].binding === 'DB_TWITCH_HOT', 'Japanese Twitch Battle Lines must reuse the Twitch Battle Lines API/binding')
+check(jaKickBattleLines?.apis?.length === 1 && jaKickBattleLines.apis[0].path === '/api/kick-battle-lines' && jaKickBattleLines.apis[0].binding === 'DB_KICK_HOT', 'Japanese Kick Battle Lines must reuse the Kick Battle Lines API/binding')
 
 const vite = readFileSync(join(root, 'apps/web/vite.config.ts'), 'utf8')
 const sitemap = readFileSync(join(root, 'apps/web/public/sitemap.xml'), 'utf8')
@@ -168,9 +174,9 @@ if (failures.length) {
 
 console.log(`Public surface inventory verified: ${routes.length} routes, ${Object.keys(profiles).length} profiles, ${Object.keys(gates).length} gate groups.`)
 console.log('- active program is Phase 12A Analytics Capture Foundation')
-console.log('- current candidate build: 34 HTML routes plus explicit 404')
-console.log('- seven Japanese candidates remain noindex, self-canonical, and outside sitemap/hreflang before J10')
-console.log('- Japanese Twitch/Kick Heatmap and Day Flow candidates reuse their provider-specific APIs and bindings')
+console.log('- current candidate build: 36 HTML routes plus explicit 404')
+console.log('- nine Japanese candidates remain noindex, self-canonical, and outside sitemap/hreflang before J10')
+console.log('- Japanese Twitch/Kick Heatmap, Day Flow, and Battle Lines candidates reuse their provider-specific APIs and bindings')
 console.log('- historical Phase 12 exact-SHA production acceptance remains preserved at its accepted route counts')
 console.log('- five R12A legal/support routes remain production accepted and resolved')
 console.log('- Twitch and Kick bindings remain separate')

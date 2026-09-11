@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Twitch Battle Lines — 配信間の競り合いと逆転 | ViewLoom</title>
+  <meta name="description" content="ViewLoomのTwitch Battle Linesで、観測された配信間の視聴者競争、リード変化、差、逆転をUTC基準で確認できます。" />
+  <meta name="robots" content="noindex,follow" />
+  <link rel="canonical" href="https://www.viewloom.net/ja/twitch/battle-lines/" />
+  <meta property="og:site_name" content="ViewLoom" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://www.viewloom.net/ja/twitch/battle-lines/" />
+  <meta property="og:title" content="Twitch Battle Lines — 配信間の競り合いと逆転 | ViewLoom" />
+  <meta property="og:description" content="Twitchの観測配信について、視聴者数の差、リード変化、逆転をUTC基準で確認します。" />
+  <meta property="og:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <meta name="twitter:title" content="Twitch Battle Lines — 配信間の競り合いと逆転 | ViewLoom" />
+  <meta name="twitter:description" content="Twitchの観測配信について、視聴者数の差、リード変化、逆転をUTC基準で確認します。" />
+  <link rel="stylesheet" href="/src/mock-site.css" />
+  <link rel="stylesheet" href="/src/live/battle-lines-wide.css" />
+  <link rel="stylesheet" href="/src/live/battle-lines-recovery.css" />
+  <link rel="stylesheet" href="/src/live/battle-lines-polish.css" />
+  <link rel="stylesheet" href="/src/live/battle-lines-split.css" />
+</head>
+<body data-provider="twitch"><div class="site-frame">
+<header class="masthead"><div class="masthead__inner"><a class="brand" href="/ja/"><span class="brand-mark">VL</span><span>ViewLoom<small>ライブデータ観測</small></span></a><nav class="global-nav"><a href="/ja/">ポータル</a><a href="/ja/twitch/" aria-current="page">Twitchデータ</a><a href="/ja/kick/">Kickデータ</a><a href="/about/">このサイトについて</a><a href="/support/">サポート</a></nav><div class="status-inline"><span class="dot"></span>コレクター状態を読み込み中 · 5分間隔</div><button class="mobile-menu mobile-only" data-mobile-menu aria-label="ナビゲーションを開く">メニュー</button></div></header>
+<main class="page page--full">
+<div class="breadcrumb">ViewLoom / Twitchデータ / Battle Lines</div>
+<nav class="feature-tabs"><a href="/ja/twitch/heatmap/">Heatmap</a><a href="/ja/twitch/day-flow/">Day Flow</a><a class="active" href="/ja/twitch/battle-lines/">Battle Lines</a><a href="/twitch/history/">History</a><a href="/twitch/status/">データ状態</a></nav>
+<section class="page-head"><div><div class="kicker">TWITCH DATA · RIVALRY</div><h1>Battle Lines</h1><p class="lede">注目すべき競り合いを見つけ、誰が首位だったか、差がいつ変化したか、どこで逆転が起きたかを確認します。</p></div><div class="head-facts"><div class="fact"><small>状態</small><strong>読み込み中</strong></div><div class="fact"><small>観測範囲</small><strong>—</strong></div><div class="fact"><small>日付</small><strong>—</strong></div><div class="fact"><small>更新</small><strong>—</strong></div></div></section>
+<section class="battle-controls" aria-label="Battle Lines操作">
+<div class="battle-control"><span>期間</span><div class="battle-control__row"><button type="button" data-battle-range="today">今日</button><button type="button" data-battle-range="yesterday">昨日</button><button type="button" data-battle-range="date">日付</button><input type="date" data-battle-date aria-label="Battle Lines日付" hidden disabled /></div></div>
+<div class="battle-control"><span>指標</span><div class="battle-control__row"><button type="button" data-battle-metric="viewers">視聴者数</button><button type="button" data-battle-metric="indexed">指数化</button></div></div>
+<div class="battle-control"><span>配信</span><div class="battle-control__row"><button type="button" data-battle-top="3">Top 3</button><button type="button" data-battle-top="5">Top 5</button><button type="button" data-battle-top="10">Top 10</button></div></div>
+<div class="battle-control"><span>バケット</span><div class="battle-control__row"><button type="button" data-battle-bucket="5m">5m</button><button type="button" data-battle-bucket="10m">10m</button></div></div>
+<div class="battle-control battle-layout-control"><span>表示</span><div class="battle-control__row"><button type="button" data-battle-layout="wide">ワイド</button><button type="button" data-battle-layout="split">分割</button></div></div>
+<div class="battle-actions"><button type="button" data-battle-recommended>推奨バトルへ戻る</button><button type="button" data-battle-latest>最新へ移動</button><button type="button" data-battle-refresh>更新</button></div>
+</section>
+<div class="battle-status" data-battle-status aria-live="polite"><strong>読み込み中</strong><span>観測済みTwitchスナップショットを読み込み中…</span></div>
+<section class="battle-primary" data-battle-primary><div class="notice">推奨Twitchバトルを選択中…</div></section>
+<section class="battle-stage" data-battle-stage><div class="notice">Twitch Battle Linesを読み込み中…</div></section>
+<section class="battle-section"><div class="battle-section__head"><h2>時刻インスペクター</h2><span>チャートをクリック、ドラッグ、タップ、または矢印キーで操作できます</span></div><div class="battle-inspector" data-battle-inspector><p>選択時刻を待機中…</p></div></section>
+<section class="battle-section"><div class="battle-section__head"><h2>逆転ストリップ</h2><span>リード交代へ直接移動</span></div><div class="reversal-strip" data-battle-reversals><p class="empty-inline">逆転を読み込み中…</p></div></section>
+<section class="battle-section"><div class="battle-section__head"><h2>その他のバトル</h2><span>この期間の他の競り合い候補</span></div><div class="secondary-grid" data-battle-secondary><p class="empty-inline">その他のバトルを読み込み中…</p></div></section>
+<section class="battle-section"><div class="battle-section__head"><h2>バトルフィード</h2><span>観測された個別イベントを最大5件表示</span></div><div class="event-feed" data-battle-feed><p class="empty-inline">バトルイベントを読み込み中…</p></div></section>
+<aside class="coverage-note" data-battle-coverage><strong>観測範囲と制約</strong><p>観測範囲を読み込み中…</p></aside>
+</main>
+<footer class="footer"><div>ViewLoom · 公開ライブ配信データを独立・非公式に観測しています。</div><nav><a href="/about/">方法と制約</a><a href="/support/">サポート</a></nav></footer>
+</div><script type="module" src="/src/mock-site.ts"></script><script type="module" src="/src/live/battle-lines-ja-twitch-entry.ts"></script><script type="module" src="/src/analytics.ts"></script></body>
+</html>
