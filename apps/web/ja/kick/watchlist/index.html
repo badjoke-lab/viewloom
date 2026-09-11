@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kick Local Watchlist — ブラウザ内のチャンネル保存 | ViewLoom</title>
+  <meta name="description" content="KickチャンネルIDをこのブラウザだけに保存し、ViewLoomの限定された最新観測と保持Historyを確認できます。アカウント作成は不要です。" />
+  <meta name="robots" content="noindex,follow" />
+  <link rel="canonical" href="https://www.viewloom.net/ja/kick/watchlist/" />
+  <meta property="og:site_name" content="ViewLoom" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.viewloom.net/ja/kick/watchlist/" />
+  <meta property="og:title" content="Kick Local Watchlist — ブラウザ内のチャンネル保存 | ViewLoom" />
+  <meta property="og:description" content="KickチャンネルIDをこのブラウザだけに保存し、限定された最新観測と保持Historyを確認します。" />
+  <meta property="og:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Kick Local Watchlist — ブラウザ内のチャンネル保存 | ViewLoom" />
+  <meta name="twitter:description" content="KickチャンネルIDをこのブラウザだけに保存し、限定された最新観測と保持Historyを確認します。" />
+  <meta name="twitter:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <link rel="stylesheet" href="/src/mock-site.css" />
+  <link rel="stylesheet" href="/src/quality-u10e-responsive.css" />
+</head>
+<body data-provider="kick" data-page="kick-watchlist" data-watchlist-state="loading">
+<div class="site-frame">
+  <header class="masthead"><div class="masthead__inner">
+    <a class="brand" href="/ja/"><span class="brand-mark">VL</span><span>ViewLoom<small>ライブデータ観測</small></span></a>
+    <nav class="global-nav" id="watchlist-global-nav" aria-label="グローバルナビゲーション"><a href="/ja/">ポータル</a><a href="/ja/twitch/">Twitchデータ</a><a href="/ja/kick/" aria-current="page">Kickデータ</a><a href="/changelog/">変更履歴</a><a href="/about/">このサイトについて</a><a href="/support/">サポート</a></nav>
+    <div class="status-inline" role="status"><span class="dot" aria-hidden="true"></span>ブラウザ内だけで利用</div>
+    <button class="mobile-menu mobile-only" data-mobile-menu aria-label="ナビゲーションを開く" aria-controls="watchlist-global-nav" aria-expanded="false">メニュー</button>
+  </div></header>
+  <main class="page page--full watchlist-page">
+    <div class="breadcrumb">ViewLoom / Kickデータ / Local Watchlist</div>
+    <nav class="feature-tabs" aria-label="Kick分析ページ"><a href="/ja/kick/heatmap/">Heatmap</a><a href="/ja/kick/day-flow/">Day Flow</a><a href="/ja/kick/battle-lines/">Battle Lines</a><a href="/ja/kick/history/">History</a><a href="/ja/kick/status/">データ状態</a></nav>
+    <section class="page-head"><div><div class="kicker">KICK DATA · LOCAL WATCHLIST</div><div class="watchlist-badge">このブラウザだけに保存</div><h1>Local Watchlist</h1><p class="lede">KickチャンネルIDをこのブラウザだけに保存し、限定された最新観測と選択期間の保持Historyを比較します。観測結果に出ないことはオフラインの証明ではありません。</p></div><div class="head-facts" aria-live="polite"><div class="fact"><small>保存数</small><strong data-watchlist-saved-count>0件保存</strong></div><div class="fact"><small>保持期間</small><strong data-watchlist-period-fact>過去30日</strong></div><div class="fact"><small>ストレージ</small><strong data-watchlist-storage-fact>読み込み中</strong></div><div class="fact"><small>データ要求</small><strong data-watchlist-request-fact>空の間は0件</strong></div></div></section>
+    <section class="data-strip watchlist-data-strip" aria-label="Kick Watchlist情報"><div class="data-strip__title">Kick Watchlist</div><div class="data-strip__cell"><small>プロバイダー</small>Kickのみ</div><div class="data-strip__cell"><small>保存キー</small><code data-watchlist-storage-key>viewloom.watchlist.kick.v1</code></div><div class="data-strip__cell"><small>最新ソース</small><span data-watchlist-latest-source>未要求</span></div><div class="data-strip__cell"><small>Historyソース</small><span data-watchlist-history-source>未要求</span></div></section>
+    <section class="surface watchlist-controls" aria-label="Local Watchlist操作"><div class="watchlist-control-block"><form data-watchlist-add-form novalidate><label for="watchlist-channel-input">KickチャンネルIDまたはKick URL</label><div class="watchlist-add-row"><input id="watchlist-channel-input" data-watchlist-input type="text" inputmode="url" autocomplete="off" spellcheck="false" aria-describedby="watchlist-input-help watchlist-storage-feedback" /><button class="button" data-watchlist-add type="submit">チャンネルを追加</button></div><p class="watchlist-help" id="watchlist-input-help">例: <code>example_channel</code> または <code>https://kick.com/example_channel</code>。正規化したIDはこのブラウザだけに保存します。</p></form></div><div class="watchlist-control-block"><span class="watchlist-control-label">保持期間</span><div class="watchlist-period-row"><div class="control-group"><button type="button" data-watchlist-period="7d" aria-pressed="false">過去7日</button><button type="button" data-watchlist-period="30d" aria-pressed="true">過去30日</button></div><button class="button button--paper watchlist-refresh" data-watchlist-refresh type="button" aria-describedby="watchlist-latest-feedback watchlist-history-feedback">データを更新</button></div><p class="watchlist-help">保存項目がある初回表示ではKick Heatmapを1回、Kick Historyを1回要求します。期間変更はHistoryだけを要求し、ローカル一覧の操作ではデータ要求を行いません。</p></div></section>
+    <section class="watchlist-feedback-grid" aria-label="Watchlistフィードバック"><div class="watchlist-feedback"><small>ストレージ</small><p id="watchlist-storage-feedback" data-watchlist-storage-feedback aria-live="polite">このブラウザのKick Watchlistを読み込み中…</p></div><div class="watchlist-feedback"><small>最新観測</small><p id="watchlist-latest-feedback" data-watchlist-latest-feedback aria-live="polite">最新観測はまだ要求していません。</p><button class="button button--quiet watchlist-retry" data-watchlist-retry-latest type="button" hidden>最新観測を再試行</button></div><div class="watchlist-feedback"><small>保持History</small><p id="watchlist-history-feedback" data-watchlist-history-feedback aria-live="polite">保持Historyはまだ要求していません。</p><button class="button button--quiet watchlist-retry" data-watchlist-retry-history type="button" hidden>Historyを再試行</button></div></section>
+    <section class="watchlist-list-tools" data-watchlist-filter-controls hidden aria-label="保存チャンネル操作"><div class="watchlist-control-block"><label for="watchlist-filter">保存チャンネルを絞り込み</label><div class="watchlist-filter-row"><input id="watchlist-filter" data-watchlist-filter type="search" autocomplete="off" placeholder="保存名・観測名・IDで絞り込み" /><button class="button button--paper" data-watchlist-show type="button" aria-expanded="false">すべて表示</button></div></div><p class="watchlist-list-summary" data-watchlist-list-summary>保存チャンネルはありません。</p><button class="button watchlist-remove" data-watchlist-clear type="button" disabled>Watchlistを消去</button></section>
+    <section class="watchlist-storage-error" data-watchlist-storage-error hidden aria-live="polite"><h2>ストレージを利用できないか破損しています</h2><p>ページ自体は利用できますが、Kickチャンネルが保存済みであるとは表示しません。ViewLoomアカウントへアップロードされるものはありません。</p><button class="button button--paper" data-watchlist-reset type="button" hidden>ローカルWatchlistをリセット</button></section>
+    <section class="watchlist-empty" data-watchlist-empty><h2>このブラウザに保存されたチャンネルはありません。</h2><p>KickチャンネルIDまたはURLを追加するとLocal Watchlistを作成できます。</p><p>ViewLoomアカウントへアップロードされるものはありません。</p></section><section class="watchlist-no-results" data-watchlist-no-results hidden><p>このローカル絞り込みに一致する保存Kickチャンネルはありません。</p></section><ol class="watchlist-list" data-watchlist-list hidden aria-label="保存Kickチャンネル"></ol>
+    <section><div class="rule-title"><h2>ローカル範囲と制約</h2><span>ブラウザ限定機能</span></div><div class="watchlist-limits"><article class="watchlist-limit"><small>ローカル保存</small><h2>このブラウザ固有</h2><p>保存IDはこのブラウザのKick専用localStorageキーだけに保持します。アカウント、クラウド同期、Cookie fallback、共有Watchlist URLはありません。</p></article><article class="watchlist-limit"><small>証拠</small><h2>限定された観測</h2><p>最新証拠は既存Kick Heatmap payload、保持証拠は選択したKick History payloadを使います。どちらにも出ないことはオフラインの証明ではなく、完全な履歴も意味しません。</p></article><article class="watchlist-limit"><small>プライバシー</small><h2>保存IDをメタデータへ含めません</h2><p>保存IDはcanonical URL、共有メタデータ、analytics payloadへ入れません。外部Kickリンクは通常のブラウザ遷移です。</p></article></div></section>
+  </main>
+  <footer class="footer"><div>ViewLoom · 公開ライブ配信データを独立・非公式に観測しています。</div><nav><a href="/ja/kick/">Kickデータ</a><a href="/about/">方法と制約</a><a href="/support/">サポート</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
+</div>
+<script type="module" src="/src/live/watchlist-ja-presentation.ts"></script>
+<script type="module" src="/src/live/watchlist-page.ts"></script>
+<script type="module" src="/src/live/watchlist-move-focus.ts"></script>
+<script type="module" src="/src/analytics.ts"></script>
+</body>
+</html>

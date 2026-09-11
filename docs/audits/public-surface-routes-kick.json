@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-routes-v1",
-  "version": 13,
+  "version": 14,
   "group": "kick",
   "routes": [
     {"id":"kick-home","route":"/kick/","provider":"kick","profile":"provider_home","source":"apps/web/kick/index.html","title":"Kick Live Stream Data, Heatmap & History — ViewLoom","canonical":"https://www.viewloom.net/kick/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-home","binding":"DB_KICK_HOT"}]},
@@ -18,6 +18,7 @@
     {"id":"kick-channel","route":"/kick/channel/","provider":"kick","profile":"channel","source":"apps/web/kick/channel/index.html","title":"Kick channel history | ViewLoom","canonical":"https://www.viewloom.net/kick/channel/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/kick-history","binding":"DB_KICK_HOT"}]},
     {"id":"ja-kick-channel","route":"/ja/kick/channel/","provider":"kick","profile":"channel","source":"apps/web/ja/kick/channel/index.html","title":"Kick Channel History — 保持ランキング履歴 | ViewLoom","canonical":"https://www.viewloom.net/ja/kick/channel/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/kick-history","binding":"DB_KICK_HOT"}]},
     {"id":"kick-watchlist","route":"/kick/watchlist/","provider":"kick","profile":"watchlist","source":"apps/web/kick/watchlist/index.html","title":"Kick Local Watchlist — ViewLoom","canonical":"https://www.viewloom.net/kick/watchlist/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/kick-heatmap","binding":"DB_KICK_HOT"},{"path":"/api/kick-history","binding":"DB_KICK_HOT"}]},
+    {"id":"ja-kick-watchlist","route":"/ja/kick/watchlist/","provider":"kick","profile":"watchlist","source":"apps/web/ja/kick/watchlist/index.html","title":"Kick Local Watchlist — ブラウザ内のチャンネル保存 | ViewLoom","canonical":"https://www.viewloom.net/ja/kick/watchlist/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/kick-heatmap","binding":"DB_KICK_HOT"},{"path":"/api/kick-history","binding":"DB_KICK_HOT"}]},
     {"id":"kick-status","route":"/kick/status/","provider":"kick","profile":"status","source":"apps/web/kick/status/index.html","title":"Data Status for Kick live streams | ViewLoom","canonical":"https://www.viewloom.net/kick/status/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-status","binding":"DB_KICK_HOT"}]},
     {"id":"ja-kick-status","route":"/ja/kick/status/","provider":"kick","profile":"status","source":"apps/web/ja/kick/status/index.html","title":"Kick Data Status — 鮮度・観測範囲・データ状態 | ViewLoom","canonical":"https://www.viewloom.net/ja/kick/status/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/kick-status","binding":"DB_KICK_HOT"}]}
   ]
