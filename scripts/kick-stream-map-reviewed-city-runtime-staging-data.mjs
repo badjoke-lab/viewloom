@@ -1,8 +1,9 @@
 export const KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA_VERSION = 'viewloom-kick-reviewed-city-runtime-staging-data-v0.1'
 
-// Generated from the independently re-reviewed 2026-09-07 Kick City batch 01.
-// KC2 staging is intentionally kept outside apps/web/functions so it cannot
-// affect or deploy with the production Kick Map runtime before KC3.
+// Generated from independently reviewed Kick City batches through 2026-09-11.
+// Review staging is intentionally kept outside apps/web/functions so newly
+// reviewed terminal outcomes cannot affect production Kick Map runtime until a
+// separate runtime-consumption change is reviewed.
 // Only provider-stable identity, terminal City outcome, accepted Base City
 // claim kind and accepted City placement are retained.
 export const KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA = Object.freeze([
@@ -47,5 +48,35 @@ export const KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA = Object.freeze([
     outcome: 'accepted',
     claimKind: 'declared_location',
     placement: { state: 'mapped', countryCode: 'IN', region: null, city: 'Mumbai' },
+  },
+  {
+    stableKickUserId: '5508767',
+    outcome: 'no_qualifying_evidence',
+    claimKind: null,
+    placement: null,
+  },
+  {
+    stableKickUserId: '35467',
+    outcome: 'no_qualifying_evidence',
+    claimKind: null,
+    placement: null,
+  },
+  {
+    stableKickUserId: '68312242',
+    outcome: 'excluded_nonperson',
+    claimKind: null,
+    placement: null,
+  },
+  {
+    stableKickUserId: '31377709',
+    outcome: 'no_qualifying_evidence',
+    claimKind: null,
+    placement: null,
+  },
+  {
+    stableKickUserId: '68422390',
+    outcome: 'no_qualifying_evidence',
+    claimKind: null,
+    placement: null,
   },
 ])
