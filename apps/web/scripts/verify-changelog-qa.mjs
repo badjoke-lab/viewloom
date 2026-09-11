@@ -6,11 +6,12 @@ const sourcePath = 'data/changelog.json'
 const publicPath = 'public/data/changelog.json'
 const contractPath = 'docs/changelog-qa-contract.md'
 const pagePath = 'changelog/index.html'
+const japanesePagePath = 'ja/changelog/index.html'
 const clientPath = 'src/changelog-page.ts'
 const stylePath = 'src/changelog-page.css'
 const failures = []
 
-for (const path of [sourcePath, publicPath, contractPath, 'scripts/build-changelog.mjs', pagePath, clientPath, stylePath]) {
+for (const path of [sourcePath, publicPath, contractPath, 'scripts/build-changelog.mjs', pagePath, japanesePagePath, clientPath, stylePath]) {
   if (!existsSync(join(root, path))) failures.push(`${path}: missing required Changelog file`)
 }
 
@@ -23,6 +24,7 @@ if (source && published && JSON.stringify(source) !== JSON.stringify(published))
 
 if (source) verifyPayload(source)
 verifyPage()
+verifyJapanesePage()
 verifyClient()
 verifyStyles()
 verifyContract()
@@ -33,7 +35,7 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log('ViewLoom Changelog QA verification passed for four reviewed v2 milestones.')
+console.log('ViewLoom Changelog QA verification passed for four reviewed v2 milestones and the hidden Japanese presentation candidate.')
 
 function readJson(path) {
   if (!existsSync(join(root, path))) return null
@@ -131,10 +133,28 @@ function verifyPage() {
   }
 }
 
+function verifyJapanesePage() {
+  if (!existsSync(join(root, japanesePagePath))) return
+  const page = readFileSync(join(root, japanesePagePath), 'utf8')
+  for (const fragment of [
+    '<html lang="ja">',
+    '<meta name="robots" content="noindex,follow"',
+    '<link rel="canonical" href="https://www.viewloom.net/ja/changelog/"',
+    'data-changelog-state="loading"',
+    'id="changelog-timeline"',
+    'href="/data/changelog.json"',
+    '/src/changelog-page.ts',
+    '/src/analytics.ts',
+  ]) if (!page.includes(fragment)) failures.push(`${japanesePagePath}: missing required Japanese page fragment: ${fragment}`)
+  if (/hreflang=/i.test(page)) failures.push(`${japanesePagePath}: hreflang must remain absent before J10`)
+  if (/\/data\/ja|\/ja\/data/i.test(page)) failures.push(`${japanesePagePath}: localized Changelog data source is forbidden`)
+}
+
 function verifyClient() {
   if (!existsSync(join(root, clientPath))) return
   const client = readFileSync(join(root, clientPath), 'utf8')
   for (const fragment of [
+    "import { localeFromPathname } from './i18n/locale'",
     "fetch('/data/changelog.json'",
     "version: 'viewloom-changelog-v2'",
     'renderEntries',
@@ -143,13 +163,18 @@ function verifyClient() {
     "setState('empty')",
     "setState('error')",
     "setState('ready')",
-    "retry.textContent = 'Retry'",
+    "retry.textContent = locale === 'ja' ? '再試行' : 'Retry'",
     'time.dateTime = entry.date',
-    'title.textContent = entry.title',
-    'summary.textContent = entry.summary',
+    'const localized = locale === \'ja\' ? JAPANESE_ENTRY_COPY[entry.id] : undefined',
+    'title.textContent = localized?.title ?? entry.title',
+    'summary.textContent = localized?.summary ?? entry.summary',
     "summary.className = 'changelog-entry__summary'",
-  ]) if (!client.includes(fragment)) failures.push(`${clientPath}: missing required client fragment: ${fragment}`)
+    'JAPANESE_ENTRY_COPY',
+    "new Intl.DateTimeFormat(locale === 'ja' ? 'ja-JP' : 'en-US'",
+  ]) if (!client.includes(fragment)) failures.push(`${clientPath}: missing required locale-aware client fragment: ${fragment}`)
 
+  if ((client.match(/\bfetch\(/g) ?? []).length !== 1) failures.push(`${clientPath}: Changelog must keep exactly one data request owner`)
+  if (/\/data\/ja|\/ja\/data/i.test(client)) failures.push(`${clientPath}: localized Changelog data endpoint is forbidden`)
   if (/entry\.(?:details|pullRequests|commit)/.test(client)) failures.push(`${clientPath}: page must not render internal implementation fields`)
   if (/innerHTML\s*=/.test(client)) failures.push(`${clientPath}: Changelog entries must use DOM text assignment rather than innerHTML`)
 }
