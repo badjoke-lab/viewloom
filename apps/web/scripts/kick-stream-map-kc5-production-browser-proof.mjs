@@ -2,7 +2,10 @@ import assert from 'node:assert/strict'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
 
-const origin = (process.env.KICK_MAP_PRODUCTION_ORIGIN || 'https://www.viewloom.net').replace(/\/$/, '')
+const productionOrigin = (process.env.KICK_MAP_PRODUCTION_ORIGIN || 'https://www.viewloom.net').replace(/\/$/, '')
+const candidateOrigin = (process.env.KICK_MAP_PREVIEW_ORIGIN || productionOrigin).replace(/\/$/, '')
+const isPullRequest = process.env.GITHUB_EVENT_NAME === 'pull_request'
+const pageOrigin = isPullRequest ? candidateOrigin : productionOrigin
 const outputRoot = '/tmp/kick-stream-map-kc5-production-browser-proof'
 const viewports = [
   { id: 'desktop-1440', width: 1440, height: 1000 },
@@ -15,8 +18,10 @@ const browser = await chromium.launch({
   args: ['--enable-webgl', '--use-gl=angle', '--use-angle=swiftshader', '--disable-gpu-sandbox'],
 })
 const evidence = {
-  schema: 'viewloom-kick-stream-map-kc5-production-browser-proof-v1',
-  origin,
+  schema: 'viewloom-kick-stream-map-kc5-production-browser-proof-v2',
+  productionOrigin,
+  pageOrigin,
+  mode: isPullRequest ? 'candidate-with-live-production-data' : 'deployed-production',
   result: 'running',
   deployment: null,
   cityApi: null,
@@ -25,12 +30,14 @@ const evidence = {
 }
 
 try {
-  const api = await waitForKc5Api(browser)
-  evidence.cityApi = summarizeCityApi(api)
-  validateCityApi(api, evidence.violations)
+  if (!isPullRequest) evidence.deployment = await waitForMatchingProductionDeployment()
+  const liveApi = await waitForKc5Api()
+  const candidateApi = isPullRequest ? stripStreamReferenceGeometry(liveApi) : liveApi
+  evidence.cityApi = summarizeCityApi(candidateApi)
+  validateCityApi(candidateApi, evidence.violations)
 
   for (const viewport of viewports) {
-    const scenario = await auditCity(viewport, api)
+    const scenario = await auditCity(viewport, candidateApi)
     evidence.scenarios.push(scenario)
     for (const violation of scenario.violations) evidence.violations.push({ scenario: scenario.id, violation })
   }
@@ -38,30 +45,60 @@ try {
   evidence.result = evidence.violations.length === 0 ? 'pass' : 'fail'
   evidence.counts = { viewports: viewports.length, scenarios: evidence.scenarios.length, violations: evidence.violations.length }
   await writeFile(`${outputRoot}/evidence.json`, `${JSON.stringify(evidence, null, 2)}\n`)
-  console.log(JSON.stringify({ result: evidence.result, counts: evidence.counts, cityApi: evidence.cityApi, violations: evidence.violations }, null, 2))
+  console.log(JSON.stringify({ result: evidence.result, mode: evidence.mode, counts: evidence.counts, cityApi: evidence.cityApi, violations: evidence.violations }, null, 2))
   assert.equal(evidence.violations.length, 0, JSON.stringify(evidence.violations))
 } finally {
   await browser.close()
 }
 
-async function waitForKc5Api(browser) {
-  const context = await browser.newContext()
-  try {
-    let last = null
-    for (let attempt = 0; attempt < 48; attempt += 1) {
-      const response = await context.request.get(`${origin}/api/kick-stream-map?geography=city&kc5-production-proof=${Date.now()}-${attempt}`, {
+async function waitForMatchingProductionDeployment() {
+  const expected = String(process.env.GITHUB_SHA ?? '').trim()
+  let last = null
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    try {
+      const response = await fetch(`${productionOrigin}/deployment.json?kc5=${Date.now()}-${attempt}`, { cache: 'no-store' })
+      if (response.ok) {
+        const payload = await response.json()
+        last = payload
+        if (!expected || (payload?.commit_sha === expected && payload?.environment === 'production' && payload?.branch === 'main')) return payload
+      }
+    } catch {}
+    if (attempt < 59) await new Promise((resolve) => setTimeout(resolve, 5_000))
+  }
+  throw new Error(`KC5 production deployment did not reach expected main SHA ${expected || '(unspecified)'}: ${JSON.stringify(last)}`)
+}
+
+async function waitForKc5Api() {
+  let last = null
+  for (let attempt = 0; attempt < 24; attempt += 1) {
+    try {
+      const response = await fetch(`${productionOrigin}/api/kick-stream-map?geography=city&kc5-production-proof=${Date.now()}-${attempt}`, {
         headers: { accept: 'application/json', 'cache-control': 'no-cache' },
-        timeout: 30_000,
+        cache: 'no-store',
       })
       let payload = null
       try { payload = await response.json() } catch {}
-      last = { status: response.status(), payload }
-      if (response.status() === 200 && payload?.publicCityActivationAuthorized === true && payload?.activation?.publicCityActivationReady === true) return payload
-      if (attempt < 47) await new Promise((resolve) => setTimeout(resolve, 5_000))
+      last = { status: response.status, payload }
+      if (response.status === 200 && payload?.publicCityActivationAuthorized === true && payload?.activation?.publicCityActivationReady === true) return payload
+    } catch (error) {
+      last = { error: error instanceof Error ? error.message : String(error) }
     }
-    throw new Error(`KC5 production API did not activate in time: ${JSON.stringify(last)}`)
-  } finally {
-    await context.close()
+    if (attempt < 23) await new Promise((resolve) => setTimeout(resolve, 5_000))
+  }
+  throw new Error(`KC5 production API did not become ready: ${JSON.stringify(last)}`)
+}
+
+function stripStreamReferenceGeometry(payload) {
+  return {
+    ...payload,
+    mappedStreams: Array.isArray(payload?.mappedStreams)
+      ? payload.mappedStreams.map((row) => ({
+          ...row,
+          geography: row?.geography && typeof row.geography === 'object'
+            ? Object.fromEntries(Object.entries(row.geography).filter(([key]) => key !== 'referenceGeometry'))
+            : row?.geography,
+        }))
+      : [],
   }
 }
 
@@ -93,6 +130,17 @@ function validateCityApi(payload, violations) {
     if (forbidden.length) violations.push({ scenario: 'city-api', violation: `${bucket} forbidden keys: ${[...new Set(forbidden)].join(', ')}` })
   }
 
+  for (const aggregate of Array.isArray(payload?.cityAggregates) ? payload.cityAggregates : []) {
+    const geometry = aggregate?.referenceGeometry
+    if (geometry?.state !== 'reference_point') continue
+    if (geometry?.semantics !== 'city_aggregate_reference') violations.push({ scenario: 'city-api', violation: `aggregate ${aggregate?.cityAggregateKey ?? '?'} reference semantics ${geometry?.semantics}` })
+    const latitude = geometry?.referencePoint?.latitude
+    const longitude = geometry?.referencePoint?.longitude
+    if (typeof latitude !== 'number' || latitude < -90 || latitude > 90 || typeof longitude !== 'number' || longitude < -180 || longitude > 180) {
+      violations.push({ scenario: 'city-api', violation: `aggregate ${aggregate?.cityAggregateKey ?? '?'} invalid reference point` })
+    }
+  }
+
   const serialized = JSON.stringify(payload)
   for (const forbidden of ['"stableKickUserId"', '"broadcaster_user_id":', '"currentLocation"', '"current_location"', '"temporaryLocation"', '"temporary_location"']) {
     if (serialized.includes(forbidden)) violations.push({ scenario: 'city-api', violation: `serialized private field ${forbidden}` })
@@ -112,7 +160,13 @@ async function auditCity(viewport, api) {
     if (url.pathname.startsWith('/api/')) apiRequests.push(`${url.pathname}${url.search}`)
   })
 
-  const response = await page.goto(`${origin}/kick/map/?geography=city&kc5-production-proof=${encodeURIComponent(process.env.GITHUB_RUN_ID || 'manual')}-${viewport.id}`, { waitUntil: 'domcontentloaded', timeout: 45_000 })
+  if (isPullRequest) {
+    await page.route('**/api/kick-stream-map*', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(api) })
+    })
+  }
+
+  const response = await page.goto(`${pageOrigin}/kick/map/?geography=city&kc5-production-proof=${encodeURIComponent(process.env.GITHUB_RUN_ID || 'manual')}-${viewport.id}`, { waitUntil: 'domcontentloaded', timeout: 45_000 })
   await page.waitForFunction(() => {
     const state = document.querySelector('[data-stream-map-state]')?.textContent?.trim()
     return state && state !== 'Loading'
@@ -183,10 +237,10 @@ async function auditCity(viewport, api) {
     if (facts.mapRect.height < (viewport.width <= 390 ? 300 : 400)) violations.push(`reference map height ${facts.mapRect.height}px`)
   }
 
-  const screenshot = `kick-city-kc5-production--${viewport.id}.png`
+  const screenshot = `kick-city-kc5-${isPullRequest ? 'candidate' : 'production'}--${viewport.id}.png`
   await page.screenshot({ path: `${outputRoot}/${screenshot}`, fullPage: true })
   await context.close()
-  return { id: `kick-city-kc5-production--${viewport.id}`, viewport, facts, apiRequests, pageErrors, consoleErrors, violations, screenshot }
+  return { id: `kick-city-kc5-${isPullRequest ? 'candidate' : 'production'}--${viewport.id}`, viewport, facts, apiRequests, pageErrors, consoleErrors, violations, screenshot }
 }
 
 function summarizeCityApi(payload) {
