@@ -230,7 +230,7 @@ jobs:
             .identity.slugIsStableIdentity == false and
             .coverage.observedStreams > 0 and
             .coverage.stableIdentityStreams == .coverage.observedStreams and
-            .coverage.reviewedEvidenceCatalogSize == 7 and
+            .coverage.reviewedEvidenceCatalogSize >= (if env.GITHUB_EVENT_NAME == "pull_request" then 7 else 12 end) and
             .coverage.referenceGeometryAggregates >= 0 and
             .coverage.listOnlyAggregates >= 0 and
             (.coverage.referenceGeometryAggregates + .coverage.listOnlyAggregates) == .coverage.mappedCityAggregateCount and
@@ -261,7 +261,7 @@ jobs:
             )] | length) == 0
           ' kick-stream-map-city.json >/dev/null
 
-          echo "Kick Stream Map City production proof: state=$(jq -r '.state' kick-stream-map-city.json) authorized=$(jq -r '.publicCityActivationAuthorized' kick-stream-map-city.json) observed=$(jq -r '.coverage.observedStreams' kick-stream-map-city.json) mapped=$(jq -r '.coverage.mappedStreams' kick-stream-map-city.json) cityAggregates=$(jq -r '.coverage.mappedCityAggregateCount' kick-stream-map-city.json) referenceGeometry=$(jq -r '.coverage.referenceGeometryAggregates' kick-stream-map-city.json)"
+          echo "Kick Stream Map City production proof: state=$(jq -r '.state' kick-stream-map-city.json) authorized=$(jq -r '.publicCityActivationAuthorized' kick-stream-map-city.json) observed=$(jq -r '.coverage.observedStreams' kick-stream-map-city.json) reviewedCatalog=$(jq -r '.coverage.reviewedEvidenceCatalogSize' kick-stream-map-city.json) mapped=$(jq -r '.coverage.mappedStreams' kick-stream-map-city.json) cityAggregates=$(jq -r '.coverage.mappedCityAggregateCount' kick-stream-map-city.json) referenceGeometry=$(jq -r '.coverage.referenceGeometryAggregates' kick-stream-map-city.json)"
 
       - name: Upload production smoke evidence
         if: always()
