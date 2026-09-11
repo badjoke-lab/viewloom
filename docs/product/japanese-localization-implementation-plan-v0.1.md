@@ -162,23 +162,25 @@ J6b — Channel
 J6c — Local Watchlist
 ```
 
-Current state (2026-09-11):
+Candidate-complete state (2026-09-11):
 
-- J6a Data Status is merged through PR #1315 with hidden `/ja/twitch/status/` and `/ja/kick/status/` candidates;
+- J6a Data Status merged through PR #1315 with hidden `/ja/twitch/status/` and `/ja/kick/status/` candidates;
 - Data Status reuses `status-current-shell-entry.ts` and the existing provider-separated `/api/twitch-status` / `/api/kick-status` contracts; `status-ja-presentation.ts` owns presentation only;
-- J6b Channel is implemented in PR #1324 with hidden `/ja/twitch/channel/` and `/ja/kick/channel/` candidates;
+- J6b Channel merged through PR #1324 at main `b15358d7d05baed108b5599ae1117ddf9970045c`, adding hidden `/ja/twitch/channel/` and `/ja/kick/channel/` candidates;
 - Channel reuses `channel-profile.ts`, the existing provider-separated `/api/history` / `/api/kick-history` endpoints, and the existing query-state URL contract;
 - `channel-ja-presentation.ts` owns no network request or API path and protects raw channel identity/external provider links while localizing rendered presentation copy;
-- Channel URL state preserves the current localized pathname plus query/hash, so Japanese Channel interaction does not fall back to the English route;
+- J6c Local Watchlist is implemented in PR #1326 with hidden `/ja/twitch/watchlist/` and `/ja/kick/watchlist/` candidates;
+- Local Watchlist reuses the existing provider-specific `localStorage` contract, `watchlist-page.ts`, and the existing bounded Heatmap/History request ownership; no account, cloud sync, cookie fallback, or shared Watchlist URL is introduced;
+- `watchlist-ja-presentation.ts` owns no fetch/API path, localizes dynamically generated internal links only when a Japanese equivalent exists, and protects raw channel identities, storage keys, and provider URLs;
 - all J6 candidates remain `noindex,follow`, self-canonical, excluded from sitemap/hreflang/public language switching until J10;
-- J6b candidate contract is 44 HTML routes plus explicit 404, 45 inventory entries, 21 noindex routes, 23 sitemap routes, 17 Japanese candidates, and 176 browser scenarios across four viewports;
-- freshness, coverage, provider separation, retained Top-10 semantics, raw provider identity, collector/storage/cadence/retention rules, geography semantics, and Current/IRL rules are unchanged;
-- J6c Local Watchlist is the remaining J6 route stage and must be implemented as a separate bounded candidate PR after J6b;
+- J6c candidate contract is 46 HTML routes plus explicit 404, 47 inventory entries, 23 noindex routes, 23 sitemap routes, 19 Japanese candidates, and 184 browser scenarios across four viewports;
+- freshness, coverage, provider separation, retained Top-10 semantics, bounded Watchlist evidence, raw provider identity, collector/storage/cadence/retention rules, geography semantics, and Current/IRL rules are unchanged;
+- J6 is candidate-complete after PR #1326; J7 fixed informational/legal routes are next;
 - J10 remains the only authorization point for Japanese indexing, sitemap, reciprocal hreflang, and public language switching.
 
 Outcome:
 
-Users do not fall back into English during ordinary Japanese navigation.
+Users do not fall back into English during ordinary Japanese product navigation. Fixed informational/legal routes remain a separate J7 stage.
 
 ### J7 — fixed informational/legal routes
 
