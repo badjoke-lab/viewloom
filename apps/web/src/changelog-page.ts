@@ -1,3 +1,5 @@
+import { localeFromPathname } from './i18n/locale'
+
 type DatePrecision = 'month' | 'day'
 
 type ChangelogEntry = {
@@ -13,7 +15,27 @@ type ChangelogPayload = {
   entries: ChangelogEntry[]
 }
 
+const locale = localeFromPathname(window.location.pathname)
 const timeline = document.getElementById('changelog-timeline')
+
+const JAPANESE_ENTRY_COPY: Record<string, { title: string; summary: string }> = {
+  'shareable-analysis-views': {
+    title: '分析ビューを共有可能に',
+    summary: 'TwitchとKickを分離した各データ画面に、正規ページURL、History・Day Flow・Battle Lines間の安定した日付リンク、現在の表示をコピーする操作を追加しました。',
+  },
+  'viewloom-design-refresh': {
+    title: 'ViewLoomデザイン刷新',
+    summary: 'Portalとプロバイダーホームを再構成し、主要分析ページを、より明確な操作、可視化された観測範囲状態、レスポンシブレイアウトを中心に再構築しました。',
+  },
+  'livefield-becomes-viewloom': {
+    title: 'LivefieldからViewLoomへ',
+    summary: 'プロジェクト名をViewLoomへ変更し、一つの独立観測ポータルの下でTwitchデータとKickデータのルートを分離しました。',
+  },
+  'livefield-begins': {
+    title: 'Livefield開始',
+    summary: 'Heatmap、Day Flow、Battle Linesを、それぞれNow、Today、Rivalryという異なる見方として扱うライブ配信観測プロジェクトを開始しました。',
+  },
+}
 
 if (timeline) void loadChangelog()
 
@@ -21,19 +43,19 @@ async function loadChangelog(): Promise<void> {
   setState('loading')
   try {
     const response = await fetch('/data/changelog.json', { cache: 'no-store' })
-    if (!response.ok) throw new Error(`Changelog request failed with ${response.status}.`)
+    if (!response.ok) throw new Error(locale === 'ja' ? `Changelogの取得に失敗しました (${response.status})。` : `Changelog request failed with ${response.status}.`)
 
     const payload = await response.json() as ChangelogPayload
     validatePayload(payload)
     renderEntries(payload.entries)
   } catch (error) {
-    renderError(error instanceof Error ? error.message : 'The Changelog could not be loaded.')
+    renderError(error instanceof Error ? error.message : locale === 'ja' ? 'Changelogを読み込めませんでした。' : 'The Changelog could not be loaded.')
   }
 }
 
 function validatePayload(payload: ChangelogPayload): void {
-  if (payload?.version !== 'viewloom-changelog-v2') throw new Error('Unexpected Changelog data version.')
-  if (!Array.isArray(payload.entries)) throw new Error('Changelog entries are unavailable.')
+  if (payload?.version !== 'viewloom-changelog-v2') throw new Error(locale === 'ja' ? 'Changelogデータのバージョンが想定外です。' : 'Unexpected Changelog data version.')
+  if (!Array.isArray(payload.entries)) throw new Error(locale === 'ja' ? 'Changelogエントリを利用できません。' : 'Changelog entries are unavailable.')
 }
 
 function renderEntries(entries: ChangelogEntry[]): void {
@@ -44,7 +66,7 @@ function renderEntries(entries: ChangelogEntry[]): void {
     setState('empty')
     const empty = document.createElement('p')
     empty.className = 'changelog-state'
-    empty.textContent = 'No reviewed milestones have been published.'
+    empty.textContent = locale === 'ja' ? '公開済みのレビュー済みマイルストーンはありません。' : 'No reviewed milestones have been published.'
     timeline.append(empty)
     timeline.setAttribute('aria-busy', 'false')
     return
@@ -69,12 +91,13 @@ function createEntry(entry: ChangelogEntry): HTMLElement {
   time.dateTime = entry.date
   time.textContent = formatDate(entry.date, entry.datePrecision)
 
+  const localized = locale === 'ja' ? JAPANESE_ENTRY_COPY[entry.id] : undefined
   const title = document.createElement('h2')
-  title.textContent = entry.title
+  title.textContent = localized?.title ?? entry.title
 
   const summary = document.createElement('p')
   summary.className = 'changelog-entry__summary'
-  summary.textContent = entry.summary
+  summary.textContent = localized?.summary ?? entry.summary
 
   const copy = document.createElement('div')
   copy.className = 'changelog-entry__copy'
@@ -93,7 +116,7 @@ function renderError(message: string): void {
   state.className = 'changelog-state changelog-state--error'
 
   const title = document.createElement('strong')
-  title.textContent = 'Changelog unavailable'
+  title.textContent = locale === 'ja' ? 'Changelogを利用できません' : 'Changelog unavailable'
 
   const detail = document.createElement('span')
   detail.textContent = message
@@ -101,7 +124,7 @@ function renderError(message: string): void {
   const retry = document.createElement('button')
   retry.type = 'button'
   retry.className = 'button button--small'
-  retry.textContent = 'Retry'
+  retry.textContent = locale === 'ja' ? '再試行' : 'Retry'
   retry.addEventListener('click', () => void loadChangelog())
 
   state.append(title, detail, retry)
@@ -124,5 +147,5 @@ function formatDate(value: string, precision: DatePrecision): string {
     timeZone: 'UTC',
   }
   if (precision === 'day') options.day = 'numeric'
-  return new Intl.DateTimeFormat('en-US', options).format(date)
+  return new Intl.DateTimeFormat(locale === 'ja' ? 'ja-JP' : 'en-US', options).format(date)
 }

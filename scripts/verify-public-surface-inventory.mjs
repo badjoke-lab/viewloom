@@ -21,13 +21,13 @@ check(manifest.provider_invariants?.twitch_binding === 'DB_TWITCH_HOT', 'Twitch 
 check(manifest.provider_invariants?.kick_binding === 'DB_KICK_HOT', 'Kick binding mismatch')
 check(manifest.provider_invariants?.combined_totals_allowed === false, 'combined totals must remain forbidden')
 check(manifest.provider_invariants?.combined_rankings_allowed === false, 'combined rankings must remain forbidden')
-check(manifest.counts?.vite_html_inputs === 46, 'expected 46 Vite HTML routes')
-check(manifest.counts?.inventory_entries === 47, 'expected 47 inventory entries')
+check(manifest.counts?.vite_html_inputs === 50, 'expected 50 Vite HTML routes')
+check(manifest.counts?.inventory_entries === 51, 'expected 51 inventory entries')
 check(manifest.counts?.indexable_routes === 23, 'expected 23 indexable routes')
-check(manifest.counts?.noindex_routes === 23, 'expected 23 noindex routes')
-check(manifest.counts?.current_browser_scenarios === 184, 'expected 184 current browser scenarios')
-check(manifest.counts?.public_readiness_configured_pages === 46, 'Public Readiness route count mismatch')
-check(manifest.counts?.production_smoke_page_routes === 46, 'Production Smoke route count mismatch')
+check(manifest.counts?.noindex_routes === 27, 'expected 27 noindex routes')
+check(manifest.counts?.current_browser_scenarios === 200, 'expected 200 current browser scenarios')
+check(manifest.counts?.public_readiness_configured_pages === 50, 'Public Readiness route count mismatch')
+check(manifest.counts?.production_smoke_page_routes === 50, 'Production Smoke route count mismatch')
 
 const gates = {}
 const profiles = {}
@@ -55,15 +55,16 @@ for (const path of manifest.route_files ?? []) {
   routes.push(...(doc.routes ?? []))
 }
 
-check(routes.length === 47, `expected 47 routes, found ${routes.length}`)
-check(routes.filter((route) => route.source !== 'apps/web/public/404.html').length === 46, 'Vite route count mismatch')
+check(routes.length === 51, `expected 51 routes, found ${routes.length}`)
+check(routes.filter((route) => route.source !== 'apps/web/public/404.html').length === 50, 'Vite route count mismatch')
 check(new Set(routes.map((route) => route.id)).size === routes.length, 'duplicate route id')
 check(new Set(routes.map((route) => route.route)).size === routes.length, 'duplicate route path')
 check(routes.filter((route) => route.profile === 'watchlist').length === 4, 'English and Japanese Watchlist routes must remain inventoried for both providers')
-check(routes.filter((route) => route.profile === 'static_legal').length === 5, 'five static legal routes required')
+check(routes.filter((route) => route.profile === 'static_legal').length === 6, 'five English static legal routes plus Japanese Contact candidate required')
 check(routes.some((route) => route.id === 'twitch-map' && route.route === '/twitch/map/' && route.profile === 'stream_map'), 'public Twitch Stream Map must remain inventoried')
 check(routes.some((route) => route.id === 'kick-map' && route.route === '/kick/map/' && route.profile === 'stream_map'), 'public Kick Stream Map must remain inventoried after K4 authorization')
 for (const [id, route, profile] of [
+  ['ja-about', '/ja/about/', 'static_content'], ['ja-support', '/ja/support/', 'static_content'], ['ja-contact', '/ja/contact/', 'static_legal'], ['ja-changelog', '/ja/changelog/', 'changelog'],
   ['ja-twitch-map', '/ja/twitch/map/', 'stream_map'], ['ja-kick-map', '/ja/kick/map/', 'stream_map'],
   ['ja-twitch-status', '/ja/twitch/status/', 'status'], ['ja-kick-status', '/ja/kick/status/', 'status'],
   ['ja-twitch-channel', '/ja/twitch/channel/', 'channel'], ['ja-kick-channel', '/ja/kick/channel/', 'channel'],
@@ -72,7 +73,7 @@ for (const [id, route, profile] of [
 
 const japaneseCandidates = routes.filter((route) => route.route.startsWith('/ja/'))
 const expectedJapaneseCandidates = [
-  '/ja/',
+  '/ja/', '/ja/about/', '/ja/support/', '/ja/contact/', '/ja/changelog/',
   '/ja/twitch/', '/ja/kick/',
   '/ja/twitch/heatmap/', '/ja/kick/heatmap/',
   '/ja/twitch/day-flow/', '/ja/kick/day-flow/',
@@ -110,6 +111,8 @@ for (const [routePath, expectedApis] of providerContracts) {
   const actual = (route?.apis ?? []).map((api) => [api.path, api.binding])
   check(JSON.stringify(actual) === JSON.stringify(expectedApis), `${routePath}: Japanese candidate must reuse provider API/binding contract`)
 }
+check(JSON.stringify(japaneseCandidates.find((route) => route.route === '/ja/changelog/')?.apis ?? []) === JSON.stringify([{ path: '/data/changelog.json', binding: 'static' }]), 'Japanese Changelog must reuse the public JSON data contract')
+for (const path of ['/ja/about/', '/ja/support/', '/ja/contact/']) check((japaneseCandidates.find((route) => route.route === path)?.apis ?? []).length === 0, `${path}: static Japanese informational route must not introduce an API`)
 
 const vite = readFileSync(join(root, 'apps/web/vite.config.ts'), 'utf8')
 const sitemap = readFileSync(join(root, 'apps/web/public/sitemap.xml'), 'utf8')
@@ -183,13 +186,14 @@ if (failures.length) {
 
 console.log(`Public surface inventory verified: ${routes.length} routes, ${Object.keys(profiles).length} profiles, ${Object.keys(gates).length} gate groups.`)
 console.log('- active program is Phase 12A Analytics Capture Foundation')
-console.log('- current candidate build: 46 HTML routes plus explicit 404')
-console.log('- nineteen Japanese candidates remain noindex, self-canonical, and outside sitemap/hreflang before J10')
-console.log('- Japanese Local Watchlist candidates reuse provider-specific localStorage plus Heatmap/History request ownership')
-console.log('- Watchlist localization is presentation/link-only and preserves raw channel identity, storage keys, bounded-observation semantics, and no-account/no-cloud behavior')
-console.log('- Japanese Channel, Data Status, and Stream Map contracts remain provider-separated')
+console.log('- current candidate build: 50 HTML routes plus explicit 404')
+console.log('- twenty-three Japanese candidates remain noindex, self-canonical, and outside sitemap/hreflang before J10')
+console.log('- J7a adds Japanese About, Support, Contact, and Changelog without changing English public routes')
+console.log('- Japanese Changelog reuses /data/changelog.json and localizes reviewed presentation copy by stable milestone id')
+console.log('- Terms, Privacy, Refund Policy, and Commercial Disclosure remain English-only until J7b')
+console.log('- Japanese product contracts remain provider-separated and preserve existing storage/data semantics')
 console.log('- historical Phase 12 exact-SHA production acceptance remains preserved at its accepted route counts')
-console.log('- five R12A legal/support routes remain production accepted and resolved')
+console.log('- five R12A legal/support routes remain historically production accepted and resolved')
 console.log('- Twitch and Kick bindings remain separate')
 console.log('- historical P8B evidence remains locked separately')
 console.log(`- primary public origin is ${primaryOrigin}`)

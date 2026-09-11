@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-inventory-v1",
-  "version": 16,
+  "version": 17,
   "updated_at": "2026-09-11",
   "source": {
     "branch": "main",
@@ -12,18 +12,18 @@
     "current_browser_audit": "apps/web/scripts/public-current-browser-audit.mjs",
     "production_smoke": ".github/workflows/production-smoke.yml"
   },
-  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. The current candidate build owns 46 HTML routes plus an explicit 404. Nineteen Japanese candidates (Portal, Twitch Home, Kick Home, Twitch Heatmap, Kick Heatmap, Twitch Day Flow, Kick Day Flow, Twitch Battle Lines, Kick Battle Lines, Twitch History, Kick History, Twitch Stream Map, Kick Stream Map, Twitch Data Status, Kick Data Status, Twitch Channel, Kick Channel, Twitch Local Watchlist, Kick Local Watchlist) are noindex and excluded from sitemap/hreflang/public language switching until the coordinated Japanese release gate. Japanese Local Watchlist reuses the existing provider-specific localStorage model, Heatmap/History request ownership, provider separation, bounded-observation semantics, and no-account/no-cloud contract; the locale adapter owns presentation and localized internal links only and does not translate raw channel identities or storage keys. Japanese Channel, Data Status, and Stream Map continue to reuse their existing provider-separated runtimes and APIs without changing collector, storage, cadence, retention, geography/evidence, or Current/IRL semantics. Historical Phase 12/R12A acceptance evidence remains separately preserved.",
+  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. The current candidate build owns 50 HTML routes plus an explicit 404. Twenty-three Japanese candidates are noindex and excluded from sitemap/hreflang/public language switching until the coordinated Japanese release gate. J7a adds Japanese About, Support, Contact, and Changelog candidates while preserving the existing English pages, shared static-page shell, Stripe-hosted support flow, Google Form contact flow, and /data/changelog.json contract. Japanese Changelog localizes reviewed presentation copy by stable milestone id but does not introduce a localized API or duplicate data feed. Terms, Privacy, Refund Policy, and Commercial Disclosure remain English-only until J7b. Japanese product routes continue to reuse their existing provider-separated runtimes and APIs without changing collector, storage, cadence, retention, geography/evidence, or Current/IRL semantics. Historical Phase 12/R12A acceptance evidence remains separately preserved.",
   "counts": {
-    "vite_html_inputs": 46,
+    "vite_html_inputs": 50,
     "explicit_not_found_pages": 1,
-    "inventory_entries": 47,
+    "inventory_entries": 51,
     "indexable_routes": 23,
-    "noindex_routes": 23,
+    "noindex_routes": 27,
     "sitemap_routes": 23,
-    "public_readiness_configured_pages": 46,
-    "production_smoke_page_routes": 46,
+    "public_readiness_configured_pages": 50,
+    "production_smoke_page_routes": 50,
     "current_browser_required_viewports": 4,
-    "current_browser_scenarios": 184
+    "current_browser_scenarios": 200
   },
   "provider_invariants": {
     "separate_routes": true,
