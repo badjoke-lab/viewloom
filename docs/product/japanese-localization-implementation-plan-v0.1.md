@@ -80,16 +80,12 @@ Work:
 - temporary Japanese noindex;
 - route-switch preservation.
 
-Current implementation state (2026-09-10):
+Historical implementation state (2026-09-10):
 
-- `/ja/`, `/ja/twitch/`, and `/ja/kick/` are implemented as hidden candidates;
-- all three self-canonicalize and remain `noindex,follow`;
-- they are excluded from sitemap, public hreflang, and the public language switcher;
-- only these three Japanese paths are currently considered available by locale-aware routing;
-- links to unreleased Japanese features deliberately fall back to the existing English routes instead of creating dead `/ja/*` URLs;
-- Twitch and Kick provider homes reuse the same provider Home renderer and existing provider-specific APIs/D1 bindings;
-- the current candidate inventory is 30 HTML routes plus explicit 404, with 120 browser scenarios across four required viewports;
-- production exposure of the language switcher/indexing remains forbidden until J10.
+- `/ja/`, `/ja/twitch/`, and `/ja/kick/` were introduced as hidden candidates;
+- all self-canonicalize and remain `noindex,follow` before J10;
+- Japanese candidates remain excluded from sitemap, public hreflang, and the public language switcher;
+- provider homes reuse the same renderer and existing provider-specific APIs/D1 bindings.
 
 Outcome:
 
@@ -103,6 +99,15 @@ Migrate both providers for:
 - Day Flow;
 - Battle Lines;
 - History / History & Trends.
+
+Current state (2026-09-11):
+
+- Twitch/Kick Heatmap, Day Flow, Battle Lines, and History candidates are implemented;
+- J4d History merged through PR #1310 at main `d5ed2e13ca4875b099a49bfa5812b969c3d7c725`;
+- shared feature controllers and provider-specific APIs remain authoritative;
+- raw streamer/provider data stays untranslated;
+- UTC data-day semantics remain unchanged;
+- all Japanese J4 surfaces remain hidden/noindex before J10.
 
 Outcome:
 
@@ -121,6 +126,19 @@ Migrate both providers for:
 - accessibility labels.
 
 Do not change geography/evidence semantics.
+
+Current candidate state (2026-09-11):
+
+- `/ja/twitch/map/` and `/ja/kick/map/` are implemented on `work-japanese-localization-stream-map-candidates-20260911`;
+- both are `noindex,follow`, self-canonical, excluded from sitemap/hreflang/public language switching;
+- Twitch reuses `maplibre-bootstrap.ts`, `geography-ui-bootstrap.ts`, `stream-map-entry.ts`, and the existing `/api/twitch-stream-map` Country/City contract;
+- Kick reuses `public-entry.ts` / `public-kc5-entry.ts` and existing `/api/kick-stream-map` Country/City contracts;
+- one locale-gated `stream-map-ja-presentation.ts` adapter translates presentation copy after the existing runtimes render and owns no API path or network request;
+- streamer names, country/city names, runtime category names, reason codes, stable IDs, and other raw/provider data remain untranslated;
+- Country, Base City, City, and Current / IRL semantics are unchanged; Current / IRL remains unavailable where the existing product contract keeps it unavailable;
+- no creator coordinates, inferred location, collector, D1, cadence, retention, or geography acceptance rule is introduced;
+- the current candidate inventory target is 40 HTML routes plus explicit 404, 41 inventory entries, 17 noindex routes, 23 sitemap routes, 13 Japanese candidates, and 160 browser scenarios across four viewports;
+- public exposure/indexing still remains forbidden until J10.
 
 Outcome:
 
@@ -218,17 +236,17 @@ English and Japanese are both first-class public ViewLoom surfaces.
 
 ## 3. Initial execution sequence
 
-The initial foundation branch is limited to:
+The initial foundation branch was limited to:
 
 1. J0 specification and implementation plan;
 2. J1 reusable locale/message/format/route primitives;
-3. targeted type/build verification if available;
-4. no public `/ja/*` route;
+3. targeted type/build verification;
+4. no public Japanese indexing;
 5. no public language switcher;
 6. no sitemap/hreflang change;
 7. no production collector/D1/cadence/retention change.
 
-Stop after the reusable foundation is reviewable. Portal/provider-home migration begins on the next bounded work branch.
+Those release boundaries remain in force through J9.
 
 ## 4. Route migration order
 
