@@ -80,7 +80,9 @@ jobs:
             '/twitch/day-flow/'
             '/ja/twitch/day-flow/'
             '/twitch/battle-lines/'
+            '/ja/twitch/battle-lines/'
             '/twitch/history/'
+            '/ja/twitch/history/'
             '/twitch/map/'
             '/twitch/channel/'
             '/twitch/watchlist/'
@@ -92,13 +94,15 @@ jobs:
             '/kick/day-flow/'
             '/ja/kick/day-flow/'
             '/kick/battle-lines/'
+            '/ja/kick/battle-lines/'
             '/kick/history/'
+            '/ja/kick/history/'
             '/kick/map/'
             '/kick/channel/'
             '/kick/watchlist/'
             '/kick/status/'
           )
-          test "${#routes[@]}" = '34'
+          test "${#routes[@]}" = '38'
           for route in "${routes[@]}"; do
             name="$(echo "$route" | tr '/' '-' | sed 's/^-//;s/-$//')"
             [ -n "$name" ] || name='portal'
@@ -137,7 +141,11 @@ jobs:
             'ja-twitch-heatmap|https://www.viewloom.net/ja/twitch/heatmap/' \
             'ja-kick-heatmap|https://www.viewloom.net/ja/kick/heatmap/' \
             'ja-twitch-day-flow|https://www.viewloom.net/ja/twitch/day-flow/' \
-            'ja-kick-day-flow|https://www.viewloom.net/ja/kick/day-flow/'
+            'ja-kick-day-flow|https://www.viewloom.net/ja/kick/day-flow/' \
+            'ja-twitch-battle-lines|https://www.viewloom.net/ja/twitch/battle-lines/' \
+            'ja-kick-battle-lines|https://www.viewloom.net/ja/kick/battle-lines/' \
+            'ja-twitch-history|https://www.viewloom.net/ja/twitch/history/' \
+            'ja-kick-history|https://www.viewloom.net/ja/kick/history/'
           do
             name="${item%%|*}"
             canonical="${item#*|}"
@@ -151,6 +159,10 @@ jobs:
           grep -Fq '観測日の集計基準はUTCです。' "$ARTIFACT_DIR/ja-kick-heatmap.html"
           grep -Fq 'UTCの実時間をたどり' "$ARTIFACT_DIR/ja-twitch-day-flow.html"
           grep -Fq 'UTCの実時間をたどり' "$ARTIFACT_DIR/ja-kick-day-flow.html"
+          grep -Fq 'UTC基準' "$ARTIFACT_DIR/ja-twitch-battle-lines.html"
+          grep -Fq 'UTC基準' "$ARTIFACT_DIR/ja-kick-battle-lines.html"
+          grep -Fq 'UTC基準' "$ARTIFACT_DIR/ja-twitch-history.html"
+          grep -Fq 'UTC基準' "$ARTIFACT_DIR/ja-kick-history.html"
           curl --silent --show-error --fail --max-time 30 "$ORIGIN/sitemap.xml" -o "$ARTIFACT_DIR/sitemap.xml"
           ! grep -q '<loc>https://www.viewloom.net/ja/' "$ARTIFACT_DIR/sitemap.xml"
       - name: Verify Twitch production status
@@ -202,8 +214,8 @@ jobs:
             if [ -f "$ARTIFACT_DIR/deployment.json" ]; then
               echo "- Deployed SHA: \`$(jq -r '.commit_sha // "unavailable"' "$ARTIFACT_DIR/deployment.json")\`"
             fi
-            echo '- Repository-owned HTML routes: 34 checked'
-            echo '- Hidden Japanese candidates: 7 checked as noindex/self-canonical/sitemap-excluded'
+            echo '- Repository-owned HTML routes: 38 checked'
+            echo '- Hidden Japanese candidates: 11 checked as noindex/self-canonical/sitemap-excluded'
             echo '- About, Support, Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Changelog, Channel, Watchlist, Twitch Stream Map, and Kick Stream Map ownership: checked'
             echo '- Twitch and Kick status APIs: checked'
             echo '- Separate D1 bindings: checked'
