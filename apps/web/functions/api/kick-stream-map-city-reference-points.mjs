@@ -24,6 +24,9 @@ const POINTS = Object.freeze([
   // Natural Earth v5.1.2 ne_10m_populated_places_simple: ne_id 1159151621.
   // This is a City aggregate reference point, never a creator coordinate.
   Object.freeze({ countryCode: 'BR', region: null, city: 'São Paulo', latitude: -23.556734, longitude: -46.626966 }),
+  // Natural Earth v5.1.2 ne_10m_populated_places_simple: ne_id 1159151485.
+  // This is a City aggregate reference point, never a creator coordinate.
+  Object.freeze({ countryCode: 'US', region: 'Texas', city: 'Houston', latitude: 29.82192, longitude: -95.341925 }),
 ])
 
 const POINT_BY_KEY = new Map(POINTS.map((point) => [keyFromParts(point), point]))
