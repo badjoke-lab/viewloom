@@ -54,21 +54,13 @@ export function kickCityReferenceGeometry(placement) {
 export function applyKickCityReferencePoints(runtime) {
   const source = runtime && typeof runtime === 'object' ? runtime : {}
   const rawAggregates = Array.isArray(source.cityAggregates) ? source.cityAggregates : []
-  const rawMappedStreams = Array.isArray(source.mappedStreams) ? source.mappedStreams : []
 
+  // Reference geometry belongs to the City aggregate only. Never duplicate a
+  // reference point into a creator/stream row, where latitude/longitude could
+  // be misread as creator precision even though the point is aggregate-only.
   const cityAggregates = rawAggregates.map((aggregate) => ({
     ...aggregate,
     referenceGeometry: kickCityReferenceGeometry(aggregate),
-  }))
-
-  const mappedStreams = rawMappedStreams.map((stream) => ({
-    ...stream,
-    geography: stream?.geography && typeof stream.geography === 'object'
-      ? {
-          ...stream.geography,
-          referenceGeometry: kickCityReferenceGeometry(stream.geography),
-        }
-      : stream?.geography,
   }))
 
   const referenceGeometryAggregates = cityAggregates.filter(
@@ -83,6 +75,5 @@ export function applyKickCityReferencePoints(runtime) {
       listOnlyAggregates: Math.max(0, cityAggregates.length - referenceGeometryAggregates),
     },
     cityAggregates,
-    mappedStreams,
   }
 }

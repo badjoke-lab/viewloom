@@ -1,5 +1,5 @@
 name: Public Browser Audit
-# Current candidate contract: 42 routes x 4 required widths = 168 scenarios.
+# Current candidate contract: 44 routes x 4 required widths = 176 scenarios.
 
 on:
   workflow_dispatch:
@@ -37,35 +37,26 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.17.1
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-
       - name: Verify development policy
         run: node scripts/verify-development-policy.mjs
-
       - name: Verify current public surface inventory
         run: node scripts/verify-public-surface-inventory.mjs
-
       - name: Verify historical P8B evidence and current handoff state
         run: node scripts/verify-public-browser-audit-historical.mjs && node scripts/verify-public-browser-audit-current.mjs
-
       - name: Typecheck web application
         run: pnpm --filter @viewloom/web typecheck:app
-
       - name: Build web application
         run: pnpm build:web
-
       - name: Start local candidate preview
         shell: bash
         run: |
@@ -81,6 +72,8 @@ jobs:
               && curl --silent --fail http://127.0.0.1:4173/ja/kick/map/ > /dev/null \
               && curl --silent --fail http://127.0.0.1:4173/ja/twitch/status/ > /dev/null \
               && curl --silent --fail http://127.0.0.1:4173/ja/kick/status/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/ja/twitch/channel/ > /dev/null \
+              && curl --silent --fail http://127.0.0.1:4173/ja/kick/channel/ > /dev/null \
               && curl --silent --fail http://127.0.0.1:4173/contact/ > /dev/null \
               && curl --silent --fail http://127.0.0.1:4173/twitch/history/ > /dev/null \
               && curl --silent --fail http://127.0.0.1:4173/kick/history/ > /dev/null \
@@ -90,45 +83,37 @@ jobs:
           done
           cat /tmp/public-browser-preview.log
           exit 1
-
       - name: Install Playwright in isolated prefix
         working-directory: apps/web
         run: node scripts/install-ci-playwright.mjs
-
       - name: Install Chromium
         run: /tmp/viewloom-playwright/node_modules/.bin/playwright install --with-deps chromium
-
       - name: Run current candidate public browser matrix
         working-directory: apps/web
         shell: bash
         run: |
           set -o pipefail
           node scripts/public-current-browser-audit.mjs 2>&1 | tee /tmp/public-current-browser-audit-run.log
-
       - name: Verify current candidate browser evidence
         run: node scripts/verify-public-current-browser-audit.mjs /tmp/public-current-browser-audit/evidence.json
-
       - name: Verify Twitch Stream Map geography accessibility
         working-directory: apps/web
         shell: bash
         run: |
           set -o pipefail
           node scripts/twitch-stream-map-geography-accessibility-audit.mjs 2>&1 | tee /tmp/twitch-stream-map-geography-accessibility-run.log
-
       - name: Verify Twitch Stream Map feature-tab accessibility
         working-directory: apps/web
         shell: bash
         run: |
           set -o pipefail
           node scripts/twitch-stream-map-feature-tab-accessibility-audit.mjs 2>&1 | tee /tmp/twitch-stream-map-feature-tab-accessibility-run.log
-
       - name: Verify Twitch Stream Map data-error stale-state handling
         working-directory: apps/web
         shell: bash
         run: |
           set -o pipefail
           node scripts/twitch-stream-map-data-state-audit.mjs 2>&1 | tee /tmp/twitch-stream-map-data-state-run.log
-
       - name: Upload current public browser artifacts
         if: always()
         uses: actions/upload-artifact@v4

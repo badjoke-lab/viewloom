@@ -240,6 +240,6 @@ async function hasVisibleFocus(page, selector) {
 }
 
 await import('../../../scripts/verify-kick-stream-map-ui-kc4-city-preview.mjs')
-await import('./kick-stream-map-kc4-city-browser-proof.mjs')
+await import('./kick-stream-map-kc5-production-browser-proof.mjs')
 const { cp } = await import('node:fs/promises')
-await cp('/tmp/kick-stream-map-kc4-city-browser-proof', `${outputRoot}/kc4-city`, { recursive: true })
+await cp('/tmp/kick-stream-map-kc5-production-browser-proof', `${outputRoot}/kc5-city-production`, { recursive: true })

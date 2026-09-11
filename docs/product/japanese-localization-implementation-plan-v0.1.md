@@ -162,15 +162,18 @@ J6b — Channel
 J6c — Local Watchlist
 ```
 
-Current candidate state (2026-09-11):
+Current state (2026-09-11):
 
-- J6a adds hidden `/ja/twitch/status/` and `/ja/kick/status/` candidates in PR #1315;
-- both reuse `status-current-shell-entry.ts` and the existing provider-separated `/api/twitch-status` / `/api/kick-status` contracts;
-- `status-ja-presentation.ts` is presentation-only and owns no fetch/API path;
-- `mock-site.ts` localizes internal links only when an equivalent Japanese route is explicitly available, preventing newly released J6 sub-routes from leaving ordinary Japanese navigation in English;
-- freshness, coverage, source mode, provider separation, and real/empty/demo semantics are unchanged;
-- J6a candidate target is 42 HTML routes plus explicit 404, 43 inventory entries, 19 noindex routes, 23 sitemap routes, 15 Japanese candidates, and 168 browser scenarios across four viewports;
-- J6b Channel and J6c Local Watchlist remain unreleased until their own bounded candidate stages;
+- J6a Data Status is merged through PR #1315 with hidden `/ja/twitch/status/` and `/ja/kick/status/` candidates;
+- Data Status reuses `status-current-shell-entry.ts` and the existing provider-separated `/api/twitch-status` / `/api/kick-status` contracts; `status-ja-presentation.ts` owns presentation only;
+- J6b Channel is implemented in PR #1324 with hidden `/ja/twitch/channel/` and `/ja/kick/channel/` candidates;
+- Channel reuses `channel-profile.ts`, the existing provider-separated `/api/history` / `/api/kick-history` endpoints, and the existing query-state URL contract;
+- `channel-ja-presentation.ts` owns no network request or API path and protects raw channel identity/external provider links while localizing rendered presentation copy;
+- Channel URL state preserves the current localized pathname plus query/hash, so Japanese Channel interaction does not fall back to the English route;
+- all J6 candidates remain `noindex,follow`, self-canonical, excluded from sitemap/hreflang/public language switching until J10;
+- J6b candidate contract is 44 HTML routes plus explicit 404, 45 inventory entries, 21 noindex routes, 23 sitemap routes, 17 Japanese candidates, and 176 browser scenarios across four viewports;
+- freshness, coverage, provider separation, retained Top-10 semantics, raw provider identity, collector/storage/cadence/retention rules, geography semantics, and Current/IRL rules are unchanged;
+- J6c Local Watchlist is the remaining J6 route stage and must be implemented as a separate bounded candidate PR after J6b;
 - J10 remains the only authorization point for Japanese indexing, sitemap, reciprocal hreflang, and public language switching.
 
 Outcome:

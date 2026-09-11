@@ -86,6 +86,7 @@ jobs:
             '/twitch/map/'
             '/ja/twitch/map/'
             '/twitch/channel/'
+            '/ja/twitch/channel/'
             '/twitch/watchlist/'
             '/twitch/status/'
             '/ja/twitch/status/'
@@ -102,24 +103,19 @@ jobs:
             '/kick/map/'
             '/ja/kick/map/'
             '/kick/channel/'
+            '/ja/kick/channel/'
             '/kick/watchlist/'
             '/kick/status/'
             '/ja/kick/status/'
           )
-          test "${#routes[@]}" = '42'
+          test "${#routes[@]}" = '44'
           for route in "${routes[@]}"; do
             name="$(echo "$route" | tr '/' '-' | sed 's/^-//;s/-$//')"
             [ -n "$name" ] || name='portal'
             code="$(curl --silent --show-error --location --max-time 30 --output "$ARTIFACT_DIR/$name.html" --write-out '%{http_code}' "$ORIGIN$route")"
             echo "production route $route -> HTTP $code"
-            if [ "$code" != '200' ]; then
-              echo "::error::$route returned HTTP $code"
-              exit 1
-            fi
-            if ! grep -qi 'ViewLoom' "$ARTIFACT_DIR/$name.html"; then
-              echo "::error::$route response did not contain ViewLoom"
-              exit 1
-            fi
+            if [ "$code" != '200' ]; then echo "::error::$route returned HTTP $code"; exit 1; fi
+            if ! grep -qi 'ViewLoom' "$ARTIFACT_DIR/$name.html"; then echo "::error::$route response did not contain ViewLoom"; exit 1; fi
           done
           grep -q '<title>History & Trends for Twitch live streams | ViewLoom</title>' "$ARTIFACT_DIR/twitch-history.html"
           grep -Fq '<title>Twitch Stream Map — Geography & Viewer Counts | ViewLoom</title>' "$ARTIFACT_DIR/twitch-map.html"
@@ -153,7 +149,9 @@ jobs:
             'ja-twitch-map|https://www.viewloom.net/ja/twitch/map/' \
             'ja-kick-map|https://www.viewloom.net/ja/kick/map/' \
             'ja-twitch-status|https://www.viewloom.net/ja/twitch/status/' \
-            'ja-kick-status|https://www.viewloom.net/ja/kick/status/'
+            'ja-kick-status|https://www.viewloom.net/ja/kick/status/' \
+            'ja-twitch-channel|https://www.viewloom.net/ja/twitch/channel/' \
+            'ja-kick-channel|https://www.viewloom.net/ja/kick/channel/'
           do
             name="${item%%|*}"
             canonical="${item#*|}"
@@ -175,37 +173,26 @@ jobs:
           grep -Fq 'Current / IRL' "$ARTIFACT_DIR/ja-kick-map.html"
           grep -Fq '鮮度' "$ARTIFACT_DIR/ja-twitch-status.html"
           grep -Fq '鮮度' "$ARTIFACT_DIR/ja-kick-status.html"
+          grep -Fq '保持ランキング履歴' "$ARTIFACT_DIR/ja-twitch-channel.html"
+          grep -Fq '保持ランキング履歴' "$ARTIFACT_DIR/ja-kick-channel.html"
           grep -Fq '/src/features/twitch-stream-map/maplibre-bootstrap.ts' "$ARTIFACT_DIR/ja-twitch-map.html"
           grep -Fq '/src/features/kick-stream-map/public-entry.ts' "$ARTIFACT_DIR/ja-kick-map.html"
           grep -Fq '/src/live/status-current-shell-entry.ts' "$ARTIFACT_DIR/ja-twitch-status.html"
           grep -Fq '/src/live/status-current-shell-entry.ts' "$ARTIFACT_DIR/ja-kick-status.html"
+          grep -Fq '/src/live/channel-profile.ts' "$ARTIFACT_DIR/ja-twitch-channel.html"
+          grep -Fq '/src/live/channel-profile.ts' "$ARTIFACT_DIR/ja-kick-channel.html"
           curl --silent --show-error --fail --max-time 30 "$ORIGIN/sitemap.xml" -o "$ARTIFACT_DIR/sitemap.xml"
           ! grep -q '<loc>https://www.viewloom.net/ja/' "$ARTIFACT_DIR/sitemap.xml"
       - name: Verify Twitch production status
         run: |
           set -euo pipefail
           curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/twitch-status" -o "$ARTIFACT_DIR/twitch-status.json"
-          jq -e '
-            .platform == "twitch" and
-            .storage.binding == "DB_TWITCH_HOT" and
-            .storage.database == "vl_twitch_hot" and
-            .sourceMode == "real" and
-            .collector.state == "ok" and
-            .freshness.isStale == false
-          ' "$ARTIFACT_DIR/twitch-status.json" > /dev/null
+          jq -e '.platform == "twitch" and .storage.binding == "DB_TWITCH_HOT" and .storage.database == "vl_twitch_hot" and .sourceMode == "real" and .collector.state == "ok" and .freshness.isStale == false' "$ARTIFACT_DIR/twitch-status.json" > /dev/null
       - name: Verify Kick production status
         run: |
           set -euo pipefail
           curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/kick-status" -o "$ARTIFACT_DIR/kick-status.json"
-          jq -e '
-            .platform == "kick" and
-            .storage.binding == "DB_KICK_HOT" and
-            .storage.database == "vl_kick_hot" and
-            .sourceMode == "authenticated" and
-            .collector.state == "snapshot_available" and
-            .freshness.isFresh == true and
-            .freshness.isStale == false
-          ' "$ARTIFACT_DIR/kick-status.json" > /dev/null
+          jq -e '.platform == "kick" and .storage.binding == "DB_KICK_HOT" and .storage.database == "vl_kick_hot" and .sourceMode == "authenticated" and .collector.state == "snapshot_available" and .freshness.isFresh == true and .freshness.isStale == false' "$ARTIFACT_DIR/kick-status.json" > /dev/null
       - name: Build Phase 11 monitoring evidence
         run: node scripts/build-phase11-monitoring-evidence.mjs "$ARTIFACT_DIR"
       - name: Verify Phase 11 monitoring evidence
@@ -226,12 +213,10 @@ jobs:
           {
             echo '## ViewLoom Production Smoke'
             echo "- Expected main SHA: \`$GITHUB_SHA\`"
-            if [ -f "$ARTIFACT_DIR/deployment.json" ]; then
-              echo "- Deployed SHA: \`$(jq -r '.commit_sha // "unavailable"' "$ARTIFACT_DIR/deployment.json")\`"
-            fi
-            echo '- Repository-owned HTML routes: 42 checked'
-            echo '- Hidden Japanese candidates: 15 checked as noindex/self-canonical/sitemap-excluded'
-            echo '- About, Support, Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Changelog, Channel, Watchlist, English/Japanese Data Status, and English/Japanese Twitch/Kick Stream Map ownership: checked'
+            if [ -f "$ARTIFACT_DIR/deployment.json" ]; then echo "- Deployed SHA: \`$(jq -r '.commit_sha // "unavailable"' "$ARTIFACT_DIR/deployment.json")\`"; fi
+            echo '- Repository-owned HTML routes: 44 checked'
+            echo '- Hidden Japanese candidates: 17 checked as noindex/self-canonical/sitemap-excluded'
+            echo '- About, Support, Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Changelog, English/Japanese Channel, Watchlist, English/Japanese Data Status, and English/Japanese Twitch/Kick Stream Map ownership: checked'
             echo '- Twitch and Kick status APIs: checked'
             echo '- Separate D1 bindings: checked'
             echo '- Collector freshness: checked'
