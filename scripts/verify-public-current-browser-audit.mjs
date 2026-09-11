@@ -3,14 +3,8 @@ import { readFileSync } from 'node:fs'
 
 const path = process.argv[2] || '/tmp/public-current-browser-audit/evidence.json'
 const evidence = JSON.parse(readFileSync(path, 'utf8'))
-const routeFiles = [
-  'docs/audits/public-surface-routes-portal.json',
-  'docs/audits/public-surface-routes-twitch.json',
-  'docs/audits/public-surface-routes-kick.json',
-]
-const expectedRoutes = routeFiles
-  .flatMap((file) => JSON.parse(readFileSync(file, 'utf8')).routes)
-  .filter((route) => route.route !== '*')
+const routeFiles = ['docs/audits/public-surface-routes-portal.json','docs/audits/public-surface-routes-twitch.json','docs/audits/public-surface-routes-kick.json']
+const expectedRoutes = routeFiles.flatMap((file) => JSON.parse(readFileSync(file, 'utf8')).routes).filter((route) => route.route !== '*')
 const japaneseCandidateRoutes = expectedRoutes.filter((route) => route.route.startsWith('/ja/'))
 const twitchFeatureRoutes = expectedRoutes.filter((route) => route.provider === 'twitch' && route.profile !== 'provider_home' && !route.route.startsWith('/ja/'))
 const kickFeatureRoutes = expectedRoutes.filter((route) => route.provider === 'kick' && route.profile !== 'provider_home')
@@ -21,10 +15,10 @@ assert.equal(evidence.phase, 'Phase 12')
 assert.equal(evidence.workstream, 'R12A')
 assert.equal(evidence.result, 'pass')
 assert.equal(evidence.counts.routes, expectedRoutes.length)
-assert.equal(evidence.counts.routes, 42)
+assert.equal(evidence.counts.routes, 44)
 assert.equal(evidence.counts.viewports, 4)
 assert.equal(evidence.counts.scenarios, expectedRoutes.length * 4)
-assert.equal(evidence.counts.scenarios, 168)
+assert.equal(evidence.counts.scenarios, 176)
 assert.equal(evidence.counts.violations, 0)
 assert.equal(evidence.counts.providerCrossingScenarios, 0)
 assert.equal(evidence.counts.providerNeutralApiRequestScenarios, 0)
@@ -36,8 +30,8 @@ assert.equal(evidence.counts.twitchHomeStreamMapLinkScenarios, 4)
 assert.equal(evidence.counts.kickHomeStreamMapLinkScenarios, 4)
 assert.equal(evidence.counts.twitchFeatureTabStreamMapLinkScenarios, twitchFeatureRoutes.length * 4)
 assert.equal(evidence.counts.kickFeatureTabStreamMapLinkScenarios, 4)
-assert.equal(evidence.scenarios.length, 168)
-assert.equal(japaneseCandidateRoutes.length, 15)
+assert.equal(evidence.scenarios.length, 176)
+assert.equal(japaneseCandidateRoutes.length, 17)
 
 for (const route of expectedRoutes) {
   const scenarios = evidence.scenarios.filter((item) => item.route === route.route)
@@ -46,9 +40,7 @@ for (const route of expectedRoutes) {
     assert.equal(scenario.status, 200, `${scenario.id}: status`)
     assert.equal(scenario.violations.length, 0, `${scenario.id}: violations`)
     assert.equal(scenario.canonical, route.canonical, `${scenario.id}: canonical`)
-    if (route.provider === 'portal' && (route.apis ?? []).length === 0) {
-      assert.equal(scenario.apiRequests.length, 0, `${scenario.id}: provider-neutral API requests`)
-    }
+    if (route.provider === 'portal' && (route.apis ?? []).length === 0) assert.equal(scenario.apiRequests.length, 0, `${scenario.id}: provider-neutral API requests`)
   }
 }
 
@@ -109,19 +101,13 @@ for (const scenario of kickMapScenarios) {
 for (const route of kickNonMapFeatureRoutes) {
   const scenarios = evidence.scenarios.filter((item) => item.route === route.route)
   assert.equal(scenarios.length, 4, `${route.route}: expected four Kick feature scenarios`)
-  for (const scenario of scenarios) {
-    assert.equal(
-      scenario.featureTabStreamMapLinks.some((link) => link.href === '/kick/map/'),
-      false,
-      `${scenario.id}: non-Map Kick feature tab unexpectedly exposes /kick/map/`,
-    )
-  }
+  for (const scenario of scenarios) assert.equal(scenario.featureTabStreamMapLinks.some((link) => link.href === '/kick/map/'), false, `${scenario.id}: non-Map Kick feature tab unexpectedly exposes /kick/map/`)
 }
 
 console.log('Current public browser audit verification passed.')
 console.log(`- routes: ${evidence.counts.routes}`)
 console.log(`- scenarios: ${evidence.counts.scenarios}`)
-console.log('- Japanese candidate routes: 15 x 4 viewports')
+console.log('- Japanese candidate routes: 17 x 4 viewports')
 console.log('- provider crossing: 0')
 console.log('- provider-neutral API requests: 0')
 console.log('- overflow/focus/unlabeled/legal mobile target failures: 0')
