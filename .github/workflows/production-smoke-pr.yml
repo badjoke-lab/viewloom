@@ -44,7 +44,11 @@ jobs:
             dist/ja/twitch/heatmap/index.html \
             dist/ja/kick/heatmap/index.html \
             dist/ja/twitch/day-flow/index.html \
-            dist/ja/kick/day-flow/index.html
+            dist/ja/kick/day-flow/index.html \
+            dist/ja/twitch/battle-lines/index.html \
+            dist/ja/kick/battle-lines/index.html \
+            dist/ja/twitch/history/index.html \
+            dist/ja/kick/history/index.html
           do
             test -f "$file"
             grep -Eqi '<html[^>]+lang="ja"' "$file"
@@ -57,21 +61,37 @@ jobs:
           grep -q '観測日の集計基準はUTCです。' dist/ja/kick/heatmap/index.html
           grep -q 'UTCの実時間をたどり' dist/ja/twitch/day-flow/index.html
           grep -q 'UTCの実時間をたどり' dist/ja/kick/day-flow/index.html
+          grep -q 'UTC基準' dist/ja/twitch/battle-lines/index.html
+          grep -q 'UTC基準' dist/ja/kick/battle-lines/index.html
+          grep -q 'UTC基準' dist/ja/twitch/history/index.html
+          grep -q 'UTC基準' dist/ja/kick/history/index.html
           grep -q '/src/live/heatmap-current-shell-entry.ts' ja/twitch/heatmap/index.html
           grep -q '/src/live/heatmap-current-shell-entry.ts' ja/kick/heatmap/index.html
           grep -q '/src/live/day-flow-ja-twitch-entry.ts' ja/twitch/day-flow/index.html
           grep -q '/src/live/day-flow-ja-kick-entry.ts' ja/kick/day-flow/index.html
+          grep -q '/src/live/battle-lines-ja-twitch-entry.ts' ja/twitch/battle-lines/index.html
+          grep -q '/src/live/battle-lines-ja-kick-entry.ts' ja/kick/battle-lines/index.html
+          grep -q '/src/live/history-ja-twitch-entry.ts' ja/twitch/history/index.html
+          grep -q '/src/live/history-ja-kick-entry.ts' ja/kick/history/index.html
           ! grep -q '<loc>https://www.viewloom.net/ja/' dist/sitemap.xml
       - name: Verify production smoke workflow contract
         run: |
           set -euo pipefail
           grep -q 'Wait for the matching production deployment' .github/workflows/production-smoke.yml
           grep -q 'Verify hidden Japanese candidates' .github/workflows/production-smoke.yml
-          grep -q "test \"\${#routes\[@\]}\" = '34'" .github/workflows/production-smoke.yml
-          grep -q "ja-twitch-heatmap|https://www.viewloom.net/ja/twitch/heatmap/" .github/workflows/production-smoke.yml
-          grep -q "ja-kick-heatmap|https://www.viewloom.net/ja/kick/heatmap/" .github/workflows/production-smoke.yml
-          grep -q "ja-twitch-day-flow|https://www.viewloom.net/ja/twitch/day-flow/" .github/workflows/production-smoke.yml
-          grep -q "ja-kick-day-flow|https://www.viewloom.net/ja/kick/day-flow/" .github/workflows/production-smoke.yml
+          grep -q "test \"\${#routes\[@\]}\" = '38'" .github/workflows/production-smoke.yml
+          for route in \
+            'ja-twitch-heatmap|https://www.viewloom.net/ja/twitch/heatmap/' \
+            'ja-kick-heatmap|https://www.viewloom.net/ja/kick/heatmap/' \
+            'ja-twitch-day-flow|https://www.viewloom.net/ja/twitch/day-flow/' \
+            'ja-kick-day-flow|https://www.viewloom.net/ja/kick/day-flow/' \
+            'ja-twitch-battle-lines|https://www.viewloom.net/ja/twitch/battle-lines/' \
+            'ja-kick-battle-lines|https://www.viewloom.net/ja/kick/battle-lines/' \
+            'ja-twitch-history|https://www.viewloom.net/ja/twitch/history/' \
+            'ja-kick-history|https://www.viewloom.net/ja/kick/history/'
+          do
+            grep -Fq "$route" .github/workflows/production-smoke.yml
+          done
           grep -q 'Verify Twitch production status' .github/workflows/production-smoke.yml
           grep -q 'Verify Kick production status' .github/workflows/production-smoke.yml
           grep -q 'Build Phase 11 monitoring evidence' .github/workflows/production-smoke.yml
