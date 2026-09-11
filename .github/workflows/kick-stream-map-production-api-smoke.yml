@@ -11,6 +11,8 @@ on:
       - 'apps/web/functions/api/kick-stream-map-city-runtime-core.mjs'
       - 'apps/web/functions/api/kick-stream-map-city-runtime-core.d.mts'
       - 'apps/web/functions/api/kick-stream-map-reviewed-city-runtime-data.mjs'
+      - 'apps/web/functions/api/kick-stream-map-city-reference-points.mjs'
+      - 'apps/web/functions/api/kick-stream-map-city-reference-points.d.mts'
       - '.github/workflows/kick-stream-map-production-api-smoke.yml'
   push:
     branches: [main]
@@ -26,6 +28,8 @@ on:
       - 'apps/web/functions/api/kick-stream-map-city-runtime-core.mjs'
       - 'apps/web/functions/api/kick-stream-map-city-runtime-core.d.mts'
       - 'apps/web/functions/api/kick-stream-map-reviewed-city-runtime-data.mjs'
+      - 'apps/web/functions/api/kick-stream-map-city-reference-points.mjs'
+      - 'apps/web/functions/api/kick-stream-map-city-reference-points.d.mts'
       - '.github/workflows/deploy-web-pages.yml'
       - '.github/workflows/kick-stream-map-production-api-smoke.yml'
   workflow_dispatch:
@@ -201,7 +205,7 @@ jobs:
 
           echo "Kick Stream Map K4 production proof: state=$state authorized=$authorized observed=$observed stable=$stable reviewed=$reviewed mapped=$mapped"
 
-      - name: Verify production Kick City runtime remains non-public
+      - name: Verify production Kick City runtime is ready and aggregate-safe
         shell: bash
         run: |
           set -euo pipefail
@@ -216,19 +220,20 @@ jobs:
             .provider == "kick" and
             .source == "real" and
             .geographyMode == "city" and
-            .publicActivationAuthorized == false and
-            .publicCityActivationAuthorized == false and
-            .state == "blocked_public_activation" and
+            .publicActivationAuthorized == true and
+            .publicCityActivationAuthorized == true and
+            .state == "ready" and
             .activation.publicCityActivationReady == true and
-            (.activation.blockers | index("public_city_activation_not_authorized")) != null and
+            (.activation.blockers | index("public_city_activation_not_authorized")) == null and
             (.activation.blockers | index("production_livestream_snapshot_missing_broadcaster_user_id")) == null and
             .identity.stableKey == "broadcaster_user_id" and
             .identity.slugIsStableIdentity == false and
             .coverage.observedStreams > 0 and
             .coverage.stableIdentityStreams == .coverage.observedStreams and
             .coverage.reviewedEvidenceCatalogSize == 7 and
-            .coverage.referenceGeometryAggregates == 0 and
-            .coverage.listOnlyAggregates == .coverage.mappedCityAggregateCount and
+            .coverage.referenceGeometryAggregates >= 0 and
+            .coverage.listOnlyAggregates >= 0 and
+            (.coverage.referenceGeometryAggregates + .coverage.listOnlyAggregates) == .coverage.mappedCityAggregateCount and
             .coverage.reconciliation.passes == true and
             .coverage.reconciliation.selectedPopulation == .coverage.observedStreams and
             .coverage.reconciliation.reconciledPopulation == .coverage.observedStreams and
@@ -242,11 +247,21 @@ jobs:
             .semantics.creatorCoordinatesAllowed == false and
             .semantics.reviewedAggregateReferenceOnly == true and
             .semantics.noGeometryListOnly == true and
-            ([paths | .[-1] | tostring | select(. == "stableKickUserId" or . == "broadcaster_user_id" or . == "currentLocation" or . == "current_location" or . == "temporaryLocation" or . == "temporary_location" or . == "latitude" or . == "longitude" or . == "coordinates" or . == "address")] | length) == 0 and
-            ([.cityAggregates[]? | select(.referenceGeometry.state != "no_geometry" or .referenceGeometry.referenceKey != null or .referenceGeometry.semantics != "list_only")] | length) == 0
+            ([paths | .[-1] | tostring | select(. == "stableKickUserId" or . == "broadcaster_user_id" or . == "currentLocation" or . == "current_location" or . == "temporaryLocation" or . == "temporary_location" or . == "coordinates" or . == "address")] | length) == 0 and
+            ([.cityAggregates[]? | select(
+              (.referenceGeometry.state == "reference_point" and
+                (.referenceGeometry.referenceKey | type == "string" and length > 0) and
+                .referenceGeometry.semantics == "city_aggregate_reference" and
+                (.referenceGeometry.referencePoint.latitude | type == "number" and . >= -90 and . <= 90) and
+                (.referenceGeometry.referencePoint.longitude | type == "number" and . >= -180 and . <= 180)) or
+              (.referenceGeometry.state == "no_geometry" and
+                .referenceGeometry.referenceKey == null and
+                .referenceGeometry.semantics == "list_only")
+              | not
+            )] | length) == 0
           ' kick-stream-map-city.json >/dev/null
 
-          echo "Kick Stream Map City production proof: state=$(jq -r '.state' kick-stream-map-city.json) authorized=$(jq -r '.publicCityActivationAuthorized' kick-stream-map-city.json) observed=$(jq -r '.coverage.observedStreams' kick-stream-map-city.json) mapped=$(jq -r '.coverage.mappedStreams' kick-stream-map-city.json) cityAggregates=$(jq -r '.coverage.mappedCityAggregateCount' kick-stream-map-city.json)"
+          echo "Kick Stream Map City production proof: state=$(jq -r '.state' kick-stream-map-city.json) authorized=$(jq -r '.publicCityActivationAuthorized' kick-stream-map-city.json) observed=$(jq -r '.coverage.observedStreams' kick-stream-map-city.json) mapped=$(jq -r '.coverage.mappedStreams' kick-stream-map-city.json) cityAggregates=$(jq -r '.coverage.mappedCityAggregateCount' kick-stream-map-city.json) referenceGeometry=$(jq -r '.coverage.referenceGeometryAggregates' kick-stream-map-city.json)"
 
       - name: Upload production smoke evidence
         if: always()
