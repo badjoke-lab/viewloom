@@ -7,15 +7,31 @@ import {
 } from '../apps/web/functions/api/kick-stream-map-reviewed-city-runtime-data.mjs'
 import {
   KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA,
+  KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA_VERSION,
 } from './kick-stream-map-reviewed-city-runtime-staging-data.mjs'
 
 assert.equal(KICK_REVIEWED_CITY_RUNTIME_DATA_VERSION, 'viewloom-kick-reviewed-city-runtime-data-v0.1')
+assert.equal(KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA_VERSION, 'viewloom-kick-reviewed-city-runtime-staging-data-v0.2')
+assert.equal(KICK_REVIEWED_CITY_RUNTIME_DATA.length, 37)
+assert.equal(KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA.length, 47)
 assert.ok(KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA.length >= KICK_REVIEWED_CITY_RUNTIME_DATA.length)
 assert.deepEqual(
   KICK_REVIEWED_CITY_RUNTIME_DATA,
   KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA.slice(0, KICK_REVIEWED_CITY_RUNTIME_DATA.length),
 )
-assert.ok(KICK_REVIEWED_CITY_RUNTIME_DATA.length >= 12)
+
+const stagedByStableId = new Map(KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA.map((row) => [row.stableKickUserId, row]))
+assert.equal(stagedByStableId.size, KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA.length)
+assert.equal(stagedByStableId.get('5680579')?.outcome, 'no_qualifying_evidence')
+assert.equal(stagedByStableId.get('108251792')?.outcome, 'no_qualifying_evidence')
+assert.equal(stagedByStableId.get('100278593')?.outcome, 'no_qualifying_evidence')
+assert.deepEqual(stagedByStableId.get('69069'), {
+  stableKickUserId: '69069',
+  outcome: 'accepted',
+  claimKind: 'declared_location',
+  placement: { state: 'mapped', countryCode: 'US', region: null, city: 'New York' },
+})
+assert.equal(KICK_REVIEWED_CITY_RUNTIME_DATA.some((row) => row.stableKickUserId === '69069'), false)
 
 const snapshotItems = [
   { slug: 'absi', displayName: 'Absi', viewer_count: 10, broadcaster_user_id: '27894320' },
@@ -175,6 +191,8 @@ console.log(JSON.stringify({
   ok: true,
   runtimeVersion: response.version,
   reviewedCatalog: response.coverage.reviewedEvidenceCatalogSize,
+  stagedCatalog: KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA.length,
+  stagedAcceptedNewYork: stagedByStableId.get('69069')?.outcome === 'accepted',
   observedStreams: response.coverage.observedStreams,
   mappedStreams: response.coverage.mappedStreams,
   excludedStreams: response.coverage.excludedStreams,
