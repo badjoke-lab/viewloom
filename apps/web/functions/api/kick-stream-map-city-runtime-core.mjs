@@ -3,6 +3,11 @@ import {
   KICK_REVIEWED_CITY_RUNTIME_DATA,
   KICK_REVIEWED_CITY_RUNTIME_DATA_VERSION,
 } from './kick-stream-map-reviewed-city-runtime-data.mjs'
+import {
+  KICK_REVIEWED_CITY_REFERENCE_GEOMETRY_VERSION,
+  kickCityAggregateKeyFromParts,
+  kickReviewedCityReferenceGeometryByKey,
+} from './kick-stream-map-reviewed-city-reference-geometry.mjs'
 
 export const KICK_STREAM_MAP_CITY_RUNTIME_VERSION = 'viewloom-kick-stream-map-city-runtime-v0.1'
 
@@ -33,20 +38,42 @@ function viewers(value) {
   return 0
 }
 
-function normalized(value) {
-  return text(value)
-    .normalize('NFKC')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-}
-
 function countryCode(value) {
   const code = text(value).toUpperCase()
   return /^[A-Z]{2}$/.test(code) ? code : null
 }
 
-function cityAggregateKey({ countryCode: code, region, city }) {
-  return `${code}|${normalized(region) || '__none__'}|${normalized(city)}`
+function publicReferenceGeometry(reference) {
+  const longitude = reference?.referencePoint?.longitude
+  const latitude = reference?.referencePoint?.latitude
+  if (
+    reference?.geometryStatus === 'reference_point'
+    && reference?.referenceRole === 'city_aggregate_reference'
+    && Number.isFinite(longitude)
+    && longitude >= -180
+    && longitude <= 180
+    && Number.isFinite(latitude)
+    && latitude >= -90
+    && latitude <= 90
+  ) {
+    return {
+      state: 'reference_point',
+      referenceKey: reference.key,
+      semantics: 'city_aggregate_reference',
+      referencePoint: { longitude, latitude },
+    }
+  }
+
+  return {
+    state: 'no_geometry',
+    referenceKey: null,
+    semantics: 'list_only',
+  }
+}
+
+function referenceGeometryForPlacement(placement) {
+  const key = kickCityAggregateKeyFromParts(placement)
+  return publicReferenceGeometry(kickReviewedCityReferenceGeometryByKey(key))
 }
 
 function publicRow(row, geography) {
@@ -127,11 +154,7 @@ function buildCityAggregates(mappedStreams) {
       city: stream.geography.city,
       streams: 1,
       viewers: stream.viewers,
-      referenceGeometry: {
-        state: 'no_geometry',
-        referenceKey: null,
-        semantics: 'list_only',
-      },
+      referenceGeometry: stream.geography.referenceGeometry,
     })
   }
 
@@ -141,12 +164,13 @@ function buildCityAggregates(mappedStreams) {
 }
 
 /**
- * KC3 production-connected City join.
+ * Production-connected reviewed Base City join.
  *
  * Stable Kick user IDs are used only for the internal join and are never
- * returned. KC3 exposes reviewed Base City state only when geography=city is
- * explicitly requested. City public activation defaults false. Until KC4
- * reviews aggregate reference geometry, every accepted City remains list-only.
+ * returned. Accepted Base City rows may expose only separately reviewed City
+ * aggregate reference points. These points are aggregate UI references, never
+ * creator coordinates or municipal-boundary claims. Cities without reviewed
+ * reference geometry remain list-only.
  */
 export function buildKickStreamMapCityRuntime({
   snapshotItems = [],
@@ -211,7 +235,7 @@ export function buildKickStreamMapCityRuntime({
 
     if (reviewed.outcome === 'accepted') {
       const placement = reviewed.placement
-      const key = cityAggregateKey(placement)
+      const key = kickCityAggregateKeyFromParts(placement)
       mappedStreams.push(publicRow(row, {
         mode: 'city',
         state: 'mapped',
@@ -220,11 +244,7 @@ export function buildKickStreamMapCityRuntime({
         region: placement.region,
         city: placement.city,
         cityAggregateKey: key,
-        referenceGeometry: {
-          state: 'no_geometry',
-          referenceKey: null,
-          semantics: 'list_only',
-        },
+        referenceGeometry: referenceGeometryForPlacement(placement),
       }))
       continue
     }
@@ -272,6 +292,10 @@ export function buildKickStreamMapCityRuntime({
   }
 
   const cityAggregates = buildCityAggregates(mappedStreams)
+  const referenceGeometryAggregates = cityAggregates.filter(
+    (aggregate) => aggregate.referenceGeometry?.state === 'reference_point',
+  ).length
+  const listOnlyAggregates = cityAggregates.length - referenceGeometryAggregates
   const observedStreams = base.coverage.observedStreams
   const mappedViewers = sumViewers(mappedStreams)
   const unmappedViewers = sumViewers(unmappedStreams)
@@ -303,8 +327,8 @@ export function buildKickStreamMapCityRuntime({
       mappedStreams: mappedStreams.length,
       mappedViewers,
       mappedCityAggregateCount: cityAggregates.length,
-      referenceGeometryAggregates: 0,
-      listOnlyAggregates: cityAggregates.length,
+      referenceGeometryAggregates,
+      listOnlyAggregates,
       unmappedStreams: unmappedStreams.length,
       unmappedViewers,
       excludedStreams: excludedStreams.length,
@@ -334,6 +358,7 @@ export function buildKickStreamMapCityRuntime({
       ...base.semantics,
       reviewedCityEvidenceRuntimeConnected: true,
       reviewedCityEvidenceDataVersion: KICK_REVIEWED_CITY_RUNTIME_DATA_VERSION,
+      reviewedCityReferenceGeometryDataVersion: KICK_REVIEWED_CITY_REFERENCE_GEOMETRY_VERSION,
       acceptedBaseCityClaimKinds: ['home_base', 'declared_location'],
       stableIdentityPublished: false,
       geographyPayloadAvailableBeforePublicPageActivation: true,
