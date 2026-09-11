@@ -171,6 +171,8 @@ function productionPopulation(snapshot) {
   const rows = [
     ...(Array.isArray(snapshot?.mappedStreams) ? snapshot.mappedStreams : []),
     ...(Array.isArray(snapshot?.unmappedStreams) ? snapshot.unmappedStreams : []),
+    ...(Array.isArray(snapshot?.excludedStreams) ? snapshot.excludedStreams : []),
+    ...(Array.isArray(snapshot?.conflictStreams) ? snapshot.conflictStreams : []),
   ]
   const observed = Number(snapshot?.coverage?.observedStreams)
   if (rows.length !== observed) throw new Error('production_population_coverage_mismatch')
