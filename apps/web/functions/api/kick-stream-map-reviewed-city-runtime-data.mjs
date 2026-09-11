@@ -1,6 +1,6 @@
 export const KICK_REVIEWED_CITY_RUNTIME_DATA_VERSION = 'viewloom-kick-reviewed-city-runtime-data-v0.1'
 
-// Generated from the independently re-reviewed 2026-09-07 Kick City batch 01.
+// Generated from independently reviewed Kick City batches through 2026-09-11.
 // Runtime payload intentionally retains only provider-stable identity, terminal
 // City outcome, accepted Base City claim kind and accepted City placement.
 // No slug, source URL, research prose, Current/temporary claim, address or
@@ -47,5 +47,35 @@ export const KICK_REVIEWED_CITY_RUNTIME_DATA = Object.freeze([
     outcome: 'accepted',
     claimKind: 'declared_location',
     placement: { state: 'mapped', countryCode: 'IN', region: null, city: 'Mumbai' },
+  },
+  {
+    stableKickUserId: '5508767',
+    outcome: 'no_qualifying_evidence',
+    claimKind: null,
+    placement: null,
+  },
+  {
+    stableKickUserId: '35467',
+    outcome: 'no_qualifying_evidence',
+    claimKind: null,
+    placement: null,
+  },
+  {
+    stableKickUserId: '68312242',
+    outcome: 'excluded_nonperson',
+    claimKind: null,
+    placement: null,
+  },
+  {
+    stableKickUserId: '31377709',
+    outcome: 'no_qualifying_evidence',
+    claimKind: null,
+    placement: null,
+  },
+  {
+    stableKickUserId: '68422390',
+    outcome: 'no_qualifying_evidence',
+    claimKind: null,
+    placement: null,
   },
 ])
