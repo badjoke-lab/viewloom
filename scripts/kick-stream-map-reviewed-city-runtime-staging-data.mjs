@@ -1,6 +1,6 @@
-export const KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA_VERSION = 'viewloom-kick-reviewed-city-runtime-staging-data-v0.1'
+export const KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA_VERSION = 'viewloom-kick-reviewed-city-runtime-staging-data-v0.2'
 
-// Generated from independently reviewed Kick City batches through 2026-09-11.
+// Generated from independently reviewed Kick City batches through batch 03a on 2026-09-11.
 // Review staging is intentionally kept outside apps/web/functions so newly
 // reviewed terminal outcomes cannot affect production Kick Map runtime until a
 // separate runtime-consumption change is reviewed.
@@ -44,4 +44,14 @@ export const KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA = Object.freeze([
   { stableKickUserId: '1647431', outcome: 'no_qualifying_evidence', claimKind: null, placement: null },
   { stableKickUserId: '258226', outcome: 'no_qualifying_evidence', claimKind: null, placement: null },
   { stableKickUserId: '4635555', outcome: 'excluded_nonperson', claimKind: null, placement: null },
+  { stableKickUserId: '5680579', outcome: 'no_qualifying_evidence', claimKind: null, placement: null },
+  { stableKickUserId: '120352837', outcome: 'no_qualifying_evidence', claimKind: null, placement: null },
+  { stableKickUserId: '10552445', outcome: 'no_qualifying_evidence', claimKind: null, placement: null },
+  { stableKickUserId: '57844209', outcome: 'no_qualifying_evidence', claimKind: null, placement: null },
+  { stableKickUserId: '1156095', outcome: 'no_qualifying_evidence', claimKind: null, placement: null },
+  { stableKickUserId: '108251792', outcome: 'no_qualifying_evidence', claimKind: null, placement: null },
+  { stableKickUserId: '100278593', outcome: 'no_qualifying_evidence', claimKind: null, placement: null },
+  { stableKickUserId: '106450641', outcome: 'no_qualifying_evidence', claimKind: null, placement: null },
+  { stableKickUserId: '10776289', outcome: 'no_qualifying_evidence', claimKind: null, placement: null },
+  { stableKickUserId: '69069', outcome: 'accepted', claimKind: 'declared_location', placement: { state: 'mapped', countryCode: 'US', region: null, city: 'New York' } },
 ])
