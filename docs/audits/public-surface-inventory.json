@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-inventory-v1",
-  "version": 12,
+  "version": 13,
   "updated_at": "2026-09-11",
   "source": {
     "branch": "main",
@@ -12,18 +12,18 @@
     "current_browser_audit": "apps/web/scripts/public-current-browser-audit.mjs",
     "production_smoke": ".github/workflows/production-smoke.yml"
   },
-  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. The current candidate build owns 38 HTML routes plus an explicit 404. Eleven Japanese candidates (Portal, Twitch Home, Kick Home, Twitch Heatmap, Kick Heatmap, Twitch Day Flow, Kick Day Flow, Twitch Battle Lines, Kick Battle Lines, Twitch History, Kick History) are noindex and excluded from sitemap/hreflang/public language switching until the coordinated Japanese release gate; historical Phase 12/R12A acceptance evidence remains separately preserved.",
+  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. The current candidate build owns 40 HTML routes plus an explicit 404. Thirteen Japanese candidates (Portal, Twitch Home, Kick Home, Twitch Heatmap, Kick Heatmap, Twitch Day Flow, Kick Day Flow, Twitch Battle Lines, Kick Battle Lines, Twitch History, Kick History, Twitch Stream Map, Kick Stream Map) are noindex and excluded from sitemap/hreflang/public language switching until the coordinated Japanese release gate. Stream Map localization reuses existing provider-separated Map runtimes and APIs and does not alter geography/evidence semantics, City/Current contracts, creator-coordinate boundaries, collector behavior, D1, cadence, or retention. Historical Phase 12/R12A acceptance evidence remains separately preserved.",
   "counts": {
-    "vite_html_inputs": 38,
+    "vite_html_inputs": 40,
     "explicit_not_found_pages": 1,
-    "inventory_entries": 39,
+    "inventory_entries": 41,
     "indexable_routes": 23,
-    "noindex_routes": 15,
+    "noindex_routes": 17,
     "sitemap_routes": 23,
-    "public_readiness_configured_pages": 38,
-    "production_smoke_page_routes": 38,
+    "public_readiness_configured_pages": 40,
+    "production_smoke_page_routes": 40,
     "current_browser_required_viewports": 4,
-    "current_browser_scenarios": 152
+    "current_browser_scenarios": 160
   },
   "provider_invariants": {
     "separate_routes": true,
