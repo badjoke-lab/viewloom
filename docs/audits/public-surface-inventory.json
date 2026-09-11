@@ -1,7 +1,7 @@
 {
   "schema": "viewloom-public-surface-inventory-v1",
-  "version": 10,
-  "updated_at": "2026-09-10",
+  "version": 11,
+  "updated_at": "2026-09-11",
   "source": {
     "branch": "main",
     "accepted_main_sha": "952f0008209363f4fd5b22587975ac247ee8d6f2",
@@ -12,18 +12,18 @@
     "current_browser_audit": "apps/web/scripts/public-current-browser-audit.mjs",
     "production_smoke": ".github/workflows/production-smoke.yml"
   },
-  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. The current candidate build owns 34 HTML routes plus an explicit 404. Seven Japanese candidates (Portal, Twitch Home, Kick Home, Twitch Heatmap, Kick Heatmap, Twitch Day Flow, Kick Day Flow) are noindex and excluded from sitemap/hreflang/public language switching until the coordinated Japanese release gate; historical Phase 12/R12A acceptance evidence remains separately preserved.",
+  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. The current candidate build owns 36 HTML routes plus an explicit 404. Nine Japanese candidates (Portal, Twitch Home, Kick Home, Twitch Heatmap, Kick Heatmap, Twitch Day Flow, Kick Day Flow, Twitch Battle Lines, Kick Battle Lines) are noindex and excluded from sitemap/hreflang/public language switching until the coordinated Japanese release gate; historical Phase 12/R12A acceptance evidence remains separately preserved.",
   "counts": {
-    "vite_html_inputs": 34,
+    "vite_html_inputs": 36,
     "explicit_not_found_pages": 1,
-    "inventory_entries": 35,
+    "inventory_entries": 37,
     "indexable_routes": 23,
-    "noindex_routes": 11,
+    "noindex_routes": 13,
     "sitemap_routes": 23,
-    "public_readiness_configured_pages": 34,
-    "production_smoke_page_routes": 34,
+    "public_readiness_configured_pages": 36,
+    "production_smoke_page_routes": 36,
     "current_browser_required_viewports": 4,
-    "current_browser_scenarios": 136
+    "current_browser_scenarios": 144
   },
   "provider_invariants": {
     "separate_routes": true,
