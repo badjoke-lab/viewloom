@@ -176,15 +176,23 @@ function auditFeatureTabs(page, html) {
   const match = html.match(/<nav\b[^>]*class=["'][^"']*feature-tabs[^"']*["'][^>]*>([\s\S]*?)<\/nav>/i)
   if (!match) return error(page.route, 'feature tabs are missing.')
   const hrefs = [...match[1].matchAll(/href=["']([^"']+)["']/gi)].map((item) => normalizeRoute(stripQuery(item[1])))
+  const runtimeLocalizedHrefs = hrefs.map((href) => {
+    if (!page.route.startsWith('/ja/') || !href.startsWith(`/${page.provider}/`)) return href
+    const localized = `/ja${href}`
+    return knownRoutes.has(localized) ? localized : href
+  })
+  if (page.route.startsWith('/ja/') && !/src=["']\/src\/mock-site\.ts["']/.test(html)) {
+    error(page.route, 'Japanese feature page is missing the shared locale-aware shell runtime.')
+  }
   const required = ['heatmap', 'day-flow', 'battle-lines', 'history', 'status'].map((feature) => {
     const localized = `/ja/${page.provider}/${feature}/`
     return page.route.startsWith('/ja/') && knownRoutes.has(localized)
       ? localized
       : `/${page.provider}/${feature}/`
   })
-  for (const route of required) if (!hrefs.includes(route)) error(page.route, `feature tabs are missing ${route}.`)
+  for (const route of required) if (!runtimeLocalizedHrefs.includes(route)) error(page.route, `feature tabs are missing ${route}.`)
   const otherProvider = page.provider === 'twitch' ? 'kick' : 'twitch'
-  if (hrefs.some((href) => href.startsWith(`/${otherProvider}/`) || href.startsWith(`/ja/${otherProvider}/`))) {
+  if (runtimeLocalizedHrefs.some((href) => href.startsWith(`/${otherProvider}/`) || href.startsWith(`/ja/${otherProvider}/`))) {
     error(page.route, 'feature tabs cross provider routes.')
   }
 }
