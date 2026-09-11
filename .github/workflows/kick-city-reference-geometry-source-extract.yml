@@ -12,46 +12,44 @@ permissions:
   contents: read
 
 jobs:
-  extract:
+  verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch Natural Earth v5.1.2 and print accepted city records
+      - uses: actions/checkout@v4
+
+      - name: Verify Kick City runtime geometry contract
+        run: node scripts/verify-kick-stream-map-city-runtime.mjs
+
+      - name: Verify Natural Earth v5.1.2 source records
         shell: bash
         run: |
           set -euo pipefail
-          for dataset in ne_10m_populated_places_simple ne_10m_populated_places; do
-            curl --fail --location --silent --show-error \
-              "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/${dataset}.geojson" \
-              --output "/tmp/${dataset}.geojson"
-          done
+          curl --fail --location --silent --show-error \
+            'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_populated_places_simple.geojson' \
+            --output /tmp/ne_10m_populated_places_simple.geojson
           node <<'NODE'
+          const assert = require('assert/strict')
           const fs = require('fs')
-          const targets = [
-            { countryCode: 'TR', names: ['Istanbul', 'İstanbul'] },
-            { countryCode: 'PL', names: ['Wroclaw', 'Wrocław'] },
-            { countryCode: 'BR', names: ['Rio de Janeiro'] },
-            { countryCode: 'IN', names: ['Fazilka'], region: 'Punjab' },
-            { countryCode: 'IN', names: ['Mumbai'] },
+          const fc = JSON.parse(fs.readFileSync('/tmp/ne_10m_populated_places_simple.geojson', 'utf8'))
+          const find = (countryCode, names, region = null) => fc.features.filter((feature) => {
+            const p = feature.properties ?? {}
+            const featureNames = [p.name, p.nameascii].filter(Boolean)
+            return p.iso_a2 === countryCode
+              && names.some((name) => featureNames.includes(name))
+              && (!region || p.adm1name === region)
+          })
+          const cases = [
+            ['TR', ['Istanbul', 'İstanbul'], null, [28.974277, 41.017602], 1159151579],
+            ['PL', ['Wroclaw', 'Wrocław'], null, [17.030009, 51.110432], 1159139051],
+            ['BR', ['Rio de Janeiro'], null, [-43.212117, -22.907308], 1159151619],
+            ['IN', ['Mumbai'], null, [72.875839, 19.068408], 1159151611],
           ]
-          for (const dataset of ['ne_10m_populated_places_simple', 'ne_10m_populated_places']) {
-            const fc = JSON.parse(fs.readFileSync(`/tmp/${dataset}.geojson`, 'utf8'))
-            console.log(`DATASET ${dataset} features=${fc.features.length}`)
-            for (const target of targets) {
-              const matches = fc.features.filter((feature) => {
-                const p = feature.properties ?? {}
-                const names = [p.NAME, p.NAMEASCII, p.name, p.nameascii].filter(Boolean)
-                const code = p.ISO_A2 ?? p.iso_a2
-                const region = p.ADM1NAME ?? p.adm1name
-                return code === target.countryCode && target.names.some((name) => names.includes(name)) && (!target.region || region === target.region)
-              })
-              console.log(JSON.stringify({ dataset, target, matchCount: matches.length, matches: matches.map((feature) => ({ geometry: feature.geometry, properties: feature.properties })) }))
-            }
-            const fuzzyFazilka = fc.features.filter((feature) => {
-              const p = feature.properties ?? {}
-              const names = [p.NAME, p.NAMEASCII, p.name, p.nameascii].filter(Boolean).join(' ').toLowerCase()
-              const code = p.ISO_A2 ?? p.iso_a2
-              return code === 'IN' && names.includes('faz')
-            })
-            console.log(JSON.stringify({ dataset, fuzzyFazilka: fuzzyFazilka.map((feature) => ({ geometry: feature.geometry, properties: feature.properties })) }))
+          for (const [countryCode, names, region, coordinates, featureId] of cases) {
+            const matches = find(countryCode, names, region)
+            assert.equal(matches.length, 1)
+            assert.deepEqual(matches[0].geometry.coordinates, coordinates)
+            assert.equal(matches[0].properties.ne_id, featureId)
           }
+          assert.equal(find('IN', ['Fazilka'], 'Punjab').length, 0)
+          console.log(JSON.stringify({ ok: true, referencePoints: 4, fazilka: 'no_geometry' }))
           NODE
