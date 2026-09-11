@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-routes-v1",
-  "version": 13,
+  "version": 14,
   "group": "twitch",
   "routes": [
     {"id":"twitch-home","route":"/twitch/","provider":"twitch","profile":"provider_home","source":"apps/web/twitch/index.html","title":"Twitch Live Stream Data, Heatmap & History — ViewLoom","canonical":"https://www.viewloom.net/twitch/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/twitch-home","binding":"DB_TWITCH_HOT"}]},
@@ -18,6 +18,7 @@
     {"id":"twitch-channel","route":"/twitch/channel/","provider":"twitch","profile":"channel","source":"apps/web/twitch/channel/index.html","title":"Twitch channel history | ViewLoom","canonical":"https://www.viewloom.net/twitch/channel/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/history","binding":"DB_TWITCH_HOT"}]},
     {"id":"ja-twitch-channel","route":"/ja/twitch/channel/","provider":"twitch","profile":"channel","source":"apps/web/ja/twitch/channel/index.html","title":"Twitch Channel History — 保持ランキング履歴 | ViewLoom","canonical":"https://www.viewloom.net/ja/twitch/channel/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/history","binding":"DB_TWITCH_HOT"}]},
     {"id":"twitch-watchlist","route":"/twitch/watchlist/","provider":"twitch","profile":"watchlist","source":"apps/web/twitch/watchlist/index.html","title":"Twitch Local Watchlist — ViewLoom","canonical":"https://www.viewloom.net/twitch/watchlist/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/twitch-heatmap","binding":"DB_TWITCH_HOT"},{"path":"/api/history","binding":"DB_TWITCH_HOT"}]},
+    {"id":"ja-twitch-watchlist","route":"/ja/twitch/watchlist/","provider":"twitch","profile":"watchlist","source":"apps/web/ja/twitch/watchlist/index.html","title":"Twitch Local Watchlist — ブラウザ内のチャンネル保存 | ViewLoom","canonical":"https://www.viewloom.net/ja/twitch/watchlist/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/twitch-heatmap","binding":"DB_TWITCH_HOT"},{"path":"/api/history","binding":"DB_TWITCH_HOT"}]},
     {"id":"twitch-status","route":"/twitch/status/","provider":"twitch","profile":"status","source":"apps/web/twitch/status/index.html","title":"Data Status for Twitch live streams | ViewLoom","canonical":"https://www.viewloom.net/twitch/status/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/twitch-status","binding":"DB_TWITCH_HOT"}]},
     {"id":"ja-twitch-status","route":"/ja/twitch/status/","provider":"twitch","profile":"status","source":"apps/web/ja/twitch/status/index.html","title":"Twitch Data Status — 鮮度・観測範囲・データ状態 | ViewLoom","canonical":"https://www.viewloom.net/ja/twitch/status/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/twitch-status","binding":"DB_TWITCH_HOT"}]}
   ]
