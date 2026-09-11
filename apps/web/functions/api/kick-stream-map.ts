@@ -3,6 +3,7 @@ import { extractKickStreamMapSnapshotItems } from './kick-stream-map-snapshot-so
 import { buildKickStreamMapPublicAdapter } from './kick-stream-map-public-adapter-core.mjs'
 import { buildKickStreamMapCountryRuntime } from './kick-stream-map-country-runtime-core.mjs'
 import { buildKickStreamMapCityRuntime } from './kick-stream-map-city-runtime-core.mjs'
+import { applyKickCityReferencePoints } from './kick-stream-map-city-reference-points.mjs'
 
 type SnapshotRow = {
   bucket_minute: string
@@ -47,7 +48,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 
     if (!env.DB_KICK_HOT) {
       const unavailable = geographyMode === 'city'
-        ? buildKickStreamMapCityRuntime({ publicCityActivationAuthorized: KICK_CITY_PUBLIC_ACTIVATION_AUTHORIZED })
+        ? applyKickCityReferencePoints(buildKickStreamMapCityRuntime({ publicCityActivationAuthorized: KICK_CITY_PUBLIC_ACTIVATION_AUTHORIZED }))
         : buildKickStreamMapPublicAdapter({ publicActivationAuthorized: K4_PUBLIC_ACTIVATION_AUTHORIZED })
       return Response.json({
         ...unavailable,
@@ -73,12 +74,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 
     if (!latest) {
       const empty = geographyMode === 'city'
-        ? buildKickStreamMapCityRuntime({
+        ? applyKickCityReferencePoints(buildKickStreamMapCityRuntime({
             snapshotItems: [],
             updatedAt: null,
             sourceMode: 'missing',
             publicCityActivationAuthorized: KICK_CITY_PUBLIC_ACTIVATION_AUTHORIZED,
-          })
+          }))
         : buildKickStreamMapCountryRuntime({
             snapshotItems: [],
             updatedAt: null,
@@ -92,12 +93,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 
     const snapshotItems = extractKickStreamMapSnapshotItems(latest.payload_json)
     const response = geographyMode === 'city'
-      ? buildKickStreamMapCityRuntime({
+      ? applyKickCityReferencePoints(buildKickStreamMapCityRuntime({
           snapshotItems,
           updatedAt: latest.collected_at || latest.bucket_minute,
           sourceMode: latest.source_mode,
           publicCityActivationAuthorized: KICK_CITY_PUBLIC_ACTIVATION_AUTHORIZED,
-        })
+        }))
       : buildKickStreamMapCountryRuntime({
           snapshotItems,
           updatedAt: latest.collected_at || latest.bucket_minute,
@@ -110,7 +111,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     })
   } catch (error) {
     const fallback = geographyMode === 'city'
-      ? buildKickStreamMapCityRuntime({ publicCityActivationAuthorized: KICK_CITY_PUBLIC_ACTIVATION_AUTHORIZED })
+      ? applyKickCityReferencePoints(buildKickStreamMapCityRuntime({ publicCityActivationAuthorized: KICK_CITY_PUBLIC_ACTIVATION_AUTHORIZED }))
       : buildKickStreamMapPublicAdapter({ publicActivationAuthorized: K4_PUBLIC_ACTIVATION_AUTHORIZED })
     return Response.json({
       ...fallback,
