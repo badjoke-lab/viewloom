@@ -7,6 +7,8 @@ on:
       - '.github/workflows/kick-stream-map-stable-id-review-queue.yml'
       - 'docs/audits/kick-stream-map-stable-id-review-queue-contract-v0.1.json'
       - 'scripts/verify-kick-stream-map-stable-id-review-queue.mjs'
+      - 'scripts/build-kick-stream-map-city-review-queue.mjs'
+      - 'apps/web/functions/api/kick-stream-map-reviewed-city-runtime-data.mjs'
       - 'tools/kick-stream-map-stable-id-review-queue/worker.mjs'
       - 'tools/kick-stream-map-stable-id-review-queue/wrangler.toml'
   push:
@@ -40,6 +42,8 @@ jobs:
           node-version: '22'
       - name: Verify bounded stable-ID queue package
         run: node scripts/verify-kick-stream-map-stable-id-review-queue.mjs
+      - name: Verify City review queue projection
+        run: node scripts/build-kick-stream-map-city-review-queue.mjs --self-test
       - name: Bundle preview Worker without deploying
         run: npx --yes wrangler@4 deploy --dry-run --config tools/kick-stream-map-stable-id-review-queue/wrangler.toml
       - name: Read optional one-time trigger
@@ -70,6 +74,8 @@ jobs:
             echo '- Production collector change: no'
             echo '- Production deployment: no'
             echo '- Geography output: none'
+            echo '- City queue: stable-ID rows minus reviewed City identities only'
+            echo '- Automatic City acceptance: no'
             echo '- Raw title/tag/profile text: none'
             echo '- Armed: ${{ steps.trigger.outputs.armed }}'
           } >> "$GITHUB_STEP_SUMMARY"
@@ -191,6 +197,39 @@ jobs:
             ([.result.queue[] | (.broadcaster_user_id == null or (.broadcaster_user_id | type == "string"))] | all) and
             ([.result.queue[] | (.identity_state == "ready" or .identity_state == "missing" or .identity_state == "ambiguous")] | all)
           ' "$ARTIFACT_DIR/result.json" >/dev/null
+      - name: Derive unreviewed Kick City candidate queue
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-kick-stream-map-city-review-queue.mjs \
+            "$ARTIFACT_DIR/result.json" \
+            "$ARTIFACT_DIR/city-review-queue.json"
+          jq -e '
+            .schemaVersion == "viewloom-kick-stream-map-city-review-queue-v0.1" and
+            .provider == "kick" and
+            .mode == "read_only_artifact" and
+            .source.type == "production_kick_stream_map_snapshot" and
+            .source.ordering == "viewer_count_desc" and
+            .reviewedCityCatalog.version == "viewloom-kick-reviewed-city-runtime-data-v0.1" and
+            .reviewedCityCatalog.identities == 7 and
+            .population.inputRows >= .population.stableIdentityReadyRows and
+            .population.stableIdentityReadyRows == (.population.alreadyReviewedRows + .population.queueRows) and
+            .population.queueRows == (.queue | length) and
+            .semantics.stableIdentity == "broadcaster_user_id" and
+            .semantics.slugRole == "display_and_manual_review_only" and
+            .semantics.automaticGeographyAcceptance == false and
+            .semantics.cityInferenceAllowed == false and
+            .semantics.currentLocationPromotionAllowed == false and
+            .semantics.twitchEvidenceCopied == false and
+            .mutation.productionDeployment == false and
+            .mutation.productionCollectorChange == false and
+            .mutation.d1Writes == 0 and
+            .mutation.d1SchemaChange == false and
+            .mutation.collectorCadenceChange == false and
+            ([.queue[] | .identity_state == "ready" and .city_review_state == "needs_review"] | all) and
+            ([.queue[] | (keys - ["rank","slug","viewer_count","broadcaster_user_id","identity_state","city_review_state","observed_at"] | length == 0)] | all) and
+            ([paths | .[-1] | tostring | select(. == "city" or . == "countryCode" or . == "region" or . == "latitude" or . == "longitude" or . == "coordinates" or . == "address")] | length) == 0
+          ' "$ARTIFACT_DIR/city-review-queue.json" >/dev/null
       - name: Publish queue result summary
         if: always()
         shell: bash
@@ -199,9 +238,12 @@ jobs:
             {
               echo '## Kick stable-ID queue result'
               jq -r 'if .ok then "- Population source: \(.result.source.type)\n- Source updated: \(.result.source.updatedAt)\n- Queue rows: \(.result.population.queueRows)\n- Unique slugs: \(.result.population.uniqueSlugs)\n- First viewers: \(.result.queue[0].viewer_count)\n- Last viewers: \(.result.queue[-1].viewer_count)\n- Stable IDs ready: \(.result.identityCoverage.ready)\n- Missing: \(.result.identityCoverage.missing)\n- Ambiguous: \(.result.identityCoverage.ambiguous)\n- Channels requests: \(.result.requestCounts.channelsV1)" else "- Preview queue failed safely" end' "$ARTIFACT_DIR/result.json"
+              if [[ -f "$ARTIFACT_DIR/city-review-queue.json" ]]; then
+                jq -r '"- City reviewed identities: \(.reviewedCityCatalog.identities)\n- City identities already reviewed in current Top100: \(.population.alreadyReviewedRows)\n- City candidates needing review: \(.population.queueRows)"' "$ARTIFACT_DIR/city-review-queue.json"
+              fi
             } >> "$GITHUB_STEP_SUMMARY"
           fi
-      - name: Upload stable-ID review queue artifact
+      - name: Upload stable-ID and City review queue artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -209,5 +251,6 @@ jobs:
           path: |
             artifacts/kick-stream-map-stable-id-review-queue/health.json
             artifacts/kick-stream-map-stable-id-review-queue/result.json
+            artifacts/kick-stream-map-stable-id-review-queue/city-review-queue.json
           if-no-files-found: error
           retention-days: 30
