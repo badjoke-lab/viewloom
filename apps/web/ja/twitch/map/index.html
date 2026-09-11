@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Twitch Stream Map — 配信の地理と視聴者数 | ViewLoom</title>
+  <meta name="description" content="ViewLoomのTwitch Stream Mapで、現在観測中のTop 300から、承認済み位置証拠に基づくCountry / City地理と視聴者数を確認できます。未知・競合・却下位置は未マップのまま扱います。" />
+  <meta name="robots" content="noindex,follow" />
+  <link rel="canonical" href="https://www.viewloom.net/ja/twitch/map/" />
+  <meta property="og:site_name" content="ViewLoom" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.viewloom.net/ja/twitch/map/" />
+  <meta property="og:title" content="Twitch Stream Map — 配信の地理と視聴者数 | ViewLoom" />
+  <meta property="og:description" content="Twitch Top 300の観測範囲で、承認済み位置証拠に基づくCountry / City地理と視聴者数を確認します。" />
+  <meta property="og:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <meta name="twitter:title" content="Twitch Stream Map — 配信の地理と視聴者数 | ViewLoom" />
+  <meta name="twitter:description" content="Twitch Top 300の観測範囲で、承認済み位置証拠に基づくCountry / City地理と視聴者数を確認します。" />
+  <link rel="stylesheet" href="/src/mock-site.css" />
+  <link rel="stylesheet" href="/src/features/twitch-stream-map/stream-map.css" />
+</head>
+<body data-provider="twitch" data-page="twitch-stream-map">
+  <div class="site-frame">
+    <header class="masthead">
+      <div class="masthead__inner">
+        <a class="brand" href="/ja/"><span class="brand-mark">VL</span><span>ViewLoom<small>ライブデータ観測</small></span></a>
+        <nav class="global-nav"><a href="/ja/">ポータル</a><a href="/ja/twitch/" aria-current="page">Twitchデータ</a><a href="/ja/kick/">Kickデータ</a><a href="/about/">このサイトについて</a><a href="/support/">サポート</a></nav>
+        <div class="status-inline"><span class="dot"></span>コレクター状態を読み込み中 · 5分間隔</div>
+        <button class="mobile-menu mobile-only" data-mobile-menu aria-label="ナビゲーションを開く">メニュー</button>
+      </div>
+    </header>
+
+    <main class="page page--full page--stream-map">
+      <div class="breadcrumb">ViewLoom / Twitchデータ / Stream Map</div>
+      <nav class="feature-tabs"><a href="/ja/twitch/heatmap/">Heatmap</a><a href="/ja/twitch/day-flow/">Day Flow</a><a href="/ja/twitch/battle-lines/">Battle Lines</a><a href="/ja/twitch/history/">History</a><a href="/ja/twitch/map/" aria-current="page">Stream Map</a><a href="/twitch/status/">データ状態</a></nav>
+
+      <section class="page-head page-head--stream-map">
+        <div>
+          <div class="kicker">TWITCH DATA · WHERE</div>
+          <h1>Stream Map</h1>
+          <p class="lede">現在観測中のTwitch Top 300から選択した範囲について、承認済みの位置証拠だけを使って地理的な分布を表示します。未知・競合・却下された位置は未マップのままです。Current / IRLは別契約であり、Base/Homeと混同しません。</p>
+        </div>
+        <div class="head-facts">
+          <div class="fact"><small>観測対象</small><strong id="stream-map-observed">—</strong></div>
+          <div class="fact"><small>現在表示のマップ済み</small><strong id="stream-map-mapped">—</strong></div>
+          <div class="fact"><small>現在表示の未マップ</small><strong id="stream-map-unmapped">—</strong></div>
+          <div class="fact"><small>状態</small><strong data-stream-map-state>読み込み中</strong></div>
+        </div>
+      </section>
+
+      <div class="data-strip">
+        <div class="data-strip__title">Twitch位置観測</div>
+        <div class="data-strip__cell"><small>更新</small><span id="stream-map-strip-updated">—</span></div>
+        <div class="data-strip__cell"><small>カバレッジ</small><span id="stream-map-strip-coverage">—</span></div>
+        <div class="data-strip__cell"><small>対象</small><span id="stream-map-population-summary">Top 300 · 全視聴者 · 全カテゴリ</span></div>
+        <div class="data-strip__cell"><small>証拠</small><span id="stream-map-filter-summary">承認済みをすべて表示</span></div>
+      </div>
+
+      <section class="surface stream-map-population-panel" aria-label="観測対象フィルター">
+        <div class="stream-map-filter-head">
+          <div><div class="stream-map-filter-label">対象フィルター</div><strong>位置証拠を評価する前に、観測中のTwitch対象範囲を選択します</strong></div>
+          <button type="button" class="stream-map-filter-clear" data-reset-population-filters>対象をリセット</button>
+        </div>
+        <div class="stream-map-population-controls">
+          <label class="stream-map-population-control"><span>全体 Top N</span><select data-population-top aria-label="全体 Top N"><option value="20">Top 20</option><option value="50">Top 50</option><option value="100">Top 100</option><option value="300" selected>Top 300</option></select></label>
+          <label class="stream-map-population-control"><span>最小視聴者数</span><select data-population-min-viewers aria-label="最小視聴者数"><option value="0" selected>指定なし</option><option value="100">100+</option><option value="500">500+</option><option value="1000">1,000+</option><option value="5000">5,000+</option><option value="10000">10,000+</option></select></label>
+          <label class="stream-map-population-control"><span>カテゴリ</span><select data-population-category aria-label="Twitchカテゴリ"><option value="all" selected>すべてのカテゴリ</option></select></label>
+        </div>
+        <div class="stream-map-population-foot">
+          <p class="stream-map-filter-note">対象の適用順は、全体Top N → 最小視聴者数 → カテゴリ → 位置証拠フィルターです。カテゴリ選択でTop-N境界より下の配信を補充しません。現在の永続snapshotはlanguageを保持していないため、languageフィルターは表示しません。</p>
+          <p class="stream-map-population-state" id="stream-map-population-state" aria-live="polite">選択対象を読み込み中…</p>
+        </div>
+      </section>
+
+      <section class="surface stream-map-filter-panel" aria-label="位置証拠フィルター">
+        <div class="stream-map-filter-head">
+          <div><div class="stream-map-filter-label">証拠フィルター</div><strong>選択対象の中で、複数の証拠ソースと位置タイプを組み合わせます</strong></div>
+          <button type="button" class="stream-map-filter-clear" data-clear-location-filters>承認済みをすべて表示</button>
+        </div>
+        <div class="stream-map-filter-groups">
+          <fieldset class="stream-map-filter-group"><legend>証拠ソース · このグループ内はOR</legend><div class="stream-map-filter-options">
+            <label class="stream-map-filter-option"><input type="checkbox" value="account_profile" data-location-source /><span class="stream-map-badge stream-map-badge--account-profile">アカウント / プロフィール</span></label>
+            <label class="stream-map-filter-option"><input type="checkbox" value="stream_title" data-location-source /><span class="stream-map-badge stream-map-badge--stream-title">配信タイトル</span></label>
+            <label class="stream-map-filter-option"><input type="checkbox" value="stream_tag" data-location-source /><span class="stream-map-badge stream-map-badge--stream-tag">配信タグ</span></label>
+            <label class="stream-map-filter-option"><input type="checkbox" value="channel_profile" data-location-source /><span class="stream-map-badge stream-map-badge--channel-profile">チャンネルプロフィール</span></label>
+            <label class="stream-map-filter-option"><input type="checkbox" value="official_external" data-location-source /><span class="stream-map-badge stream-map-badge--official-external">公式外部情報</span></label>
+            <label class="stream-map-filter-option"><input type="checkbox" value="manual_review" data-location-source /><span class="stream-map-badge stream-map-badge--manual-review">手動レビュー</span></label>
+          </div></fieldset>
+          <fieldset class="stream-map-filter-group"><legend>位置タイプ · このグループ内はOR</legend><div class="stream-map-filter-options">
+            <label class="stream-map-filter-option"><input type="checkbox" value="home_base" data-location-type /><span class="stream-map-type-badge">ホーム / 拠点</span></label>
+            <label class="stream-map-filter-option"><input type="checkbox" value="declared_location" data-location-type /><span class="stream-map-type-badge">公開所在地</span></label>
+            <label class="stream-map-filter-option"><input type="checkbox" value="current_location" data-location-type /><span class="stream-map-type-badge">現在地</span></label>
+          </div></fieldset>
+        </div>
+        <p class="stream-map-filter-note" id="stream-map-filter-note">ソースとタイプの次元はANDで結合します。何も選ばない場合は、承認済み証拠をすべて使用します。</p>
+      </section>
+
+      <section class="surface stream-map-shell" aria-label="Stream Map">
+        <div class="stream-map-shell__head">
+          <div><div class="stream-map-shell__eyebrow">ライブの証拠ベース地理</div><h2>世界地図</h2><p>地図または国一覧で国を選ぶと、現在マップされている配信を絞り込みます。国の選択は対象範囲や証拠の承認判定を変更しません。</p></div>
+          <div class="stream-map-badges" aria-label="位置証拠の凡例"><span class="stream-map-badge stream-map-badge--account-profile">プロフィール</span><span class="stream-map-badge stream-map-badge--stream-title">タイトル</span><span class="stream-map-badge stream-map-badge--stream-tag">タグ</span><span class="stream-map-badge stream-map-badge--channel-profile">チャンネル</span><span class="stream-map-badge stream-map-badge--official-external">外部情報</span><span class="stream-map-badge stream-map-badge--manual-review">手動</span></div>
+        </div>
+        <div class="stream-map-stage"><div id="stream-map-root" class="stream-map-canvas" role="region" aria-label="インタラクティブ世界地図"></div><div class="stream-map-status" data-stream-map-status role="status" aria-live="polite"><strong>Twitchの地理情報を読み込み中…</strong><span>デモ用の地理データには置き換えません。</span></div></div>
+        <p class="stream-map-interaction-note">ドラッグで移動し、+/−でズームします。国は地図または国一覧から選択できます。小国向けfallbackも集約選択であり、配信者座標ではありません。ページスクロールを維持するためwheel zoomは無効です。</p>
+      </section>
+
+      <section class="stream-map-support-grid">
+        <article class="surface"><small>マップ済み配信</small><strong id="stream-map-card-mapped">—</strong><p>選択中の承認済み証拠だけを対象にします。フィルターで除外されたマップ済み証拠は、現在表示では未マップとして数えます。</p></article>
+        <article class="surface"><small>マップ済み視聴者</small><strong id="stream-map-card-viewers">—</strong><p>視聴者カバレッジは選択対象内で再計算し、その後に証拠ソースと位置タイプを適用します。</p></article>
+        <article class="surface"><small>除外された非個人</small><strong id="stream-map-card-excluded">—</strong><p>組織・イベント配信チャンネルは集計に残しますが、人の位置として配置しません。</p></article>
+      </section>
+
+      <section class="surface stream-map-unmapped" aria-labelledby="stream-map-unmapped-heading">
+        <div class="stream-map-unmapped__head"><div><div class="stream-map-shell__eyebrow">理由別の集計</div><h2 id="stream-map-unmapped-heading">配信がマップされない理由</h2><p>実APIのreasonは選択対象についてのものです。証拠フィルターで承認済み位置を隠した場合は、そのclient-side調整を別に表示し、証拠の承認状態自体は変更しません。</p></div><div class="stream-map-unmapped__facts"><div><small>現在表示の未マップ</small><strong id="stream-map-unmapped-current">—</strong></div><div><small>API基準の未マップ</small><strong id="stream-map-unmapped-baseline">—</strong></div><div><small>承認済みだがフィルター除外</small><strong id="stream-map-unmapped-filtered-out">—</strong></div></div></div>
+        <p id="stream-map-unmapped-reconciliation" class="stream-map-filter-note" aria-live="polite">理由別集計を読み込み中…</p>
+        <div class="stream-map-unmapped-grid"><div class="stream-map-results-card"><h3>未マップ理由</h3><p class="stream-map-unmapped-explainer">reason codeはAPIの値をそのまま保持します。<code>filtered_out_accepted_evidence</code>だけが現在表示用の派生reasonで、source/typeフィルターが承認済み位置証拠を隠した場合だけ現れます。国のdrilldownは集計を変更しません。</p><div id="stream-map-unmapped-reason-list" class="stream-map-unmapped-reason-list"><p class="stream-map-empty">読み込み中…</p></div></div><div class="stream-map-results-card"><h3>除外された非個人チャンネル</h3><p class="stream-map-unmapped-explainer">組織とイベント配信は選択対象の観測/未マップ集計に残しますが、人として位置配置しません。</p><div id="stream-map-excluded-nonperson-list" class="stream-map-excluded-list"><p class="stream-map-empty">読み込み中…</p></div></div></div>
+      </section>
+
+      <section class="surface stream-map-results">
+        <div class="stream-map-results__head"><div><div class="stream-map-shell__eyebrow">現在のフィルター結果</div><h2>マップ済みの国と配信</h2><p>国を選ぶとdrilldown一覧を絞り込みます。表示中の各配信には証拠provenanceを維持します。</p></div><div class="head-facts"><div class="fact"><small>国</small><strong id="stream-map-country-count">—</strong></div><div class="fact"><small>Current位置の配信</small><strong id="stream-map-current-count">—</strong></div></div></div>
+        <section id="stream-map-selected-country" class="stream-map-selected-country" aria-live="polite" hidden><div class="stream-map-selected-country__head"><div><div class="stream-map-shell__eyebrow">選択中の国</div><h3 id="stream-map-selected-country-name">—</h3></div><button type="button" class="stream-map-filter-clear" data-clear-selected-country>国の選択を解除</button></div><div class="stream-map-selected-country__facts"><div><small>マップ済み配信</small><strong id="stream-map-selected-country-streams">0</strong></div><div><small>マップ済み視聴者</small><strong id="stream-map-selected-country-viewers">0</strong></div><div><small>証拠ソース</small><div id="stream-map-selected-country-sources" class="stream-map-selected-country-sources"></div></div></div><p id="stream-map-selected-country-note" class="stream-map-filter-note"></p></section>
+        <div class="stream-map-results-grid"><div class="stream-map-results-card"><h3>国</h3><div id="stream-map-country-list" class="stream-map-country-list"><p class="stream-map-empty">読み込み中…</p></div></div><div class="stream-map-results-card"><h3 id="stream-map-stream-list-title">マップ済み配信</h3><div id="stream-map-stream-list" class="stream-map-stream-list"><p class="stream-map-empty">読み込み中…</p></div></div></div>
+      </section>
+    </main>
+
+    <footer class="footer"><div>ViewLoom · 公開ライブ配信データを独立・非公式に観測しています。</div><nav><a href="/about/">方法と制約</a><a href="/support/">サポート</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
+  </div>
+  <script type="module" src="/src/mock-site.ts"></script>
+  <script type="module" src="/src/features/twitch-stream-map/maplibre-bootstrap.ts"></script>
+  <script type="module" src="/src/features/twitch-stream-map/stream-map-ja-presentation.ts"></script>
+  <script type="module" src="/src/analytics.ts"></script>
+</body>
+</html>
