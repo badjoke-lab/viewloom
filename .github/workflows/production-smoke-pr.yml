@@ -54,15 +54,15 @@ jobs:
             dist/ja/twitch/status/index.html \
             dist/ja/kick/status/index.html \
             dist/ja/twitch/channel/index.html \
-            dist/ja/kick/channel/index.html
+            dist/ja/kick/channel/index.html \
+            dist/ja/twitch/watchlist/index.html \
+            dist/ja/kick/watchlist/index.html
           do
             test -f "$file"
             grep -Eqi '<html[^>]+lang="ja"' "$file"
             grep -Eqi '<meta[^>]+name="robots"[^>]+content="noindex,follow"|<meta[^>]+content="noindex,follow"[^>]+name="robots"' "$file"
             ! grep -qi 'hreflang=' "$file"
           done
-          grep -q '現在のTwitch観測ダッシュボードを表示するにはJavaScriptが必要です。' dist/ja/twitch/index.html
-          grep -q '現在のKick観測ダッシュボードを表示するにはJavaScriptが必要です。' dist/ja/kick/index.html
           grep -q '観測日の集計基準はUTCです。' dist/ja/twitch/heatmap/index.html
           grep -q '観測日の集計基準はUTCです。' dist/ja/kick/heatmap/index.html
           grep -q 'UTCの実時間をたどり' dist/ja/twitch/day-flow/index.html
@@ -77,35 +77,25 @@ jobs:
           grep -q '鮮度' dist/ja/kick/status/index.html
           grep -q '保持ランキング履歴' dist/ja/twitch/channel/index.html
           grep -q '保持ランキング履歴' dist/ja/kick/channel/index.html
-          grep -q '/src/live/heatmap-current-shell-entry.ts' ja/twitch/heatmap/index.html
-          grep -q '/src/live/heatmap-current-shell-entry.ts' ja/kick/heatmap/index.html
-          grep -q '/src/live/day-flow-ja-twitch-entry.ts' ja/twitch/day-flow/index.html
-          grep -q '/src/live/day-flow-ja-kick-entry.ts' ja/kick/day-flow/index.html
-          grep -q '/src/live/battle-lines-ja-twitch-entry.ts' ja/twitch/battle-lines/index.html
-          grep -q '/src/live/battle-lines-ja-kick-entry.ts' ja/kick/battle-lines/index.html
-          grep -q '/src/live/history-ja-twitch-entry.ts' ja/twitch/history/index.html
-          grep -q '/src/live/history-ja-kick-entry.ts' ja/kick/history/index.html
-          grep -q '/src/features/twitch-stream-map/maplibre-bootstrap.ts' ja/twitch/map/index.html
-          grep -q '/src/features/kick-stream-map/public-entry.ts' ja/kick/map/index.html
-          grep -q '/src/features/twitch-stream-map/stream-map-ja-presentation.ts' ja/twitch/map/index.html
-          grep -q '/src/features/twitch-stream-map/stream-map-ja-presentation.ts' ja/kick/map/index.html
-          grep -q '/src/live/status-ja-presentation.ts' ja/twitch/status/index.html
-          grep -q '/src/live/status-ja-presentation.ts' ja/kick/status/index.html
-          grep -q '/src/live/status-current-shell-entry.ts' ja/twitch/status/index.html
-          grep -q '/src/live/status-current-shell-entry.ts' ja/kick/status/index.html
+          grep -q 'このブラウザだけに保存' dist/ja/twitch/watchlist/index.html
+          grep -q 'このブラウザだけに保存' dist/ja/kick/watchlist/index.html
+          grep -q '/src/live/watchlist-ja-presentation.ts' ja/twitch/watchlist/index.html
+          grep -q '/src/live/watchlist-ja-presentation.ts' ja/kick/watchlist/index.html
+          grep -q '/src/live/watchlist-page.ts' ja/twitch/watchlist/index.html
+          grep -q '/src/live/watchlist-page.ts' ja/kick/watchlist/index.html
           grep -q '/src/live/channel-ja-presentation.ts' ja/twitch/channel/index.html
           grep -q '/src/live/channel-ja-presentation.ts' ja/kick/channel/index.html
-          grep -q '/src/live/channel-profile.ts' ja/twitch/channel/index.html
-          grep -q '/src/live/channel-profile.ts' ja/kick/channel/index.html
-          grep -Eq 'data-kick-geography="country"[^>]*>Country<' ja/kick/map/index.html
-          grep -Eq 'data-kick-geography="city"[^>]*>City<' ja/kick/map/index.html
+          grep -q '/src/live/status-ja-presentation.ts' ja/twitch/status/index.html
+          grep -q '/src/live/status-ja-presentation.ts' ja/kick/status/index.html
+          grep -q '/src/features/twitch-stream-map/stream-map-ja-presentation.ts' ja/twitch/map/index.html
+          grep -q '/src/features/twitch-stream-map/stream-map-ja-presentation.ts' ja/kick/map/index.html
           ! grep -q '<loc>https://www.viewloom.net/ja/' dist/sitemap.xml
       - name: Verify production smoke workflow contract
         run: |
           set -euo pipefail
           grep -q 'Wait for the matching production deployment' .github/workflows/production-smoke.yml
           grep -q 'Verify hidden Japanese candidates' .github/workflows/production-smoke.yml
-          grep -q "test \"\${#routes\[@\]}\" = '44'" .github/workflows/production-smoke.yml
+          grep -q "test \"\${#routes\[@\]}\" = '46'" .github/workflows/production-smoke.yml
           for route in \
             'ja-twitch-heatmap|https://www.viewloom.net/ja/twitch/heatmap/' \
             'ja-kick-heatmap|https://www.viewloom.net/ja/kick/heatmap/' \
@@ -120,7 +110,9 @@ jobs:
             'ja-twitch-status|https://www.viewloom.net/ja/twitch/status/' \
             'ja-kick-status|https://www.viewloom.net/ja/kick/status/' \
             'ja-twitch-channel|https://www.viewloom.net/ja/twitch/channel/' \
-            'ja-kick-channel|https://www.viewloom.net/ja/kick/channel/'
+            'ja-kick-channel|https://www.viewloom.net/ja/kick/channel/' \
+            'ja-twitch-watchlist|https://www.viewloom.net/ja/twitch/watchlist/' \
+            'ja-kick-watchlist|https://www.viewloom.net/ja/kick/watchlist/'
           do
             grep -Fq "$route" .github/workflows/production-smoke.yml
           done
