@@ -87,6 +87,7 @@ for (const provider of ['twitch', 'kick']) {
   assert.match(heatmap, /src=["']\/src\/analytics\.ts["']/, `/ja/${provider}/heatmap/: shared analytics runtime must be used`)
   assert.match(heatmap, /観測/, `/ja/${provider}/heatmap/: Japanese observation copy missing`)
   assert.match(heatmap, new RegExp(`href=["']/ja/${provider}/day-flow/["']`), `/ja/${provider}/heatmap/: localized Day Flow link missing`)
+  assert.match(heatmap, new RegExp(`href=["']/ja/${provider}/battle-lines/["']`), `/ja/${provider}/heatmap/: localized Battle Lines link missing`)
   assert.doesNotMatch(heatmap, new RegExp(`href=["']/ja/${provider}/(?:history|map|status|watchlist|channel)/`), `/ja/${provider}/heatmap/: unreleased Japanese feature link exposed`)
 
   const expectedDayFlowEntry = provider === 'twitch' ? 'day-flow-ja-twitch-entry.ts' : 'day-flow-ja-kick-entry.ts'
