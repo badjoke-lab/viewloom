@@ -12,7 +12,6 @@ const routeFiles = [
   'docs/audits/public-surface-routes-kick.json',
 ]
 const pages = loadPublicPages()
-
 const knownRoutes = new Set(pages.map((page) => page.route))
 const errors = []
 const warnings = []
@@ -32,11 +31,9 @@ if (!robots) warning('robots', 'dist/robots.txt is missing.')
 else if (!/sitemap:\s*https:\/\/www\.viewloom\.net\/sitemap\.xml/i.test(robots)) warning('robots', 'robots.txt does not advertise the canonical sitemap URL.')
 
 for (const page of pages) auditPage(page)
-
 for (const page of pages.filter((item) => item.indexable)) {
   if (!sitemapRoutes.has(page.route)) error(page.route, 'indexable route is missing from sitemap.xml.')
 }
-
 for (const route of sitemapRoutes) {
   if (!knownRoutes.has(route)) warning('sitemap', `sitemap route is not part of the configured public build: ${route}`)
 }
@@ -90,7 +87,6 @@ function loadPublicPages() {
     }
     routes.push(...(document.routes ?? []))
   }
-
   return routes
     .filter((route) => route.route !== '*')
     .map((route) => ({
@@ -176,15 +172,20 @@ function auditFeatureTabs(page, html) {
   const match = html.match(/<nav\b[^>]*class=["'][^"']*feature-tabs[^"']*["'][^>]*>([\s\S]*?)<\/nav>/i)
   if (!match) return error(page.route, 'feature tabs are missing.')
   const hrefs = [...match[1].matchAll(/href=["']([^"']+)["']/gi)].map((item) => normalizeRoute(stripQuery(item[1])))
+  const runtimeLocalizedHrefs = hrefs.map((href) => {
+    if (!page.route.startsWith('/ja/') || !href.startsWith(`/${page.provider}/`)) return href
+    const localized = `/ja${href}`
+    return knownRoutes.has(localized) ? localized : href
+  })
   const required = ['heatmap', 'day-flow', 'battle-lines', 'history', 'status'].map((feature) => {
     const localized = `/ja/${page.provider}/${feature}/`
     return page.route.startsWith('/ja/') && knownRoutes.has(localized)
       ? localized
       : `/${page.provider}/${feature}/`
   })
-  for (const route of required) if (!hrefs.includes(route)) error(page.route, `feature tabs are missing ${route}.`)
+  for (const route of required) if (!runtimeLocalizedHrefs.includes(route)) error(page.route, `feature tabs are missing ${route}.`)
   const otherProvider = page.provider === 'twitch' ? 'kick' : 'twitch'
-  if (hrefs.some((href) => href.startsWith(`/${otherProvider}/`) || href.startsWith(`/ja/${otherProvider}/`))) {
+  if (runtimeLocalizedHrefs.some((href) => href.startsWith(`/${otherProvider}/`) || href.startsWith(`/ja/${otherProvider}/`))) {
     error(page.route, 'feature tabs cross provider routes.')
   }
 }

@@ -67,6 +67,10 @@ async function loadTwitchFeatureRoutes() {
 
 async function auditScenario(browser, route, viewport) {
   const id = `${route.id}--${viewport.id}`
+  const expectedHref = route.route.startsWith('/ja/') ? '/ja/twitch/map/' : '/twitch/map/'
+  const forbiddenKickHrefs = route.route.startsWith('/ja/')
+    ? ['/kick/map/', '/ja/kick/map/']
+    : ['/kick/map/', '/ja/kick/map/']
   const context = await browser.newContext({ viewport })
   await context.route('**/api/**', async (requestRoute) => {
     await requestRoute.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ state: 'fixture_unavailable' }) })
@@ -76,14 +80,18 @@ async function auditScenario(browser, route, viewport) {
 
   try {
     await page.goto(`${origin}${route.route}`, { waitUntil: 'domcontentloaded', timeout: 45_000 })
-    const locator = page.locator('.feature-tabs a[href="/twitch/map/"]')
+    const locator = page.locator(`.feature-tabs a[href="${expectedHref}"]`)
     await locator.waitFor({ timeout: 15_000 })
 
-    const state = await page.evaluate(() => {
-      const links = [...document.querySelectorAll('.feature-tabs a[href="/twitch/map/"]')]
+    const state = await page.evaluate(({ expectedHref, forbiddenKickHrefs }) => {
+      const links = [...document.querySelectorAll(`.feature-tabs a[href="${expectedHref}"]`)]
       const link = links[0]
       const rect = link?.getBoundingClientRect()
       const style = link ? getComputedStyle(link) : null
+      const kickMapLinks = forbiddenKickHrefs.reduce(
+        (count, href) => count + document.querySelectorAll(`.feature-tabs a[href="${href}"]`).length,
+        0,
+      )
       return {
         count: links.length,
         href: link?.getAttribute('href') ?? null,
@@ -94,21 +102,21 @@ async function auditScenario(browser, route, viewport) {
         active: Boolean(link?.classList.contains('active')),
         current: link?.getAttribute('aria-current') ?? null,
         installerOwned: link?.getAttribute('data-twitch-stream-map-feature-tab') === 'true',
-        kickMapLinks: document.querySelectorAll('.feature-tabs a[href="/kick/map/"]').length,
+        kickMapLinks,
       }
-    })
+    }, { expectedHref, forbiddenKickHrefs })
 
     if (state.count !== 1) violations.push(`${id}: expected one Stream Map feature tab, found ${state.count}`)
-    if (state.href !== '/twitch/map/') violations.push(`${id}: Stream Map href mismatch: ${state.href}`)
+    if (state.href !== expectedHref) violations.push(`${id}: Stream Map href mismatch: ${state.href}`)
     if (!/Stream Map/i.test(state.text || '')) violations.push(`${id}: Stream Map label mismatch: ${state.text}`)
     if (state.height < 44) violations.push(`${id}: Stream Map target height ${state.height}px`)
     if (state.width <= 0) violations.push(`${id}: Stream Map target width is zero`)
     if (state.kickMapLinks !== 0) violations.push(`${id}: unauthorized Kick Map feature tab present`)
-    if (route.route === '/twitch/map/' && (!state.active || state.current !== 'page')) {
-      violations.push(`${id}: Stream Map tab must remain active/current on /twitch/map/`)
+    if ((route.route === '/twitch/map/' || route.route === '/ja/twitch/map/') && (!state.active || state.current !== 'page')) {
+      violations.push(`${id}: Stream Map tab must remain active/current on ${route.route}`)
     }
 
-    const focus = await focusStreamMapWithKeyboard(page)
+    const focus = await focusStreamMapWithKeyboard(page, expectedHref)
     if (!focus.reached) violations.push(`${id}: keyboard focus did not reach Stream Map tab`)
     if (!focus.focusVisible) violations.push(`${id}: Stream Map tab is not :focus-visible under keyboard focus`)
     if (!focus.visualIndicator) violations.push(`${id}: Stream Map tab lacks a visible focus indicator`)
@@ -130,16 +138,16 @@ async function auditScenario(browser, route, viewport) {
   }
 }
 
-async function focusStreamMapWithKeyboard(page) {
+async function focusStreamMapWithKeyboard(page, expectedHref) {
   await page.evaluate(() => {
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
   })
 
   for (let attempt = 0; attempt < 120; attempt += 1) {
     await page.keyboard.press('Tab')
-    const state = await page.evaluate(() => {
+    const state = await page.evaluate((expectedHref) => {
       const active = document.activeElement
-      if (!(active instanceof HTMLAnchorElement) || active.getAttribute('href') !== '/twitch/map/' || !active.closest('.feature-tabs')) {
+      if (!(active instanceof HTMLAnchorElement) || active.getAttribute('href') !== expectedHref || !active.closest('.feature-tabs')) {
         return { reached: false, focusVisible: false, visualIndicator: false }
       }
       const style = getComputedStyle(active)
@@ -152,7 +160,7 @@ async function focusStreamMapWithKeyboard(page) {
         outlineOffset: style.outlineOffset,
         visualIndicator: style.outlineStyle !== 'none' && outlineWidth >= 2,
       }
-    })
+    }, expectedHref)
     if (state.reached) return state
   }
   return { reached: false, focusVisible: false, visualIndicator: false }

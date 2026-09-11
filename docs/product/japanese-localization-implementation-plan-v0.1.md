@@ -127,9 +127,10 @@ Migrate both providers for:
 
 Do not change geography/evidence semantics.
 
-Current candidate state (2026-09-11):
+Merged state (2026-09-11):
 
-- `/ja/twitch/map/` and `/ja/kick/map/` are implemented on `work-japanese-localization-stream-map-candidates-20260911`;
+- `/ja/twitch/map/` and `/ja/kick/map/` were implemented on `work-japanese-localization-stream-map-candidates-20260911` and merged through PR #1312;
+- J5 merge main is `6751f0acc95719d5fea4f87b5938b4301d9607f1`;
 - both are `noindex,follow`, self-canonical, excluded from sitemap/hreflang/public language switching;
 - Twitch reuses `maplibre-bootstrap.ts`, `geography-ui-bootstrap.ts`, `stream-map-entry.ts`, and the existing `/api/twitch-stream-map` Country/City contract;
 - Kick reuses `public-entry.ts` / `public-kc5-entry.ts` and existing `/api/kick-stream-map` Country/City contracts;
@@ -137,7 +138,7 @@ Current candidate state (2026-09-11):
 - streamer names, country/city names, runtime category names, reason codes, stable IDs, and other raw/provider data remain untranslated;
 - Country, Base City, City, and Current / IRL semantics are unchanged; Current / IRL remains unavailable where the existing product contract keeps it unavailable;
 - no creator coordinates, inferred location, collector, D1, cadence, retention, or geography acceptance rule is introduced;
-- the current candidate inventory target is 40 HTML routes plus explicit 404, 41 inventory entries, 17 noindex routes, 23 sitemap routes, 13 Japanese candidates, and 160 browser scenarios across four viewports;
+- J5 closed at 40 HTML routes plus explicit 404, 41 inventory entries, 17 noindex routes, 23 sitemap routes, 13 Japanese candidates, and 160 browser scenarios across four viewports;
 - public exposure/indexing still remains forbidden until J10.
 
 Outcome:
@@ -148,10 +149,29 @@ Japanese localization covers the current main product program without forking Ma
 
 Migrate:
 
+- Data Status;
 - Channel;
 - Local Watchlist;
-- Data Status;
 - other public utility routes present in the current route inventory.
+
+Execution order:
+
+```text
+J6a — Data Status
+J6b — Channel
+J6c — Local Watchlist
+```
+
+Current candidate state (2026-09-11):
+
+- J6a adds hidden `/ja/twitch/status/` and `/ja/kick/status/` candidates in PR #1315;
+- both reuse `status-current-shell-entry.ts` and the existing provider-separated `/api/twitch-status` / `/api/kick-status` contracts;
+- `status-ja-presentation.ts` is presentation-only and owns no fetch/API path;
+- `mock-site.ts` localizes internal links only when an equivalent Japanese route is explicitly available, preventing newly released J6 sub-routes from leaving ordinary Japanese navigation in English;
+- freshness, coverage, source mode, provider separation, and real/empty/demo semantics are unchanged;
+- J6a candidate target is 42 HTML routes plus explicit 404, 43 inventory entries, 19 noindex routes, 23 sitemap routes, 15 Japanese candidates, and 168 browser scenarios across four viewports;
+- J6b Channel and J6c Local Watchlist remain unreleased until their own bounded candidate stages;
+- J10 remains the only authorization point for Japanese indexing, sitemap, reciprocal hreflang, and public language switching.
 
 Outcome:
 
@@ -261,7 +281,9 @@ shared shell
 -> Battle Lines
 -> History
 -> Stream Map
--> Channel / Watchlist / Status
+-> Data Status
+-> Channel
+-> Local Watchlist
 -> informational/legal pages
 -> SEO release layer
 ```

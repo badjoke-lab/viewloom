@@ -21,13 +21,13 @@ check(manifest.provider_invariants?.twitch_binding === 'DB_TWITCH_HOT', 'Twitch 
 check(manifest.provider_invariants?.kick_binding === 'DB_KICK_HOT', 'Kick binding mismatch')
 check(manifest.provider_invariants?.combined_totals_allowed === false, 'combined totals must remain forbidden')
 check(manifest.provider_invariants?.combined_rankings_allowed === false, 'combined rankings must remain forbidden')
-check(manifest.counts?.vite_html_inputs === 40, 'expected 40 Vite HTML routes')
-check(manifest.counts?.inventory_entries === 41, 'expected 41 inventory entries')
+check(manifest.counts?.vite_html_inputs === 42, 'expected 42 Vite HTML routes')
+check(manifest.counts?.inventory_entries === 43, 'expected 43 inventory entries')
 check(manifest.counts?.indexable_routes === 23, 'expected 23 indexable routes')
-check(manifest.counts?.noindex_routes === 17, 'expected 17 noindex routes')
-check(manifest.counts?.current_browser_scenarios === 160, 'expected 160 current browser scenarios')
-check(manifest.counts?.public_readiness_configured_pages === 40, 'Public Readiness route count mismatch')
-check(manifest.counts?.production_smoke_page_routes === 40, 'Production Smoke route count mismatch')
+check(manifest.counts?.noindex_routes === 19, 'expected 19 noindex routes')
+check(manifest.counts?.current_browser_scenarios === 168, 'expected 168 current browser scenarios')
+check(manifest.counts?.public_readiness_configured_pages === 42, 'Public Readiness route count mismatch')
+check(manifest.counts?.production_smoke_page_routes === 42, 'Production Smoke route count mismatch')
 
 const gates = {}
 const profiles = {}
@@ -55,8 +55,8 @@ for (const path of manifest.route_files ?? []) {
   routes.push(...(doc.routes ?? []))
 }
 
-check(routes.length === 41, `expected 41 routes, found ${routes.length}`)
-check(routes.filter((route) => route.source !== 'apps/web/public/404.html').length === 40, 'Vite route count mismatch')
+check(routes.length === 43, `expected 43 routes, found ${routes.length}`)
+check(routes.filter((route) => route.source !== 'apps/web/public/404.html').length === 42, 'Vite route count mismatch')
 check(new Set(routes.map((route) => route.id)).size === routes.length, 'duplicate route id')
 check(new Set(routes.map((route) => route.route)).size === routes.length, 'duplicate route path')
 check(routes.filter((route) => route.profile === 'watchlist').length === 2, 'both Watchlist routes must remain inventoried')
@@ -65,6 +65,8 @@ check(routes.some((route) => route.id === 'twitch-map' && route.route === '/twit
 check(routes.some((route) => route.id === 'kick-map' && route.route === '/kick/map/' && route.profile === 'stream_map'), 'public Kick Stream Map must remain inventoried after K4 authorization')
 check(routes.some((route) => route.id === 'ja-twitch-map' && route.route === '/ja/twitch/map/' && route.profile === 'stream_map'), 'Japanese Twitch Stream Map candidate missing')
 check(routes.some((route) => route.id === 'ja-kick-map' && route.route === '/ja/kick/map/' && route.profile === 'stream_map'), 'Japanese Kick Stream Map candidate missing')
+check(routes.some((route) => route.id === 'ja-twitch-status' && route.route === '/ja/twitch/status/' && route.profile === 'status'), 'Japanese Twitch Data Status candidate missing')
+check(routes.some((route) => route.id === 'ja-kick-status' && route.route === '/ja/kick/status/' && route.profile === 'status'), 'Japanese Kick Data Status candidate missing')
 
 const japaneseCandidates = routes.filter((route) => route.route.startsWith('/ja/'))
 const expectedJapaneseCandidates = [
@@ -75,6 +77,7 @@ const expectedJapaneseCandidates = [
   '/ja/twitch/battle-lines/', '/ja/kick/battle-lines/',
   '/ja/twitch/history/', '/ja/kick/history/',
   '/ja/twitch/map/', '/ja/kick/map/',
+  '/ja/twitch/status/', '/ja/kick/status/',
 ]
 check(japaneseCandidates.length === expectedJapaneseCandidates.length, `expected ${expectedJapaneseCandidates.length} Japanese candidate routes, found ${japaneseCandidates.length}`)
 for (const expected of expectedJapaneseCandidates) {
@@ -99,6 +102,8 @@ const providerContracts = [
   ['/ja/kick/history/', '/api/kick-history', 'DB_KICK_HOT'],
   ['/ja/twitch/map/', '/api/twitch-stream-map', 'DB_TWITCH_HOT'],
   ['/ja/kick/map/', '/api/kick-stream-map', 'DB_KICK_HOT'],
+  ['/ja/twitch/status/', '/api/twitch-status', 'DB_TWITCH_HOT'],
+  ['/ja/kick/status/', '/api/kick-status', 'DB_KICK_HOT'],
 ]
 for (const [routePath, apiPath, binding] of providerContracts) {
   const route = japaneseCandidates.find((candidate) => candidate.route === routePath)
@@ -177,9 +182,10 @@ if (failures.length) {
 
 console.log(`Public surface inventory verified: ${routes.length} routes, ${Object.keys(profiles).length} profiles, ${Object.keys(gates).length} gate groups.`)
 console.log('- active program is Phase 12A Analytics Capture Foundation')
-console.log('- current candidate build: 40 HTML routes plus explicit 404')
-console.log('- thirteen Japanese candidates remain noindex, self-canonical, and outside sitemap/hreflang before J10')
-console.log('- Japanese Twitch/Kick core analysis and Stream Map candidates reuse provider-specific APIs and bindings')
+console.log('- current candidate build: 42 HTML routes plus explicit 404')
+console.log('- fifteen Japanese candidates remain noindex, self-canonical, and outside sitemap/hreflang before J10')
+console.log('- Japanese Twitch/Kick core analysis, Stream Map, and Data Status candidates reuse provider-specific APIs and bindings')
+console.log('- Japanese Data Status localization is presentation-only and preserves collector/storage/cadence/status semantics')
 console.log('- Japanese Stream Maps preserve existing geography/evidence semantics and Current / IRL boundaries')
 console.log('- historical Phase 12 exact-SHA production acceptance remains preserved at its accepted route counts')
 console.log('- five R12A legal/support routes remain production accepted and resolved')

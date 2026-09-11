@@ -50,7 +50,9 @@ jobs:
             dist/ja/twitch/history/index.html \
             dist/ja/kick/history/index.html \
             dist/ja/twitch/map/index.html \
-            dist/ja/kick/map/index.html
+            dist/ja/kick/map/index.html \
+            dist/ja/twitch/status/index.html \
+            dist/ja/kick/status/index.html
           do
             test -f "$file"
             grep -Eqi '<html[^>]+lang="ja"' "$file"
@@ -69,6 +71,8 @@ jobs:
           grep -q 'UTC基準' dist/ja/kick/history/index.html
           grep -q 'Current / IRL' dist/ja/twitch/map/index.html
           grep -q 'Current / IRL' dist/ja/kick/map/index.html
+          grep -q '鮮度' dist/ja/twitch/status/index.html
+          grep -q '鮮度' dist/ja/kick/status/index.html
           grep -q '/src/live/heatmap-current-shell-entry.ts' ja/twitch/heatmap/index.html
           grep -q '/src/live/heatmap-current-shell-entry.ts' ja/kick/heatmap/index.html
           grep -q '/src/live/day-flow-ja-twitch-entry.ts' ja/twitch/day-flow/index.html
@@ -81,6 +85,10 @@ jobs:
           grep -q '/src/features/kick-stream-map/public-entry.ts' ja/kick/map/index.html
           grep -q '/src/features/twitch-stream-map/stream-map-ja-presentation.ts' ja/twitch/map/index.html
           grep -q '/src/features/twitch-stream-map/stream-map-ja-presentation.ts' ja/kick/map/index.html
+          grep -q '/src/live/status-ja-presentation.ts' ja/twitch/status/index.html
+          grep -q '/src/live/status-ja-presentation.ts' ja/kick/status/index.html
+          grep -q '/src/live/status-current-shell-entry.ts' ja/twitch/status/index.html
+          grep -q '/src/live/status-current-shell-entry.ts' ja/kick/status/index.html
           grep -Eq 'data-kick-geography="country"[^>]*>Country<' ja/kick/map/index.html
           grep -Eq 'data-kick-geography="city"[^>]*>City<' ja/kick/map/index.html
           ! grep -q '<loc>https://www.viewloom.net/ja/' dist/sitemap.xml
@@ -89,7 +97,7 @@ jobs:
           set -euo pipefail
           grep -q 'Wait for the matching production deployment' .github/workflows/production-smoke.yml
           grep -q 'Verify hidden Japanese candidates' .github/workflows/production-smoke.yml
-          grep -q "test \"\${#routes\[@\]}\" = '40'" .github/workflows/production-smoke.yml
+          grep -q "test \"\${#routes\[@\]}\" = '42'" .github/workflows/production-smoke.yml
           for route in \
             'ja-twitch-heatmap|https://www.viewloom.net/ja/twitch/heatmap/' \
             'ja-kick-heatmap|https://www.viewloom.net/ja/kick/heatmap/' \
@@ -100,7 +108,9 @@ jobs:
             'ja-twitch-history|https://www.viewloom.net/ja/twitch/history/' \
             'ja-kick-history|https://www.viewloom.net/ja/kick/history/' \
             'ja-twitch-map|https://www.viewloom.net/ja/twitch/map/' \
-            'ja-kick-map|https://www.viewloom.net/ja/kick/map/'
+            'ja-kick-map|https://www.viewloom.net/ja/kick/map/' \
+            'ja-twitch-status|https://www.viewloom.net/ja/twitch/status/' \
+            'ja-kick-status|https://www.viewloom.net/ja/kick/status/'
           do
             grep -Fq "$route" .github/workflows/production-smoke.yml
           done
