@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { buildKickStreamMapCityRuntime } from '../apps/web/functions/api/kick-stream-map-city-runtime-core.mjs'
+import { kickCityReferenceGeometry } from '../apps/web/functions/api/kick-stream-map-city-reference-points.mjs'
 import {
   KICK_REVIEWED_CITY_RUNTIME_DATA,
   KICK_REVIEWED_CITY_RUNTIME_DATA_VERSION,
@@ -15,7 +16,15 @@ assert.deepEqual(
   KICK_REVIEWED_CITY_RUNTIME_DATA,
   KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA.slice(0, KICK_REVIEWED_CITY_RUNTIME_DATA.length),
 )
-assert.ok(KICK_REVIEWED_CITY_RUNTIME_DATA.length >= 12)
+assert.ok(KICK_REVIEWED_CITY_RUNTIME_DATA.length >= 107)
+
+const houstonReference = kickCityReferenceGeometry({ countryCode: 'US', region: 'Texas', city: 'Houston' })
+assert.deepEqual(houstonReference, {
+  state: 'reference_point',
+  referenceKey: 'US|texas|houston',
+  semantics: 'city_aggregate_reference',
+  referencePoint: { latitude: 29.82192, longitude: -95.341925 },
+})
 
 const snapshotItems = [
   { slug: 'absi', displayName: 'Absi', viewer_count: 10, broadcaster_user_id: '27894320' },
