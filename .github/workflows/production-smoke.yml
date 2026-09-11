@@ -88,6 +88,7 @@ jobs:
             '/twitch/channel/'
             '/twitch/watchlist/'
             '/twitch/status/'
+            '/ja/twitch/status/'
             '/kick/'
             '/ja/kick/'
             '/kick/heatmap/'
@@ -103,8 +104,9 @@ jobs:
             '/kick/channel/'
             '/kick/watchlist/'
             '/kick/status/'
+            '/ja/kick/status/'
           )
-          test "${#routes[@]}" = '40'
+          test "${#routes[@]}" = '42'
           for route in "${routes[@]}"; do
             name="$(echo "$route" | tr '/' '-' | sed 's/^-//;s/-$//')"
             [ -n "$name" ] || name='portal'
@@ -149,7 +151,9 @@ jobs:
             'ja-twitch-history|https://www.viewloom.net/ja/twitch/history/' \
             'ja-kick-history|https://www.viewloom.net/ja/kick/history/' \
             'ja-twitch-map|https://www.viewloom.net/ja/twitch/map/' \
-            'ja-kick-map|https://www.viewloom.net/ja/kick/map/'
+            'ja-kick-map|https://www.viewloom.net/ja/kick/map/' \
+            'ja-twitch-status|https://www.viewloom.net/ja/twitch/status/' \
+            'ja-kick-status|https://www.viewloom.net/ja/kick/status/'
           do
             name="${item%%|*}"
             canonical="${item#*|}"
@@ -169,8 +173,12 @@ jobs:
           grep -Fq 'UTC基準' "$ARTIFACT_DIR/ja-kick-history.html"
           grep -Fq 'Current / IRL' "$ARTIFACT_DIR/ja-twitch-map.html"
           grep -Fq 'Current / IRL' "$ARTIFACT_DIR/ja-kick-map.html"
+          grep -Fq '鮮度' "$ARTIFACT_DIR/ja-twitch-status.html"
+          grep -Fq '鮮度' "$ARTIFACT_DIR/ja-kick-status.html"
           grep -Fq '/src/features/twitch-stream-map/maplibre-bootstrap.ts' "$ARTIFACT_DIR/ja-twitch-map.html"
           grep -Fq '/src/features/kick-stream-map/public-entry.ts' "$ARTIFACT_DIR/ja-kick-map.html"
+          grep -Fq '/src/live/status-current-shell-entry.ts' "$ARTIFACT_DIR/ja-twitch-status.html"
+          grep -Fq '/src/live/status-current-shell-entry.ts' "$ARTIFACT_DIR/ja-kick-status.html"
           curl --silent --show-error --fail --max-time 30 "$ORIGIN/sitemap.xml" -o "$ARTIFACT_DIR/sitemap.xml"
           ! grep -q '<loc>https://www.viewloom.net/ja/' "$ARTIFACT_DIR/sitemap.xml"
       - name: Verify Twitch production status
@@ -217,14 +225,13 @@ jobs:
         run: |
           {
             echo '## ViewLoom Production Smoke'
-            echo
             echo "- Expected main SHA: \`$GITHUB_SHA\`"
             if [ -f "$ARTIFACT_DIR/deployment.json" ]; then
               echo "- Deployed SHA: \`$(jq -r '.commit_sha // "unavailable"' "$ARTIFACT_DIR/deployment.json")\`"
             fi
-            echo '- Repository-owned HTML routes: 40 checked'
-            echo '- Hidden Japanese candidates: 13 checked as noindex/self-canonical/sitemap-excluded'
-            echo '- About, Support, Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Changelog, Channel, Watchlist, English and Japanese Twitch/Kick Stream Map ownership: checked'
+            echo '- Repository-owned HTML routes: 42 checked'
+            echo '- Hidden Japanese candidates: 15 checked as noindex/self-canonical/sitemap-excluded'
+            echo '- About, Support, Contact, Terms, Privacy, Refund Policy, Commercial Disclosure, Changelog, Channel, Watchlist, English/Japanese Data Status, and English/Japanese Twitch/Kick Stream Map ownership: checked'
             echo '- Twitch and Kick status APIs: checked'
             echo '- Separate D1 bindings: checked'
             echo '- Collector freshness: checked'
