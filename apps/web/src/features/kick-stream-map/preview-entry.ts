@@ -195,6 +195,8 @@ function renderCitySurface(model: KickCityPreviewModel): void {
       ? `Reconciliation passes · ${number(model.accounting.observedStreams)} observed streams accounted for · ${number(model.accounting.referenceGeometryAggregates)} reference point · ${number(model.accounting.listOnlyAggregates)} list-only.`
       : 'Reconciliation failed · City preview remains fail closed.',
   )
+
+  if (activeGeography === 'city') void ensureCityMap()
 }
 
 function deriveCitySurfacePresentation(model: KickCityPreviewModel): SurfacePresentation {
