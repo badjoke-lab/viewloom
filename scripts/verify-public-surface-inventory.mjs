@@ -21,13 +21,13 @@ check(manifest.provider_invariants?.twitch_binding === 'DB_TWITCH_HOT', 'Twitch 
 check(manifest.provider_invariants?.kick_binding === 'DB_KICK_HOT', 'Kick binding mismatch')
 check(manifest.provider_invariants?.combined_totals_allowed === false, 'combined totals must remain forbidden')
 check(manifest.provider_invariants?.combined_rankings_allowed === false, 'combined rankings must remain forbidden')
-check(manifest.counts?.vite_html_inputs === 36, 'expected 36 Vite HTML routes')
-check(manifest.counts?.inventory_entries === 37, 'expected 37 inventory entries')
+check(manifest.counts?.vite_html_inputs === 38, 'expected 38 Vite HTML routes')
+check(manifest.counts?.inventory_entries === 39, 'expected 39 inventory entries')
 check(manifest.counts?.indexable_routes === 23, 'expected 23 indexable routes')
-check(manifest.counts?.noindex_routes === 13, 'expected 13 noindex routes')
-check(manifest.counts?.current_browser_scenarios === 144, 'expected 144 current browser scenarios')
-check(manifest.counts?.public_readiness_configured_pages === 36, 'Public Readiness route count mismatch')
-check(manifest.counts?.production_smoke_page_routes === 36, 'Production Smoke route count mismatch')
+check(manifest.counts?.noindex_routes === 15, 'expected 15 noindex routes')
+check(manifest.counts?.current_browser_scenarios === 152, 'expected 152 current browser scenarios')
+check(manifest.counts?.public_readiness_configured_pages === 38, 'Public Readiness route count mismatch')
+check(manifest.counts?.production_smoke_page_routes === 38, 'Production Smoke route count mismatch')
 
 const gates = {}
 const profiles = {}
@@ -55,8 +55,8 @@ for (const path of manifest.route_files ?? []) {
   routes.push(...(doc.routes ?? []))
 }
 
-check(routes.length === 37, `expected 37 routes, found ${routes.length}`)
-check(routes.filter((route) => route.source !== 'apps/web/public/404.html').length === 36, 'Vite route count mismatch')
+check(routes.length === 39, `expected 39 routes, found ${routes.length}`)
+check(routes.filter((route) => route.source !== 'apps/web/public/404.html').length === 38, 'Vite route count mismatch')
 check(new Set(routes.map((route) => route.id)).size === routes.length, 'duplicate route id')
 check(new Set(routes.map((route) => route.route)).size === routes.length, 'duplicate route path')
 check(routes.filter((route) => route.profile === 'watchlist').length === 2, 'both Watchlist routes must remain inventoried')
@@ -67,14 +67,11 @@ check(routes.some((route) => route.id === 'kick-map' && route.route === '/kick/m
 const japaneseCandidates = routes.filter((route) => route.route.startsWith('/ja/'))
 const expectedJapaneseCandidates = [
   '/ja/',
-  '/ja/twitch/',
-  '/ja/kick/',
-  '/ja/twitch/heatmap/',
-  '/ja/kick/heatmap/',
-  '/ja/twitch/day-flow/',
-  '/ja/kick/day-flow/',
-  '/ja/twitch/battle-lines/',
-  '/ja/kick/battle-lines/',
+  '/ja/twitch/', '/ja/kick/',
+  '/ja/twitch/heatmap/', '/ja/kick/heatmap/',
+  '/ja/twitch/day-flow/', '/ja/kick/day-flow/',
+  '/ja/twitch/battle-lines/', '/ja/kick/battle-lines/',
+  '/ja/twitch/history/', '/ja/kick/history/',
 ]
 check(japaneseCandidates.length === expectedJapaneseCandidates.length, `expected ${expectedJapaneseCandidates.length} Japanese candidate routes, found ${japaneseCandidates.length}`)
 for (const expected of expectedJapaneseCandidates) {
@@ -85,22 +82,23 @@ for (const expected of expectedJapaneseCandidates) {
   check(candidate.sitemap === false, `${expected}: Japanese candidate must remain outside sitemap before J10`)
   check(candidate.canonical === `${primaryOrigin}${expected}`, `${expected}: Japanese candidate must self-canonicalize`)
 }
-const jaTwitch = japaneseCandidates.find((route) => route.route === '/ja/twitch/')
-const jaKick = japaneseCandidates.find((route) => route.route === '/ja/kick/')
-const jaTwitchHeatmap = japaneseCandidates.find((route) => route.route === '/ja/twitch/heatmap/')
-const jaKickHeatmap = japaneseCandidates.find((route) => route.route === '/ja/kick/heatmap/')
-const jaTwitchDayFlow = japaneseCandidates.find((route) => route.route === '/ja/twitch/day-flow/')
-const jaKickDayFlow = japaneseCandidates.find((route) => route.route === '/ja/kick/day-flow/')
-const jaTwitchBattleLines = japaneseCandidates.find((route) => route.route === '/ja/twitch/battle-lines/')
-const jaKickBattleLines = japaneseCandidates.find((route) => route.route === '/ja/kick/battle-lines/')
-check(jaTwitch?.apis?.length === 1 && jaTwitch.apis[0].path === '/api/twitch-home' && jaTwitch.apis[0].binding === 'DB_TWITCH_HOT', 'Japanese Twitch Home must reuse the Twitch Home API/binding')
-check(jaKick?.apis?.length === 1 && jaKick.apis[0].path === '/api/kick-home' && jaKick.apis[0].binding === 'DB_KICK_HOT', 'Japanese Kick Home must reuse the Kick Home API/binding')
-check(jaTwitchHeatmap?.apis?.length === 1 && jaTwitchHeatmap.apis[0].path === '/api/twitch-heatmap' && jaTwitchHeatmap.apis[0].binding === 'DB_TWITCH_HOT', 'Japanese Twitch Heatmap must reuse the Twitch Heatmap API/binding')
-check(jaKickHeatmap?.apis?.length === 1 && jaKickHeatmap.apis[0].path === '/api/kick-heatmap' && jaKickHeatmap.apis[0].binding === 'DB_KICK_HOT', 'Japanese Kick Heatmap must reuse the Kick Heatmap API/binding')
-check(jaTwitchDayFlow?.apis?.length === 1 && jaTwitchDayFlow.apis[0].path === '/api/day-flow' && jaTwitchDayFlow.apis[0].binding === 'DB_TWITCH_HOT', 'Japanese Twitch Day Flow must reuse the Twitch Day Flow API/binding')
-check(jaKickDayFlow?.apis?.length === 1 && jaKickDayFlow.apis[0].path === '/api/kick-day-flow' && jaKickDayFlow.apis[0].binding === 'DB_KICK_HOT', 'Japanese Kick Day Flow must reuse the Kick Day Flow API/binding')
-check(jaTwitchBattleLines?.apis?.length === 1 && jaTwitchBattleLines.apis[0].path === '/api/battle-lines' && jaTwitchBattleLines.apis[0].binding === 'DB_TWITCH_HOT', 'Japanese Twitch Battle Lines must reuse the Twitch Battle Lines API/binding')
-check(jaKickBattleLines?.apis?.length === 1 && jaKickBattleLines.apis[0].path === '/api/kick-battle-lines' && jaKickBattleLines.apis[0].binding === 'DB_KICK_HOT', 'Japanese Kick Battle Lines must reuse the Kick Battle Lines API/binding')
+
+const providerContracts = [
+  ['/ja/twitch/', '/api/twitch-home', 'DB_TWITCH_HOT'],
+  ['/ja/kick/', '/api/kick-home', 'DB_KICK_HOT'],
+  ['/ja/twitch/heatmap/', '/api/twitch-heatmap', 'DB_TWITCH_HOT'],
+  ['/ja/kick/heatmap/', '/api/kick-heatmap', 'DB_KICK_HOT'],
+  ['/ja/twitch/day-flow/', '/api/day-flow', 'DB_TWITCH_HOT'],
+  ['/ja/kick/day-flow/', '/api/kick-day-flow', 'DB_KICK_HOT'],
+  ['/ja/twitch/battle-lines/', '/api/battle-lines', 'DB_TWITCH_HOT'],
+  ['/ja/kick/battle-lines/', '/api/kick-battle-lines', 'DB_KICK_HOT'],
+  ['/ja/twitch/history/', '/api/history', 'DB_TWITCH_HOT'],
+  ['/ja/kick/history/', '/api/kick-history', 'DB_KICK_HOT'],
+]
+for (const [routePath, apiPath, binding] of providerContracts) {
+  const route = japaneseCandidates.find((candidate) => candidate.route === routePath)
+  check(route?.apis?.length === 1 && route.apis[0].path === apiPath && route.apis[0].binding === binding, `${routePath}: Japanese candidate must reuse provider API/binding`)
+}
 
 const vite = readFileSync(join(root, 'apps/web/vite.config.ts'), 'utf8')
 const sitemap = readFileSync(join(root, 'apps/web/public/sitemap.xml'), 'utf8')
@@ -174,9 +172,9 @@ if (failures.length) {
 
 console.log(`Public surface inventory verified: ${routes.length} routes, ${Object.keys(profiles).length} profiles, ${Object.keys(gates).length} gate groups.`)
 console.log('- active program is Phase 12A Analytics Capture Foundation')
-console.log('- current candidate build: 36 HTML routes plus explicit 404')
-console.log('- nine Japanese candidates remain noindex, self-canonical, and outside sitemap/hreflang before J10')
-console.log('- Japanese Twitch/Kick Heatmap, Day Flow, and Battle Lines candidates reuse their provider-specific APIs and bindings')
+console.log('- current candidate build: 38 HTML routes plus explicit 404')
+console.log('- eleven Japanese candidates remain noindex, self-canonical, and outside sitemap/hreflang before J10')
+console.log('- Japanese Twitch/Kick Heatmap, Day Flow, Battle Lines, and History candidates reuse their provider-specific APIs and bindings')
 console.log('- historical Phase 12 exact-SHA production acceptance remains preserved at its accepted route counts')
 console.log('- five R12A legal/support routes remain production accepted and resolved')
 console.log('- Twitch and Kick bindings remain separate')
