@@ -9,7 +9,7 @@ const readRepo = (path) => readFileSync(resolve(repoRoot, path), 'utf8')
 const origin = 'https://www.viewloom.net'
 
 const candidates = [
-  { route: '/ja/', source: 'ja/index.html', canonical: `${origin}/ja/`, provider: 'portal', apis: [] },
+  { route: '/ja/', source: 'ja/index.html', canonical: `${origin}/ja/`, provider: 'portal', apis: [{ path: '/api/twitch-home', binding: 'DB_TWITCH_HOT' }, { path: '/api/kick-home', binding: 'DB_KICK_HOT' }] },
   { route: '/ja/twitch/', source: 'ja/twitch/index.html', canonical: `${origin}/ja/twitch/`, provider: 'twitch', apis: [{ path: '/api/twitch-home', binding: 'DB_TWITCH_HOT' }] },
   { route: '/ja/twitch/heatmap/', source: 'ja/twitch/heatmap/index.html', canonical: `${origin}/ja/twitch/heatmap/`, provider: 'twitch', apis: [{ path: '/api/twitch-heatmap', binding: 'DB_TWITCH_HOT' }] },
   { route: '/ja/twitch/day-flow/', source: 'ja/twitch/day-flow/index.html', canonical: `${origin}/ja/twitch/day-flow/`, provider: 'twitch', apis: [{ path: '/api/day-flow', binding: 'DB_TWITCH_HOT' }] },
@@ -102,7 +102,6 @@ for (const provider of ['twitch', 'kick']) {
   const status = readWeb(`ja/${provider}/status/index.html`)
   const channel = readWeb(`ja/${provider}/channel/index.html`)
   const watchlist = readWeb(`ja/${provider}/watchlist/index.html`)
-
   assert.match(home, /src=["']\/src\/provider-home\.ts["']/, `/ja/${provider}/: shared Provider Home runtime must be used`)
   assert.match(heatmap, /観測/, `/ja/${provider}/heatmap/: Japanese observation copy missing`)
   assert.match(dayFlow, /UTC/, `/ja/${provider}/day-flow/: explicit UTC semantics copy missing`)
@@ -127,7 +126,6 @@ assert.match(jaKickDayFlowEntry, /import '\.\/day-flow-kick-entry'/)
 assert.match(jaDayFlowPresentation, /localeFromPathname\(window\.location\.pathname\) === 'ja'/)
 assert.doesNotMatch(jaDayFlowPresentation, /\/api\//)
 assert.match(sharedDayFlowController, /provider === 'kick' \? '\/api\/kick-day-flow' : '\/api\/day-flow'/)
-
 for (const [provider, entry] of [['twitch', jaTwitchBattleEntry], ['kick', jaKickBattleEntry]]) {
   assert.match(entry, /import '\.\/battle-lines-ja-presentation'/, `Japanese ${provider} Battle Lines presentation adapter missing`)
   assert.match(entry, /import '\.\/battle-lines-current-shell-entry'/, `Japanese ${provider} Battle Lines shared controller missing`)
@@ -138,7 +136,6 @@ assert.doesNotMatch(jaBattlePresentation, /\/api\//)
 assert.match(jaBattleSplitLabels, /localeFromPathname\(window\.location\.pathname\) === 'ja'/)
 assert.doesNotMatch(jaBattleSplitLabels, /\/api\//)
 assert.match(sharedBattleController, /provider === 'kick' \? '\/api\/kick-battle-lines' : '\/api\/battle-lines'/)
-
 for (const [provider, entry] of [['twitch', jaTwitchHistoryEntry], ['kick', jaKickHistoryEntry]]) {
   assert.match(entry, /import '\.\/history-ja-presentation'/, `Japanese ${provider} History presentation adapter missing`)
   assert.match(entry, /import '\.\/history-current-shell-entry'/, `Japanese ${provider} History shared controller missing`)
@@ -148,7 +145,6 @@ assert.match(jaHistoryPresentation, /RAW_TEXT_ANCESTORS/)
 assert.doesNotMatch(jaHistoryPresentation, /\/api\//)
 assert.doesNotMatch(jaHistoryPresentation, /\bfetch\(/)
 assert.match(sharedHistoryController, /provider === 'kick' \? '\/api\/kick-history' : '\/api\/history'/)
-
 assert.match(jaMapPresentation, /localeFromPathname\(window\.location\.pathname\) === 'ja'/)
 assert.match(jaMapPresentation, /RAW_TEXT_ANCESTORS/)
 assert.doesNotMatch(jaMapPresentation, /\/api\//)
@@ -162,14 +158,12 @@ assert.match(kickMapController, /'\/api\/kick-stream-map\?geography=city'/)
 assert.match(kickMapController, /'\/api\/kick-stream-map'/)
 assert.doesNotMatch(twitchMapController, /\/ja\//)
 assert.doesNotMatch(kickMapController, /\/ja\//)
-
 assert.match(jaStatusPresentation, /localeFromPathname\(window\.location\.pathname\) === 'ja'/)
 assert.match(jaStatusPresentation, /RAW_ANCESTORS/)
 assert.doesNotMatch(jaStatusPresentation, /\/api\//)
 assert.doesNotMatch(jaStatusPresentation, /\bfetch\(/)
 assert.match(sharedStatusController, /provider === 'kick' \? '\/api\/kick-status' : '\/api\/twitch-status'/)
 assert.equal((sharedStatusController.match(/\bfetch\(/g) ?? []).length, 1)
-
 assert.match(jaChannelPresentation, /localeFromPathname\(window\.location\.pathname\) === 'ja'/)
 assert.match(jaChannelPresentation, /RAW_ANCESTORS/)
 assert.doesNotMatch(jaChannelPresentation, /\/api\//)
@@ -178,17 +172,16 @@ assert.match(sharedChannelController, /provider === 'kick' \? '\/api\/kick-histo
 assert.equal((sharedChannelController.match(/\bfetch\(/g) ?? []).length, 1)
 assert.match(channelUrlState, /const url = new URL\(currentUrl\)/)
 assert.match(channelUrlState, /return `\$\{url\.pathname\}/)
-
-assert.match(jaWatchlistPresentation, /localeFromPathname\(window\.location\.pathname\) === 'ja'/, 'Japanese Watchlist presentation must be locale-gated')
-assert.match(jaWatchlistPresentation, /RAW_ANCESTORS/, 'Japanese Watchlist presentation must protect raw identities/storage values')
-assert.match(jaWatchlistPresentation, /localizeAvailableHref/, 'Japanese Watchlist presentation must localize dynamic internal links')
-assert.doesNotMatch(jaWatchlistPresentation, /\/api\//, 'Japanese Watchlist presentation must not own API paths')
-assert.doesNotMatch(jaWatchlistPresentation, /\bfetch\(/, 'Japanese Watchlist presentation must not own network requests')
-assert.match(sharedWatchlistRuntime, /createWatchlistCombinedController/, 'Watchlist must retain shared combined controller')
-assert.match(sharedWatchlistRuntime, /function requestProviderData\(/, 'Watchlist network ownership must remain in shared runtime')
-assert.equal((sharedWatchlistRuntime.match(/\bfetch\(/g) ?? []).length, 1, 'Watchlist network request must remain single-owner')
-assert.match(watchlistStorage, /viewloom\.watchlist\./, 'provider-specific Watchlist localStorage contract missing')
-assert.doesNotMatch(sharedWatchlistRuntime, /\/ja\/api|\/api\/ja/i, 'shared Watchlist runtime must remain locale-neutral')
+assert.match(jaWatchlistPresentation, /localeFromPathname\(window\.location\.pathname\) === 'ja'/)
+assert.match(jaWatchlistPresentation, /RAW_ANCESTORS/)
+assert.match(jaWatchlistPresentation, /localizeAvailableHref/)
+assert.doesNotMatch(jaWatchlistPresentation, /\/api\//)
+assert.doesNotMatch(jaWatchlistPresentation, /\bfetch\(/)
+assert.match(sharedWatchlistRuntime, /createWatchlistCombinedController/)
+assert.match(sharedWatchlistRuntime, /function requestProviderData\(/)
+assert.equal((sharedWatchlistRuntime.match(/\bfetch\(/g) ?? []).length, 1)
+assert.match(watchlistStorage, /viewloom\.watchlist\./)
+assert.doesNotMatch(sharedWatchlistRuntime, /\/ja\/api|\/api\/ja/i)
 
 const routeDocs = ['docs/audits/public-surface-routes-portal.json', 'docs/audits/public-surface-routes-twitch.json', 'docs/audits/public-surface-routes-kick.json'].flatMap((path) => JSON.parse(readRepo(path)).routes)
 const inventoriedCandidates = routeDocs.filter((route) => route.route.startsWith('/ja/'))
