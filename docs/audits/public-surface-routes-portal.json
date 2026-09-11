@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-routes-v1",
-  "version": 6,
+  "version": 7,
   "group": "portal",
   "routes": [
     {"id":"portal","route":"/","provider":"portal","profile":"portal","source":"apps/web/index.html","title":"ViewLoom — Live Stream Data Heatmaps, Day Flow, and Rivalry Charts","canonical":"https://www.viewloom.net/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/twitch-home","binding":"DB_TWITCH_HOT"},{"path":"/api/kick-home","binding":"DB_KICK_HOT"}]},
@@ -14,9 +14,13 @@
     {"id":"contact","route":"/contact/","provider":"portal","profile":"static_legal","source":"apps/web/contact/index.html","title":"Contact — ViewLoom","canonical":"https://www.viewloom.net/contact/","robots":"index,follow","sitemap":true,"apis":[]},
     {"id":"ja-contact","route":"/ja/contact/","provider":"portal","profile":"static_legal","source":"apps/web/ja/contact/index.html","title":"お問い合わせ — ViewLoom","canonical":"https://www.viewloom.net/ja/contact/","robots":"noindex,follow","sitemap":false,"apis":[]},
     {"id":"terms","route":"/terms/","provider":"portal","profile":"static_legal","source":"apps/web/terms/index.html","title":"Terms — ViewLoom","canonical":"https://www.viewloom.net/terms/","robots":"index,follow","sitemap":true,"apis":[]},
+    {"id":"ja-terms","route":"/ja/terms/","provider":"portal","profile":"static_legal","source":"apps/web/ja/terms/index.html","title":"利用規約 — ViewLoom","canonical":"https://www.viewloom.net/ja/terms/","robots":"noindex,follow","sitemap":false,"apis":[]},
     {"id":"privacy","route":"/privacy/","provider":"portal","profile":"static_legal","source":"apps/web/privacy/index.html","title":"Privacy — ViewLoom","canonical":"https://www.viewloom.net/privacy/","robots":"index,follow","sitemap":true,"apis":[]},
+    {"id":"ja-privacy","route":"/ja/privacy/","provider":"portal","profile":"static_legal","source":"apps/web/ja/privacy/index.html","title":"プライバシー — ViewLoom","canonical":"https://www.viewloom.net/ja/privacy/","robots":"noindex,follow","sitemap":false,"apis":[]},
     {"id":"refund-policy","route":"/refund-policy/","provider":"portal","profile":"static_legal","source":"apps/web/refund-policy/index.html","title":"Refund Policy — ViewLoom","canonical":"https://www.viewloom.net/refund-policy/","robots":"index,follow","sitemap":true,"apis":[]},
+    {"id":"ja-refund-policy","route":"/ja/refund-policy/","provider":"portal","profile":"static_legal","source":"apps/web/ja/refund-policy/index.html","title":"返金ポリシー — ViewLoom","canonical":"https://www.viewloom.net/ja/refund-policy/","robots":"noindex,follow","sitemap":false,"apis":[]},
     {"id":"commercial-disclosure","route":"/commercial-disclosure/","provider":"portal","profile":"static_legal","source":"apps/web/commercial-disclosure/index.html","title":"Commercial Disclosure — ViewLoom","canonical":"https://www.viewloom.net/commercial-disclosure/","robots":"index,follow","sitemap":true,"apis":[]},
+    {"id":"ja-commercial-disclosure","route":"/ja/commercial-disclosure/","provider":"portal","profile":"static_legal","source":"apps/web/ja/commercial-disclosure/index.html","title":"特定商取引法に基づく表記 — ViewLoom","canonical":"https://www.viewloom.net/ja/commercial-disclosure/","robots":"noindex,follow","sitemap":false,"apis":[]},
     {"id":"not-found","route":"*","provider":"portal","profile":"not_found","source":"apps/web/public/404.html","title":"Page not found | ViewLoom","canonical":null,"robots":"noindex,follow","sitemap":false,"apis":[]}
   ]
 }
