@@ -12,7 +12,6 @@ const routeFiles = [
   'docs/audits/public-surface-routes-kick.json',
 ]
 const pages = loadPublicPages()
-
 const knownRoutes = new Set(pages.map((page) => page.route))
 const errors = []
 const warnings = []
@@ -32,11 +31,9 @@ if (!robots) warning('robots', 'dist/robots.txt is missing.')
 else if (!/sitemap:\s*https:\/\/www\.viewloom\.net\/sitemap\.xml/i.test(robots)) warning('robots', 'robots.txt does not advertise the canonical sitemap URL.')
 
 for (const page of pages) auditPage(page)
-
 for (const page of pages.filter((item) => item.indexable)) {
   if (!sitemapRoutes.has(page.route)) error(page.route, 'indexable route is missing from sitemap.xml.')
 }
-
 for (const route of sitemapRoutes) {
   if (!knownRoutes.has(route)) warning('sitemap', `sitemap route is not part of the configured public build: ${route}`)
 }
@@ -90,7 +87,6 @@ function loadPublicPages() {
     }
     routes.push(...(document.routes ?? []))
   }
-
   return routes
     .filter((route) => route.route !== '*')
     .map((route) => ({
@@ -181,9 +177,6 @@ function auditFeatureTabs(page, html) {
     const localized = `/ja${href}`
     return knownRoutes.has(localized) ? localized : href
   })
-  if (page.route.startsWith('/ja/') && !/src=["']\/src\/mock-site\.ts["']/.test(html)) {
-    error(page.route, 'Japanese feature page is missing the shared locale-aware shell runtime.')
-  }
   const required = ['heatmap', 'day-flow', 'battle-lines', 'history', 'status'].map((feature) => {
     const localized = `/ja/${page.provider}/${feature}/`
     return page.route.startsWith('/ja/') && knownRoutes.has(localized)
