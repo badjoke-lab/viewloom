@@ -1,9 +1,13 @@
+.feature-tabs a[href="/twitch/map/"],
+.feature-tabs a[href="/ja/twitch/map/"],
 .feature-tabs a[data-twitch-stream-map-feature-tab="true"] {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
 }
 
+.feature-tabs a[href="/twitch/map/"]:focus-visible,
+.feature-tabs a[href="/ja/twitch/map/"]:focus-visible,
 .feature-tabs a[data-twitch-stream-map-feature-tab="true"]:focus-visible {
   outline: 2px solid var(--accent, #905aff);
   outline-offset: -2px;
