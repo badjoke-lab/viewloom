@@ -36,7 +36,8 @@ assert.equal(localeSource.includes("export const JAPANESE_PATH_PREFIX = '/ja'"),
 assert.equal(routeSource.includes('withLocalePathname'), true)
 assert.equal(routeSource.includes('localizeAvailableHref'), true, 'availability-aware locale routing must be present')
 assert.equal(routeSource.includes("'/twitch/'"), true, 'Japanese Twitch Home must remain an available localized route')
-assert.equal(routeSource.includes("'/twitch/map/'"), false, 'Japanese Twitch Map must not be treated as available before its localized route exists')
+assert.equal(routeSource.includes("'/twitch/map/'"), true, 'J5 Japanese Twitch Map candidate must be an available localized route')
+assert.equal(routeSource.includes("'/kick/map/'"), true, 'J5 Japanese Kick Map candidate must be an available localized route')
 assert.equal(messagesSource.includes("'feature.streamMap': 'Stream Map'"), true)
 assert.equal(shellSource.includes("'05 · WHERE'"), true, 'shared provider Home shell must expose authorized Kick Map card')
 assert.equal(shellSource.includes("'Stream Map'"), true, 'Kick Home Stream Map label missing')
@@ -55,9 +56,10 @@ assert.equal(kickSurfaceSource.includes('/kick/map/'), true, 'Kick Map must ente
 console.log(JSON.stringify({
   ok: true,
   twitchHomeStreamMapEntry: '/twitch/map/',
-  japaneseTwitchHomeStreamMapEntry: '/twitch/map/',
-  japaneseTwitchHomeFallbackUntilLocalizedMapExists: true,
+  japaneseTwitchHomeStreamMapEntry: '/ja/twitch/map/',
   kickHomeStreamMapEntry: '/kick/map/',
+  japaneseKickHomeStreamMapEntry: '/ja/kick/map/',
+  japaneseMapCandidatesAvailable: true,
   providerSeparated: true,
   localeAwareHomeEntry: true,
   twitchMapPublic: true,

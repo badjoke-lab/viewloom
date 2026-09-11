@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-routes-v1",
-  "version": 10,
+  "version": 11,
   "group": "kick",
   "routes": [
     {"id":"kick-home","route":"/kick/","provider":"kick","profile":"provider_home","source":"apps/web/kick/index.html","title":"Kick Live Stream Data, Heatmap & History — ViewLoom","canonical":"https://www.viewloom.net/kick/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-home","binding":"DB_KICK_HOT"}]},
@@ -14,6 +14,7 @@
     {"id":"kick-history","route":"/kick/history/","provider":"kick","profile":"history","source":"apps/web/kick/history/index.html","title":"History & Trends for Kick live streams | ViewLoom","canonical":"https://www.viewloom.net/kick/history/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-history","binding":"DB_KICK_HOT"}]},
     {"id":"ja-kick-history","route":"/ja/kick/history/","provider":"kick","profile":"history","source":"apps/web/ja/kick/history/index.html","title":"Kick History & Trends — 日次推移と配信者履歴 | ViewLoom","canonical":"https://www.viewloom.net/ja/kick/history/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/kick-history","binding":"DB_KICK_HOT"}]},
     {"id":"kick-map","route":"/kick/map/","provider":"kick","profile":"stream_map","source":"apps/web/kick/map/index.html","title":"Kick Stream Map — Geography & Viewer Counts | ViewLoom","canonical":"https://www.viewloom.net/kick/map/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-stream-map","binding":"DB_KICK_HOT"}]},
+    {"id":"ja-kick-map","route":"/ja/kick/map/","provider":"kick","profile":"stream_map","source":"apps/web/ja/kick/map/index.html","title":"Kick Stream Map — 配信の地理と視聴者数 | ViewLoom","canonical":"https://www.viewloom.net/ja/kick/map/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/kick-stream-map","binding":"DB_KICK_HOT"}]},
     {"id":"kick-channel","route":"/kick/channel/","provider":"kick","profile":"channel","source":"apps/web/kick/channel/index.html","title":"Kick channel history | ViewLoom","canonical":"https://www.viewloom.net/kick/channel/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/kick-history","binding":"DB_KICK_HOT"}]},
     {"id":"kick-watchlist","route":"/kick/watchlist/","provider":"kick","profile":"watchlist","source":"apps/web/kick/watchlist/index.html","title":"Kick Local Watchlist — ViewLoom","canonical":"https://www.viewloom.net/kick/watchlist/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/kick-heatmap","binding":"DB_KICK_HOT"},{"path":"/api/kick-history","binding":"DB_KICK_HOT"}]},
     {"id":"kick-status","route":"/kick/status/","provider":"kick","profile":"status","source":"apps/web/kick/status/index.html","title":"Data Status for Kick live streams | ViewLoom","canonical":"https://www.viewloom.net/kick/status/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/kick-status","binding":"DB_KICK_HOT"}]}
