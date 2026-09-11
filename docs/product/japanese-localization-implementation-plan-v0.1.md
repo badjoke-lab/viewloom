@@ -184,20 +184,43 @@ Users do not fall back into English during ordinary Japanese product navigation.
 
 ### J7 — fixed informational/legal routes
 
-Migrate:
+Execution order:
+
+```text
+J7a — About / Support / Contact / Changelog
+J7b — Terms / Privacy / Refund Policy / Commercial Disclosure
+```
+
+J7a work:
 
 - About / methodology and limits;
-- Support;
-- Contact surface where locally rendered;
+- Support and existing Stripe-hosted support flow;
+- Contact surface and existing Google Form flow;
+- Changelog presentation using the existing reviewed public JSON source.
+
+J7b work:
+
 - Terms;
 - Privacy;
 - Refund Policy;
-- Commercial Disclosure;
-- Changelog presentation.
+- Commercial Disclosure.
+
+J7a candidate state (2026-09-11):
+
+- PR #1331 adds hidden `/ja/about/`, `/ja/support/`, `/ja/contact/`, and `/ja/changelog/` candidates;
+- all four remain `noindex,follow`, self-canonical, excluded from sitemap/hreflang/public language switching before J10;
+- About, Support, and Contact reuse `static-page.ts` and the shared locale-aware shell;
+- the existing Stripe-hosted ViewLoom payment link and external Google Form remain unchanged;
+- Japanese Changelog reuses the existing `/data/changelog.json` source and `changelog-page.ts`; no localized data endpoint or duplicate feed is introduced;
+- Japanese reviewed milestone presentation is mapped by stable milestone id while English JSON title/summary remains the canonical public data payload;
+- J7a advances the candidate contract to 50 HTML routes plus explicit 404, 51 inventory entries, 27 noindex routes, 23 sitemap routes, 23 Japanese candidates, and 200 browser scenarios across four viewports;
+- Terms, Privacy, Refund Policy, and Commercial Disclosure intentionally remain English-only until J7b;
+- collector, D1, cadence, retention, provider separation, geography/evidence, and Current/IRL semantics are unchanged;
+- J10 remains the only authorization point for public Japanese indexing, sitemap entries, reciprocal hreflang, and the public language switcher.
 
 Outcome:
 
-Japanese users can understand operating limits, support, and legal information.
+J7a removes ordinary informational fallbacks to English. J7b completes the fixed legal/policy surface before SEO release work begins.
 
 ### J8 — localized SEO layer
 
@@ -289,7 +312,8 @@ shared shell
 -> Data Status
 -> Channel
 -> Local Watchlist
--> informational/legal pages
+-> About / Support / Contact / Changelog
+-> Terms / Privacy / Refund Policy / Commercial Disclosure
 -> SEO release layer
 ```
 
