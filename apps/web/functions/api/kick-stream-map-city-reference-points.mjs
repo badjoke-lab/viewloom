@@ -21,6 +21,9 @@ const POINTS = Object.freeze([
   Object.freeze({ countryCode: 'BR', region: null, city: 'Rio de Janeiro', latitude: -22.9068, longitude: -43.1729 }),
   Object.freeze({ countryCode: 'IN', region: 'Punjab', city: 'Fazilka', latitude: 30.403648, longitude: 74.027962 }),
   Object.freeze({ countryCode: 'IN', region: null, city: 'Mumbai', latitude: 19.076, longitude: 72.8777 }),
+  // Natural Earth v5.1.2 ne_10m_populated_places_simple: ne_id 1159151621.
+  // This is a City aggregate reference point, never a creator coordinate.
+  Object.freeze({ countryCode: 'BR', region: null, city: 'São Paulo', latitude: -23.556734, longitude: -46.626966 }),
 ])
 
 const POINT_BY_KEY = new Map(POINTS.map((point) => [keyFromParts(point), point]))
