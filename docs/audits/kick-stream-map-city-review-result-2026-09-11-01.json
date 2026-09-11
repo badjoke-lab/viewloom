@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "viewloom-kick-stream-map-city-review-result-v0.1",
+  "batchId": "2026-09-11-01",
+  "reviewMode": "manual_bounded_city_review",
+  "reviewedOn": "2026-09-11",
+  "sourceSelection": "five current production-Top100 City review candidates that could be closed conservatively from current platform or user-managed first-party sources without City inference",
+  "externalLookupsUsed": 8,
+  "providerRequests": 0,
+  "canonicalMutationApplied": false,
+  "productionDeployment": false,
+  "completed": true,
+  "identities": [
+    {
+      "rank": 1,
+      "broadcasterUserId": "5508767",
+      "slug": "deenthegreat",
+      "lookupsUsed": 2,
+      "outcome": "no_qualifying_evidence",
+      "evidence": [],
+      "reviewedSources": [
+        {
+          "sourceClass": "platform_profile",
+          "sourceUrl": "https://kick.com/deenthegreat",
+          "observedOn": "2026-09-11"
+        },
+        {
+          "sourceClass": "first_party_link_hub",
+          "sourceUrl": "https://link.me/deenthegreat",
+          "observedOn": "2026-09-11"
+        }
+      ],
+      "placement": null,
+      "researchNote": "The current Kick profile and verified user-managed LinkMe bind the creator identity and current Kick/social links but do not declare an explicit durable Base City. IRL stream/category context is not promoted to Base City."
+    },
+    {
+      "rank": 2,
+      "broadcasterUserId": "35467",
+      "slug": "lospollostv",
+      "lookupsUsed": 2,
+      "outcome": "no_qualifying_evidence",
+      "evidence": [],
+      "reviewedSources": [
+        {
+          "sourceClass": "platform_profile",
+          "sourceUrl": "https://kick.com/lospollostv",
+          "observedOn": "2026-09-11"
+        },
+        {
+          "sourceClass": "first_party_link_hub",
+          "sourceUrl": "https://linktr.ee/LosPollosTV",
+          "observedOn": "2026-09-11"
+        }
+      ],
+      "placement": null,
+      "researchNote": "The current Kick profile and user-managed Linktree bind the creator identity and social accounts but provide no explicit durable Base City. No City is inferred from external reputation or event context."
+    },
+    {
+      "rank": 3,
+      "broadcasterUserId": "68312242",
+      "slug": "fissure_cs_a",
+      "lookupsUsed": 1,
+      "outcome": "excluded_nonperson",
+      "evidence": [],
+      "reviewedSources": [
+        {
+          "sourceClass": "platform_profile",
+          "sourceUrl": "https://kick.com/fissure_cs_a",
+          "observedOn": "2026-09-11"
+        }
+      ],
+      "placement": null,
+      "researchNote": "The current Kick profile is an organizational FISSURE tournament broadcast channel, with FISSURE brand handles and tournament/event copy rather than a personal creator identity. Organization headquarters or event venue must not become creator Base City."
+    },
+    {
+      "rank": 8,
+      "broadcasterUserId": "31377709",
+      "slug": "agusneta",
+      "lookupsUsed": 1,
+      "outcome": "no_qualifying_evidence",
+      "evidence": [],
+      "reviewedSources": [
+        {
+          "sourceClass": "first_party_profile",
+          "sourceUrl": "https://x.com/Lagusneta/with_replies",
+          "observedOn": "2026-09-11"
+        }
+      ],
+      "placement": null,
+      "researchNote": "The current first-party X profile explicitly binds kick.com/agusneta and the creator's Instagram/business identity but does not declare a Base City. Country, language, collaborators or event context are not promoted to City."
+    },
+    {
+      "rank": 10,
+      "broadcasterUserId": "68422390",
+      "slug": "gaules",
+      "lookupsUsed": 2,
+      "outcome": "no_qualifying_evidence",
+      "evidence": [],
+      "reviewedSources": [
+        {
+          "sourceClass": "platform_profile",
+          "sourceUrl": "https://kick.com/gaules",
+          "observedOn": "2026-09-11"
+        },
+        {
+          "sourceClass": "first_party_link_hub",
+          "sourceUrl": "https://linktr.ee/AleGaules",
+          "observedOn": "2026-09-11"
+        }
+      ],
+      "placement": null,
+      "researchNote": "The current Kick profile and user-managed Linktree bind the Gaules identity and current social/channel network but do not explicitly declare a durable Base City. Team/organization associations are not promoted to creator City."
+    }
+  ],
+  "summary": {
+    "reviewed": 5,
+    "accepted": 0,
+    "excludedNonperson": 1,
+    "noQualifyingEvidence": 4,
+    "conflictUnmapped": 0,
+    "acceptedCities": {}
+  },
+  "constraints": {
+    "maxIdentities": 25,
+    "maxExternalLookupsPerIdentity": 5,
+    "baseCityClaimKinds": [
+      "home_base",
+      "declared_location"
+    ],
+    "countryOnlyPromotionAllowed": false,
+    "currentLocationAllowedForBaseCity": false,
+    "temporaryLocationAllowedForBaseCity": false,
+    "birthplaceAsPlacementAllowed": false,
+    "nationalityAsPlacementAllowed": false,
+    "languageAsPlacementAllowed": false,
+    "eventVenueAsBaseAllowed": false,
+    "organizationHeadquartersAsBaseAllowed": false,
+    "preciseLocationAllowed": false,
+    "creatorCoordinatesAllowed": false,
+    "twitchEvidenceReuseAllowed": false,
+    "automaticRuntimePromotion": false
+  }
+}
