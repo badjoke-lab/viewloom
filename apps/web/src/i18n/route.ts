@@ -4,6 +4,10 @@ import { stripLocalePrefix, withLocalePathname } from './locale'
 const NON_LOCALIZED_PREFIXES = ['/api/', '/src/', '/assets/', '/og/'] as const
 const JAPANESE_AVAILABLE_PATHNAMES = new Set([
   '/',
+  '/about/',
+  '/support/',
+  '/contact/',
+  '/changelog/',
   '/twitch/',
   '/twitch/heatmap/',
   '/twitch/day-flow/',
