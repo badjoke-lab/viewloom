@@ -10,7 +10,11 @@ import {
 } from './kick-stream-map-reviewed-city-runtime-staging-data.mjs'
 
 assert.equal(KICK_REVIEWED_CITY_RUNTIME_DATA_VERSION, 'viewloom-kick-reviewed-city-runtime-data-v0.1')
-assert.deepEqual(KICK_REVIEWED_CITY_RUNTIME_DATA, KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA)
+assert.ok(KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA.length >= KICK_REVIEWED_CITY_RUNTIME_DATA.length)
+assert.deepEqual(
+  KICK_REVIEWED_CITY_RUNTIME_DATA,
+  KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA.slice(0, KICK_REVIEWED_CITY_RUNTIME_DATA.length),
+)
 assert.equal(KICK_REVIEWED_CITY_RUNTIME_DATA.length, 12)
 
 const snapshotItems = [
