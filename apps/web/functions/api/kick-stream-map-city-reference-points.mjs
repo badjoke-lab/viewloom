@@ -47,3 +47,39 @@ export function kickCityReferenceGeometry(placement) {
     },
   }
 }
+
+export function applyKickCityReferencePoints(runtime) {
+  const source = runtime && typeof runtime === 'object' ? runtime : {}
+  const rawAggregates = Array.isArray(source.cityAggregates) ? source.cityAggregates : []
+  const rawMappedStreams = Array.isArray(source.mappedStreams) ? source.mappedStreams : []
+
+  const cityAggregates = rawAggregates.map((aggregate) => ({
+    ...aggregate,
+    referenceGeometry: kickCityReferenceGeometry(aggregate),
+  }))
+
+  const mappedStreams = rawMappedStreams.map((stream) => ({
+    ...stream,
+    geography: stream?.geography && typeof stream.geography === 'object'
+      ? {
+          ...stream.geography,
+          referenceGeometry: kickCityReferenceGeometry(stream.geography),
+        }
+      : stream?.geography,
+  }))
+
+  const referenceGeometryAggregates = cityAggregates.filter(
+    (aggregate) => aggregate.referenceGeometry?.state === 'reference_point',
+  ).length
+
+  return {
+    ...source,
+    coverage: {
+      ...(source.coverage ?? {}),
+      referenceGeometryAggregates,
+      listOnlyAggregates: Math.max(0, cityAggregates.length - referenceGeometryAggregates),
+    },
+    cityAggregates,
+    mappedStreams,
+  }
+}
