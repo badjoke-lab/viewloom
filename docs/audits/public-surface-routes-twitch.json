@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-routes-v1",
-  "version": 10,
+  "version": 11,
   "group": "twitch",
   "routes": [
     {"id":"twitch-home","route":"/twitch/","provider":"twitch","profile":"provider_home","source":"apps/web/twitch/index.html","title":"Twitch Live Stream Data, Heatmap & History — ViewLoom","canonical":"https://www.viewloom.net/twitch/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/twitch-home","binding":"DB_TWITCH_HOT"}]},
@@ -14,6 +14,7 @@
     {"id":"twitch-history","route":"/twitch/history/","provider":"twitch","profile":"history","source":"apps/web/twitch/history/index.html","title":"History & Trends for Twitch live streams | ViewLoom","canonical":"https://www.viewloom.net/twitch/history/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/history","binding":"DB_TWITCH_HOT"}]},
     {"id":"ja-twitch-history","route":"/ja/twitch/history/","provider":"twitch","profile":"history","source":"apps/web/ja/twitch/history/index.html","title":"Twitch History & Trends — 日次推移と配信者履歴 | ViewLoom","canonical":"https://www.viewloom.net/ja/twitch/history/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/history","binding":"DB_TWITCH_HOT"}]},
     {"id":"twitch-map","route":"/twitch/map/","provider":"twitch","profile":"stream_map","source":"apps/web/twitch/map/index.html","title":"Twitch Stream Map — Geography & Viewer Counts | ViewLoom","canonical":"https://www.viewloom.net/twitch/map/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/twitch-stream-map","binding":"DB_TWITCH_HOT"}]},
+    {"id":"ja-twitch-map","route":"/ja/twitch/map/","provider":"twitch","profile":"stream_map","source":"apps/web/ja/twitch/map/index.html","title":"Twitch Stream Map — 配信の地理と視聴者数 | ViewLoom","canonical":"https://www.viewloom.net/ja/twitch/map/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/twitch-stream-map","binding":"DB_TWITCH_HOT"}]},
     {"id":"twitch-channel","route":"/twitch/channel/","provider":"twitch","profile":"channel","source":"apps/web/twitch/channel/index.html","title":"Twitch channel history | ViewLoom","canonical":"https://www.viewloom.net/twitch/channel/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/history","binding":"DB_TWITCH_HOT"}]},
     {"id":"twitch-watchlist","route":"/twitch/watchlist/","provider":"twitch","profile":"watchlist","source":"apps/web/twitch/watchlist/index.html","title":"Twitch Local Watchlist — ViewLoom","canonical":"https://www.viewloom.net/twitch/watchlist/","robots":"noindex,follow","sitemap":false,"apis":[{"path":"/api/twitch-heatmap","binding":"DB_TWITCH_HOT"},{"path":"/api/history","binding":"DB_TWITCH_HOT"}]},
     {"id":"twitch-status","route":"/twitch/status/","provider":"twitch","profile":"status","source":"apps/web/twitch/status/index.html","title":"Data Status for Twitch live streams | ViewLoom","canonical":"https://www.viewloom.net/twitch/status/","robots":"index,follow","sitemap":true,"apis":[{"path":"/api/twitch-status","binding":"DB_TWITCH_HOT"}]}
