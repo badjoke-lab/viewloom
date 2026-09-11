@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kick Stream Map — 配信の地理と視聴者数 | ViewLoom</title>
+  <meta name="description" content="ViewLoomのKick Stream Mapで、現在観測中のTop 100から、レビュー済みCountry / Base City地理と視聴者数を確認できます。Current / IRL、住所、配信者座標は推測しません。" />
+  <meta name="robots" content="noindex,follow" />
+  <link rel="canonical" href="https://www.viewloom.net/ja/kick/map/" />
+  <meta property="og:site_name" content="ViewLoom" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.viewloom.net/ja/kick/map/" />
+  <meta property="og:title" content="Kick Stream Map — 配信の地理と視聴者数 | ViewLoom" />
+  <meta property="og:description" content="Kick Top 100の観測範囲で、レビュー済みCountry / Base City地理と視聴者数を確認します。" />
+  <meta property="og:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <meta name="twitter:title" content="Kick Stream Map — 配信の地理と視聴者数 | ViewLoom" />
+  <meta name="twitter:description" content="Kick Top 100の観測範囲で、レビュー済みCountry / Base City地理と視聴者数を確認します。" />
+  <link rel="stylesheet" href="/src/mock-site.css" />
+  <link rel="stylesheet" href="/src/features/twitch-stream-map/stream-map.css" />
+  <link rel="stylesheet" href="/src/features/twitch-stream-map/maplibre-bootstrap.css" />
+  <link rel="stylesheet" href="/src/features/kick-stream-map/public.css" />
+</head>
+<body data-provider="kick" data-page="kick-stream-map">
+  <div class="site-frame">
+    <header class="masthead"><div class="masthead__inner">
+      <a class="brand" href="/ja/"><span class="brand-mark">VL</span><span>ViewLoom<small>ライブデータ観測</small></span></a>
+      <nav class="global-nav" aria-label="グローバルナビゲーション"><a href="/ja/">ポータル</a><a href="/ja/twitch/">Twitchデータ</a><a href="/ja/kick/" aria-current="page">Kickデータ</a><a href="/changelog/">変更履歴</a><a href="/about/">このサイトについて</a><a href="/support/">サポート</a></nav>
+      <div class="status-inline"><span class="dot"></span>コレクター状態を読み込み中 · 5分間隔</div>
+      <button class="mobile-menu mobile-only" data-mobile-menu aria-label="ナビゲーションを開く">メニュー</button>
+    </div></header>
+
+    <main class="page page--full page--stream-map page--kick-stream-map" data-kick-map-public>
+      <div class="breadcrumb">ViewLoom / Kickデータ / Stream Map</div>
+      <nav class="feature-tabs" aria-label="Kick分析ページ"><a href="/ja/kick/heatmap/">Heatmap</a><a href="/ja/kick/day-flow/">Day Flow</a><a href="/ja/kick/battle-lines/">Battle Lines</a><a href="/ja/kick/history/">History</a><a href="/ja/kick/map/" aria-current="page">Stream Map</a><a href="/kick/status/">データ状態</a></nav>
+
+      <section class="page-head page-head--stream-map">
+        <div><div class="kicker">KICK DATA · WHERE</div><h1>Stream Map</h1><p class="lede">現在観測中のKick Top 100から選択した範囲の地理を表示します。Countryが既定で、Base Cityは別個のKick専用レビュー契約を通じて利用します。未知・競合・除外・未レビューの配信は未マップのままです。Current / IRLは利用できません。</p></div>
+        <div class="head-facts"><div class="fact"><small>観測対象</small><strong id="stream-map-observed">—</strong></div><div class="fact"><small>現在表示のマップ済み</small><strong id="stream-map-mapped">—</strong></div><div class="fact"><small>現在表示の未マップ</small><strong id="stream-map-unmapped">—</strong></div><div class="fact"><small>状態</small><strong data-stream-map-state>読み込み中</strong></div></div>
+      </section>
+
+      <div class="data-strip"><div class="data-strip__title">Kick位置観測</div><div class="data-strip__cell"><small>更新</small><span id="stream-map-strip-updated">—</span></div><div class="data-strip__cell"><small>カバレッジ</small><span id="stream-map-strip-coverage">—</span></div><div class="data-strip__cell"><small>対象</small><span id="stream-map-population-summary">Top 100 · 全視聴者</span></div><div class="data-strip__cell"><small>証拠</small><span>レビュー済みCountryのみ</span></div></div>
+
+      <section class="surface stream-map-geography-panel" aria-label="地理解像度">
+        <div class="stream-map-geography-copy"><div class="stream-map-filter-label">地理</div><strong>地理の解像度を選択</strong><p>Countryが既定です。Cityは別個のレビュー済みBase City契約を使用します。Current / IRLは利用できません。</p></div>
+        <div class="stream-map-geography-options" role="group" aria-label="地理解像度">
+          <button type="button" data-kick-geography="country" data-active="true" aria-pressed="true">Country</button>
+          <button type="button" data-kick-geography="city" data-active="false" aria-pressed="false">City</button>
+          <button type="button" disabled aria-disabled="true">Current / IRL</button>
+        </div>
+      </section>
+
+      <section class="surface stream-map-population-panel" aria-label="観測対象フィルター">
+        <div class="stream-map-filter-head"><div><div class="stream-map-filter-label">対象フィルター</div><strong>レビュー済み地理を集計する前に、観測中のKick対象範囲を選択します</strong></div><button type="button" class="stream-map-filter-clear" data-reset-population-filters>対象をリセット</button></div>
+        <div class="stream-map-population-controls">
+          <label class="stream-map-population-control"><span>全体 Top N</span><select data-population-top aria-label="全体 Top N"><option value="20">Top 20</option><option value="50">Top 50</option><option value="100" selected>Top 100</option></select></label>
+          <label class="stream-map-population-control"><span>最小視聴者数</span><select data-population-min-viewers aria-label="最小視聴者数"><option value="0" selected>指定なし</option><option value="100">100+</option><option value="500">500+</option><option value="1000">1,000+</option><option value="5000">5,000+</option><option value="10000">10,000+</option></select></label>
+          <label class="stream-map-population-control"><span>カテゴリ</span><select disabled aria-disabled="true" aria-label="Kickカテゴリは利用不可"><option>現在のMap snapshotでは利用不可</option></select></label>
+        </div>
+        <div class="stream-map-population-foot"><p class="stream-map-filter-note">Top Nと最小視聴者数フィルターは観測中のKick Top 100内で適用します。現在の公開Map snapshotはカテゴリを保持していないため、カテゴリは表示しません。</p><p class="stream-map-population-state" id="stream-map-population-state" aria-live="polite">選択対象を読み込み中…</p></div>
+      </section>
+
+      <section class="surface stream-map-filter-panel" aria-label="位置証拠契約">
+        <div class="stream-map-filter-head"><div><div class="stream-map-filter-label">証拠</div><strong>レビュー済みKick Country / Base Cityのterminal stateだけを使用します</strong></div></div>
+        <div class="stream-map-fixed-evidence"><span class="stream-map-badge stream-map-badge--kick-reviewed">レビュー済み地理情報</span><p>stable broadcaster IDはprovider分離された内部joinだけに使用します。CountryとBase CityからCurrent / IRL、住所、配信者座標を推測しません。</p></div>
+      </section>
+
+      <section class="surface stream-map-shell" aria-label="Kick Stream Map">
+        <div class="stream-map-shell__head"><div><div class="stream-map-shell__eyebrow">ライブの証拠ベース地理</div><h2>世界地図</h2><p>地図または国一覧で国を選ぶとマップ済み配信一覧を絞り込みます。Countryが既定で、Cityへ切り替えるとレビュー済みBase City集約を使用します。</p></div><div class="stream-map-metric-controls" role="group" aria-label="地理表示の強度"><span>強度</span><button type="button" data-kick-metric="streams">配信数</button><button type="button" data-kick-metric="viewers" data-active="true">視聴者数</button><button type="button" data-kick-world>世界表示</button></div></div>
+        <div class="stream-map-stage"><div id="stream-map-root" class="stream-map-canvas" role="region" aria-label="インタラクティブKickレビュー済み地理地図"></div><div class="stream-map-status" data-kick-stream-map-status role="status" aria-live="polite"><strong>Kickの地理情報を読み込み中…</strong><span>デモ用の地理データには置き換えません。</span></div></div>
+        <p class="stream-map-interaction-note">ドラッグで移動し、+/−でズームします。Country fillとCity集約参照は集約選択であり、配信者の位置ではありません。レビュー済みreference geometryがないCity行は一覧表示のみにします。ページスクロールを維持するためwheel zoomは無効です。</p>
+      </section>
+
+      <section class="stream-map-support-grid"><article class="surface"><small>マップ済み配信</small><strong id="stream-map-card-mapped">—</strong><p>選択対象と現在のgeography modeの中で承認されたレビュー済み配置だけを数えます。</p></article><article class="surface"><small>マップ済み視聴者</small><strong id="stream-map-card-viewers">—</strong><p>視聴者カバレッジは選択したTop-N / 最小視聴者数の範囲で再計算します。</p></article><article class="surface"><small>除外された非個人</small><strong id="stream-map-card-excluded">—</strong><p>組織・イベント配信チャンネルは集計に残しますが、人の位置として配置しません。</p></article></section>
+
+      <section class="surface stream-map-unmapped" aria-labelledby="stream-map-unmapped-heading">
+        <div class="stream-map-unmapped__head"><div><div class="stream-map-shell__eyebrow">理由別の集計</div><h2 id="stream-map-unmapped-heading">配信がマップされない理由</h2><p>reason codeは現在の実Kick geography runtimeから取得します。対象フィルターは現在のsliceだけを変え、レビュー済み証拠判定は変更しません。</p></div><div class="stream-map-unmapped__facts"><div><small>現在表示の未マップ</small><strong id="stream-map-unmapped-current">—</strong></div><div><small>競合</small><strong id="stream-map-conflict-current">—</strong></div><div><small>除外</small><strong id="stream-map-excluded-current">—</strong></div></div></div>
+        <p id="stream-map-unmapped-reconciliation" class="stream-map-filter-note" aria-live="polite">理由別集計を読み込み中…</p>
+        <div class="stream-map-unmapped-grid"><div class="stream-map-results-card"><h3>未マップ理由</h3><div id="stream-map-unmapped-reason-list" class="stream-map-unmapped-reason-list"><p class="stream-map-empty">読み込み中…</p></div></div><div class="stream-map-results-card"><h3>除外された非個人チャンネル</h3><div id="stream-map-excluded-nonperson-list" class="stream-map-excluded-list"><p class="stream-map-empty">読み込み中…</p></div></div></div>
+      </section>
+
+      <section class="surface stream-map-results">
+        <div class="stream-map-results__head"><div><div class="stream-map-shell__eyebrow">現在のフィルター結果</div><h2>マップ済みの国と配信</h2><p>国を選ぶと結果一覧を絞り込みます。City modeでは、この結果面をレビュー済みBase City集約へ切り替えます。</p></div><div class="head-facts"><div class="fact"><small>地域</small><strong id="stream-map-country-count">—</strong></div><div class="fact"><small>競合</small><strong id="stream-map-conflict-count">—</strong></div></div></div>
+        <section id="stream-map-selected-country" class="stream-map-selected-country" aria-live="polite" hidden><div class="stream-map-selected-country__head"><div><div class="stream-map-shell__eyebrow">選択中の地理</div><h3 id="stream-map-selected-country-name">—</h3></div><button type="button" class="stream-map-filter-clear" data-clear-selected-country>選択を解除</button></div><div class="stream-map-selected-country__facts"><div><small>マップ済み配信</small><strong id="stream-map-selected-country-streams">0</strong></div><div><small>マップ済み視聴者</small><strong id="stream-map-selected-country-viewers">0</strong></div><div><small>証拠</small><strong>レビュー済みCountry</strong></div></div></section>
+        <div class="stream-map-results-grid"><div class="stream-map-results-card"><h3>国</h3><div id="stream-map-country-list" class="stream-map-country-list"><p class="stream-map-empty">読み込み中…</p></div></div><div class="stream-map-results-card"><h3 id="stream-map-stream-list-title">マップ済み配信</h3><div id="stream-map-stream-list" class="stream-map-stream-list"><p class="stream-map-empty">読み込み中…</p></div></div></div>
+      </section>
+    </main>
+
+    <footer class="footer"><div>ViewLoom · 公開ライブ配信データを独立・非公式に観測しています。</div><nav><a href="/changelog/">変更履歴</a><a href="/about/">方法と制約</a><a href="/support/">サポート</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
+  </div>
+  <script type="module" src="/src/features/kick-stream-map/public-entry.ts"></script>
+  <script type="module" src="/src/features/twitch-stream-map/stream-map-ja-presentation.ts"></script>
+  <script type="module" src="/src/analytics.ts"></script>
+</body>
+</html>
