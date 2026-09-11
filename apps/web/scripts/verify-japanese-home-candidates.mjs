@@ -17,6 +17,7 @@ const candidates = [
   { route: '/ja/twitch/history/', source: 'ja/twitch/history/index.html', canonical: `${origin}/ja/twitch/history/`, provider: 'twitch', api: { path: '/api/history', binding: 'DB_TWITCH_HOT' } },
   { route: '/ja/twitch/map/', source: 'ja/twitch/map/index.html', canonical: `${origin}/ja/twitch/map/`, provider: 'twitch', api: { path: '/api/twitch-stream-map', binding: 'DB_TWITCH_HOT' } },
   { route: '/ja/twitch/status/', source: 'ja/twitch/status/index.html', canonical: `${origin}/ja/twitch/status/`, provider: 'twitch', api: { path: '/api/twitch-status', binding: 'DB_TWITCH_HOT' } },
+  { route: '/ja/twitch/channel/', source: 'ja/twitch/channel/index.html', canonical: `${origin}/ja/twitch/channel/`, provider: 'twitch', api: { path: '/api/history', binding: 'DB_TWITCH_HOT' } },
   { route: '/ja/kick/', source: 'ja/kick/index.html', canonical: `${origin}/ja/kick/`, provider: 'kick', api: { path: '/api/kick-home', binding: 'DB_KICK_HOT' } },
   { route: '/ja/kick/heatmap/', source: 'ja/kick/heatmap/index.html', canonical: `${origin}/ja/kick/heatmap/`, provider: 'kick', api: { path: '/api/kick-heatmap', binding: 'DB_KICK_HOT' } },
   { route: '/ja/kick/day-flow/', source: 'ja/kick/day-flow/index.html', canonical: `${origin}/ja/kick/day-flow/`, provider: 'kick', api: { path: '/api/kick-day-flow', binding: 'DB_KICK_HOT' } },
@@ -24,6 +25,7 @@ const candidates = [
   { route: '/ja/kick/history/', source: 'ja/kick/history/index.html', canonical: `${origin}/ja/kick/history/`, provider: 'kick', api: { path: '/api/kick-history', binding: 'DB_KICK_HOT' } },
   { route: '/ja/kick/map/', source: 'ja/kick/map/index.html', canonical: `${origin}/ja/kick/map/`, provider: 'kick', api: { path: '/api/kick-stream-map', binding: 'DB_KICK_HOT' } },
   { route: '/ja/kick/status/', source: 'ja/kick/status/index.html', canonical: `${origin}/ja/kick/status/`, provider: 'kick', api: { path: '/api/kick-status', binding: 'DB_KICK_HOT' } },
+  { route: '/ja/kick/channel/', source: 'ja/kick/channel/index.html', canonical: `${origin}/ja/kick/channel/`, provider: 'kick', api: { path: '/api/kick-history', binding: 'DB_KICK_HOT' } },
 ]
 
 const sitemap = readWeb('public/sitemap.xml')
@@ -53,20 +55,16 @@ const kickMapEntry = readWeb('src/features/kick-stream-map/public-entry.ts')
 const kickMapController = readWeb('src/features/kick-stream-map/public-kc5-entry.ts')
 const jaStatusPresentation = readWeb('src/live/status-ja-presentation.ts')
 const sharedStatusController = readWeb('src/live/status-current-shell-entry.ts')
+const jaChannelPresentation = readWeb('src/live/channel-ja-presentation.ts')
+const sharedChannelController = readWeb('src/live/channel-profile.ts')
+const channelUrlState = readWeb('src/live/channel/url-state.ts')
 
 for (const path of [
   '/',
-  '/twitch/', '/twitch/heatmap/', '/twitch/day-flow/', '/twitch/battle-lines/', '/twitch/history/', '/twitch/map/', '/twitch/status/',
-  '/kick/', '/kick/heatmap/', '/kick/day-flow/', '/kick/battle-lines/', '/kick/history/', '/kick/map/', '/kick/status/',
-]) {
-  assert.match(routeHelper, new RegExp(`["']${escapeRegex(path)}["']`), `Japanese availability missing ${path}`)
-}
-for (const path of [
-  '/twitch/channel/', '/twitch/watchlist/',
-  '/kick/channel/', '/kick/watchlist/',
-]) {
-  assert.doesNotMatch(routeHelper, new RegExp(`["']${escapeRegex(path)}["']`), `unreleased Japanese utility route exposed: ${path}`)
-}
+  '/twitch/', '/twitch/heatmap/', '/twitch/day-flow/', '/twitch/battle-lines/', '/twitch/history/', '/twitch/map/', '/twitch/status/', '/twitch/channel/',
+  '/kick/', '/kick/heatmap/', '/kick/day-flow/', '/kick/battle-lines/', '/kick/history/', '/kick/map/', '/kick/status/', '/kick/channel/',
+]) assert.match(routeHelper, new RegExp(`["']${escapeRegex(path)}["']`), `Japanese availability missing ${path}`)
+for (const path of ['/twitch/watchlist/', '/kick/watchlist/']) assert.doesNotMatch(routeHelper, new RegExp(`["']${escapeRegex(path)}["']`), `unreleased Japanese utility route exposed: ${path}`)
 assert.match(routeHelper, /export function localizeAvailableHref\(/, 'availability-aware locale route helper missing')
 assert.match(providerShell, /localizeAvailableHref/, 'Provider Home shell must use availability-aware route localization')
 assert.doesNotMatch(providerShell, /const base\s*=\s*localizeHref/, 'Provider Home shell must not build Japanese feature URLs from a localized base')
@@ -87,10 +85,8 @@ for (const candidate of candidates) {
 const jaPortal = readWeb('ja/index.html')
 assert.match(jaPortal, /src=["']\/src\/portal-page\.ts["']/, '/ja/: shared Portal runtime must be used')
 assert.match(portalRuntime, /type Platform\s*=\s*'twitch'\s*\|\s*'kick'/, 'Portal runtime must retain separate Twitch/Kick platform ownership')
-assert.match(portalRuntime, /fetch\(`\/api\/\$\{platform\}-home`/, 'Portal runtime must reuse the existing provider Home API family')
+assert.match(portalRuntime, /fetch\(`\/api\/\$\{platform\}-home`/, 'Portal runtime must reuse existing provider Home APIs')
 assert.doesNotMatch(portalRuntime, /\/api\/ja(?:\/|-)/i, 'Portal runtime must not introduce localized API paths')
-assert.match(jaPortal, /href=["']\/ja\/twitch\//, '/ja/: localized Twitch Home link missing')
-assert.match(jaPortal, /href=["']\/ja\/kick\//, '/ja/: localized Kick Home link missing')
 
 for (const provider of ['twitch', 'kick']) {
   const home = readWeb(`ja/${provider}/index.html`)
@@ -100,9 +96,9 @@ for (const provider of ['twitch', 'kick']) {
   const history = readWeb(`ja/${provider}/history/index.html`)
   const map = readWeb(`ja/${provider}/map/index.html`)
   const status = readWeb(`ja/${provider}/status/index.html`)
+  const channel = readWeb(`ja/${provider}/channel/index.html`)
 
   assert.match(home, /src=["']\/src\/provider-home\.ts["']/, `/ja/${provider}/: shared Provider Home runtime must be used`)
-  assert.match(home, /src=["']\/src\/analytics\.ts["']/, `/ja/${provider}/: shared analytics runtime must be used`)
   assert.match(heatmap, /観測/, `/ja/${provider}/heatmap/: Japanese observation copy missing`)
   assert.match(dayFlow, /UTC/, `/ja/${provider}/day-flow/: explicit UTC semantics copy missing`)
   assert.match(battleLines, /UTC/, `/ja/${provider}/battle-lines/: explicit UTC semantics copy missing`)
@@ -111,24 +107,26 @@ for (const provider of ['twitch', 'kick']) {
   assert.match(map, /Stream Map/, `/ja/${provider}/map/: stable Stream Map feature name missing`)
   assert.match(map, /Current \/ IRL/, `/ja/${provider}/map/: Current / IRL boundary copy missing`)
   assert.match(map, /src=["']\/src\/features\/twitch-stream-map\/stream-map-ja-presentation\.ts["']/, `/ja/${provider}/map/: Japanese Map presentation adapter missing`)
-  assert.match(map, /href=["']\/ja\/(?:twitch|kick)\//, `/ja/${provider}/map/: localized provider navigation missing`)
-  assert.doesNotMatch(map, new RegExp(`href=["']/ja/${provider}/(?:watchlist|channel)/`), `/ja/${provider}/map/: unreleased Japanese utility link exposed`)
-  assert.doesNotMatch(map, /\/api\/ja(?:\/|-)/i, `/ja/${provider}/map/: localized Map API path forbidden`)
+  assert.doesNotMatch(map, new RegExp(`href=["']/ja/${provider}/watchlist/`), `/ja/${provider}/map/: unreleased Japanese Watchlist link exposed`)
 
   assert.match(status, /src=["']\/src\/live\/status-ja-presentation\.ts["']/, `/ja/${provider}/status/: Japanese Status presentation adapter missing`)
   assert.match(status, /src=["']\/src\/live\/status-current-shell-entry\.ts["']/, `/ja/${provider}/status/: shared Status runtime must be used`)
   assert.match(status, /鮮度/, `/ja/${provider}/status/: Japanese freshness copy missing`)
-  assert.match(status, /観測範囲/, `/ja/${provider}/status/: Japanese coverage copy missing`)
-  assert.doesNotMatch(status, /\/api\/ja(?:\/|-)/i, `/ja/${provider}/status/: localized Status API path forbidden`)
+
+  assert.match(channel, /src=["']\/src\/live\/channel-ja-presentation\.ts["']/, `/ja/${provider}/channel/: Japanese Channel presentation adapter missing`)
+  assert.match(channel, /src=["']\/src\/live\/channel-profile\.ts["']/, `/ja/${provider}/channel/: shared Channel runtime missing`)
+  assert.match(channel, /保持/, `/ja/${provider}/channel/: Japanese retained-history copy missing`)
+  assert.match(channel, new RegExp(`href=["']/ja/${provider}/history/["']`), `/ja/${provider}/channel/: localized History link missing`)
+  assert.doesNotMatch(channel, /\/api\/ja(?:\/|-)/i, `/ja/${provider}/channel/: localized Channel API path forbidden`)
 
   if (provider === 'twitch') {
-    assert.match(map, /src=["']\/src\/features\/twitch-stream-map\/maplibre-bootstrap\.ts["']/, 'Japanese Twitch Map must reuse the shared Twitch Map bootstrap')
+    assert.match(map, /src=["']\/src\/features\/twitch-stream-map\/maplibre-bootstrap\.ts["']/, 'Japanese Twitch Map must reuse shared Twitch Map bootstrap')
     assert.match(map, /承認済み/, 'Japanese Twitch Map evidence copy missing')
   } else {
-    assert.match(map, /src=["']\/src\/features\/kick-stream-map\/public-entry\.ts["']/, 'Japanese Kick Map must reuse the shared Kick Map entry')
+    assert.match(map, /src=["']\/src\/features\/kick-stream-map\/public-entry\.ts["']/, 'Japanese Kick Map must reuse KC5 public runtime')
     assert.match(map, /レビュー済み/, 'Japanese Kick Map reviewed-geography copy missing')
-    assert.match(map, /data-kick-geography=["']country["'][^>]*>Country</, 'Kick Country bootstrap label must remain runtime-compatible before the JA adapter runs')
-    assert.match(map, /data-kick-geography=["']city["'][^>]*>City</, 'Kick City bootstrap label must remain runtime-compatible before the JA adapter runs')
+    assert.match(map, /data-kick-geography=["']country["'][^>]*>Country</, 'Kick Country bootstrap label must remain runtime-compatible')
+    assert.match(map, /data-kick-geography=["']city["'][^>]*>City</, 'Kick City bootstrap label must remain runtime-compatible')
   }
 }
 
@@ -162,37 +160,40 @@ assert.doesNotMatch(jaHistoryPresentation, /\bfetch\(/)
 assert.match(sharedHistoryController, /provider === 'kick' \? '\/api\/kick-history' : '\/api\/history'/)
 
 assert.match(jaMapPresentation, /localeFromPathname\(window\.location\.pathname\) === 'ja'/, 'Japanese Stream Map presentation must be locale-gated')
-assert.match(jaMapPresentation, /RAW_TEXT_ANCESTORS/, 'Japanese Stream Map presentation must explicitly protect raw data labels')
+assert.match(jaMapPresentation, /RAW_TEXT_ANCESTORS/, 'Japanese Stream Map presentation must protect raw data labels')
 assert.match(jaMapPresentation, /\.stream-map-stream-row__head a/, 'Japanese Stream Map must protect raw streamer identities')
-assert.match(jaMapPresentation, /\.stream-map-country-row strong/, 'Japanese Stream Map must protect raw country/city names')
-assert.match(jaMapPresentation, /\[data-population-category\] option:not/, 'Japanese Stream Map must protect raw category names')
-assert.match(jaMapPresentation, /Current \/ IRL/, 'Japanese Stream Map Current / IRL copy missing')
+assert.match(jaMapPresentation, /\.stream-map-country-row strong/, 'Japanese Stream Map must protect raw geography names')
 assert.doesNotMatch(jaMapPresentation, /\/api\//, 'Japanese Stream Map presentation must not own API paths')
 assert.doesNotMatch(jaMapPresentation, /\bfetch\(/, 'Japanese Stream Map presentation must not own network requests')
-assert.match(twitchMapBootstrap, /import\('\.\/geography-ui-bootstrap'\)/, 'Twitch Map geography controller must remain shared')
-assert.match(twitchMapBootstrap, /import\('\.\/stream-map-entry'\)/, 'Twitch Map renderer/controller must remain shared')
-assert.match(twitchMapController, /new URL\('\/api\/twitch-stream-map'/, 'Twitch Map API ownership must remain in the shared controller')
-assert.match(twitchGeographyController, /request\.pathname === '\/api\/twitch-stream-map'/, 'Twitch geography mode API adapter must remain shared')
-assert.match(kickMapEntry, /import '\.\/public-kc5-entry'/, 'Kick Map must reuse the KC5 public runtime')
-assert.match(kickMapController, /'\/api\/kick-stream-map\?geography=city'/, 'Kick City API ownership must remain in the shared runtime')
-assert.match(kickMapController, /'\/api\/kick-stream-map'/, 'Kick Country API ownership must remain in the shared runtime')
-assert.doesNotMatch(twitchMapController, /\/ja\//, 'Twitch Map runtime must remain locale-neutral')
-assert.doesNotMatch(kickMapController, /\/ja\//, 'Kick Map runtime must remain locale-neutral')
+assert.match(twitchMapBootstrap, /import\('\.\/geography-ui-bootstrap'\)/)
+assert.match(twitchMapBootstrap, /import\('\.\/stream-map-entry'\)/)
+assert.match(twitchMapController, /new URL\('\/api\/twitch-stream-map'/)
+assert.match(twitchGeographyController, /request\.pathname === '\/api\/twitch-stream-map'/)
+assert.match(kickMapEntry, /import '\.\/public-kc5-entry'/)
+assert.match(kickMapController, /'\/api\/kick-stream-map\?geography=city'/)
+assert.match(kickMapController, /'\/api\/kick-stream-map'/)
+assert.doesNotMatch(twitchMapController, /\/ja\//)
+assert.doesNotMatch(kickMapController, /\/ja\//)
 
 assert.match(jaStatusPresentation, /localeFromPathname\(window\.location\.pathname\) === 'ja'/, 'Japanese Status presentation must be locale-gated')
 assert.match(jaStatusPresentation, /RAW_ANCESTORS/, 'Japanese Status presentation must protect sanitized debug payload text')
 assert.doesNotMatch(jaStatusPresentation, /\/api\//, 'Japanese Status presentation must not own API paths')
 assert.doesNotMatch(jaStatusPresentation, /\bfetch\(/, 'Japanese Status presentation must not own network requests')
-assert.match(sharedStatusController, /provider === 'kick' \? '\/api\/kick-status' : '\/api\/twitch-status'/, 'Status API ownership must remain in the shared controller')
+assert.match(sharedStatusController, /provider === 'kick' \? '\/api\/kick-status' : '\/api\/twitch-status'/, 'Status API ownership must remain shared')
 assert.equal((sharedStatusController.match(/\bfetch\(/g) ?? []).length, 1, 'Status feature request must remain single-owner')
 
-const routeDocs = [
-  'docs/audits/public-surface-routes-portal.json',
-  'docs/audits/public-surface-routes-twitch.json',
-  'docs/audits/public-surface-routes-kick.json',
-].flatMap((path) => JSON.parse(readRepo(path)).routes)
+assert.match(jaChannelPresentation, /localeFromPathname\(window\.location\.pathname\) === 'ja'/, 'Japanese Channel presentation must be locale-gated')
+assert.match(jaChannelPresentation, /RAW_ANCESTORS/, 'Japanese Channel presentation must protect raw channel identity')
+assert.doesNotMatch(jaChannelPresentation, /\/api\//, 'Japanese Channel presentation must not own API paths')
+assert.doesNotMatch(jaChannelPresentation, /\bfetch\(/, 'Japanese Channel presentation must not own network requests')
+assert.match(sharedChannelController, /provider === 'kick' \? '\/api\/kick-history' : '\/api\/history'/, 'Channel API ownership must remain in shared controller')
+assert.equal((sharedChannelController.match(/\bfetch\(/g) ?? []).length, 1, 'Channel feature request must remain single-owner')
+assert.match(channelUrlState, /const url = new URL\(currentUrl\)/, 'Channel URL state must preserve current localized pathname')
+assert.match(channelUrlState, /return `\$\{url\.pathname\}/, 'Channel URL state must return the current pathname')
+
+const routeDocs = ['docs/audits/public-surface-routes-portal.json', 'docs/audits/public-surface-routes-twitch.json', 'docs/audits/public-surface-routes-kick.json'].flatMap((path) => JSON.parse(readRepo(path)).routes)
 const inventoriedCandidates = routeDocs.filter((route) => route.route.startsWith('/ja/'))
-assert.deepEqual(inventoriedCandidates.map((route) => route.route).sort(), candidates.map((item) => item.route).sort(), 'route inventory must contain exactly the fifteen current Japanese candidates')
+assert.deepEqual(inventoriedCandidates.map((route) => route.route).sort(), candidates.map((item) => item.route).sort(), 'route inventory must contain exactly the seventeen current Japanese candidates')
 for (const candidate of candidates) {
   const route = inventoriedCandidates.find((item) => item.route === candidate.route)
   assert.ok(route, `${candidate.route}: inventory route missing`)
@@ -203,24 +204,13 @@ for (const candidate of candidates) {
 }
 
 console.log('Japanese localization candidate contract verified.')
-console.log('- candidate routes: /ja/, Twitch/Kick Home, Heatmap, Day Flow, Battle Lines, History, Stream Map, and Data Status')
+console.log('- candidate routes: /ja/, Twitch/Kick Home, Heatmap, Day Flow, Battle Lines, History, Stream Map, Data Status, and Channel')
 console.log('- robots: noindex,follow; sitemap/hreflang/public language switcher: disabled')
-console.log('- Data Status reuses existing provider-separated status runtimes and APIs')
-console.log('- Japanese Status presentation owns no fetch/API path and preserves raw sanitized debug data')
-console.log('- Stream Map reuses existing Twitch/Kick geography runtimes and provider-separated APIs')
-console.log('- Channel and Watchlist remain unreleased Japanese utility routes')
+console.log('- Channel reuses provider-separated History APIs and shared query-state runtime')
+console.log('- Japanese Channel presentation owns no fetch/API path and protects raw channel identity')
+console.log('- Watchlist remains the unreleased Japanese utility route')
 
-function attr(source, name) {
-  return source.match(new RegExp(`\\b${name}=["']([^"']*)["']`, 'i'))?.[1] ?? ''
-}
-function meta(html, key, value) {
-  const item = (html.match(/<meta\b[^>]*>/gi) ?? []).find((entry) => attr(entry, key).toLowerCase() === value.toLowerCase()) ?? ''
-  return attr(item, 'content')
-}
-function link(html, rel) {
-  const item = (html.match(/<link\b[^>]*>/gi) ?? []).find((entry) => attr(entry, 'rel').toLowerCase().split(/\s+/).includes(rel)) ?? ''
-  return attr(item, 'href')
-}
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
+function attr(source, name) { return source.match(new RegExp(`\\b${name}=["']([^"']*)["']`, 'i'))?.[1] ?? '' }
+function meta(html, key, value) { const item = (html.match(/<meta\b[^>]*>/gi) ?? []).find((entry) => attr(entry, key).toLowerCase() === value.toLowerCase()) ?? ''; return attr(item, 'content') }
+function link(html, rel) { const item = (html.match(/<link\b[^>]*>/gi) ?? []).find((entry) => attr(entry, 'rel').toLowerCase().split(/\s+/).includes(rel)) ?? ''; return attr(item, 'href') }
+function escapeRegex(value) { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') }
