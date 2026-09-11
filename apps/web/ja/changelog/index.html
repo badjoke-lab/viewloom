@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,follow" />
+  <title>変更履歴 — ViewLoom</title>
+  <meta name="description" content="Livefield開始から現在のViewLoomまで、レビュー済みの主要な製品変更を記録します。" />
+  <link rel="canonical" href="https://www.viewloom.net/ja/changelog/" />
+  <meta property="og:site_name" content="ViewLoom" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://www.viewloom.net/ja/changelog/" />
+  <meta property="og:title" content="変更履歴 — ViewLoom" />
+  <meta property="og:description" content="Livefield開始から現在のViewLoomまで、レビュー済みの主要な製品変更を記録します。" />
+  <meta property="og:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="変更履歴 — ViewLoom" />
+  <meta name="twitter:description" content="レビュー済みの主要なViewLoom製品変更を記録します。" />
+  <meta name="twitter:image" content="https://www.viewloom.net/og/viewloom.svg" />
+  <link rel="stylesheet" href="/src/mock-site.css" />
+  <link rel="stylesheet" href="/src/changelog-page.css" />
+</head>
+<body data-provider="portal" data-changelog-state="loading">
+  <div class="site-frame">
+    <header class="masthead"><div class="masthead__inner">
+      <a class="brand" href="/ja/"><span class="brand-mark">VL</span><span>ViewLoom<small>ライブデータ観測</small></span></a>
+      <nav class="global-nav"><a href="/ja/">ポータル</a><a href="/ja/twitch/">Twitchデータ</a><a href="/ja/kick/">Kickデータ</a><a href="/ja/changelog/" aria-current="page">変更履歴</a><a href="/ja/about/">このサイトについて</a><a href="/ja/support/">サポート</a></nav>
+      <div class="status-inline"><span class="dot"></span>公開マイルストーン記録</div>
+      <button class="mobile-menu mobile-only" data-mobile-menu aria-label="ナビゲーションを開く">メニュー</button>
+    </div></header>
+    <main class="page changelog-page">
+      <div class="breadcrumb">ViewLoom / 変更履歴</div>
+      <section class="page-head">
+        <div><div class="kicker">PRODUCT HISTORY</div><h1>変更履歴</h1><p class="lede">レビュー済みのViewLoom主要マイルストーンを簡潔に記録します。詳細な修正履歴は別途レビューし、この公開履歴には含めません。</p></div>
+        <div class="head-facts"><div class="fact"><small>初期エントリ</small><strong>4</strong></div><div class="fact"><small>最初の記録</small><strong>2026-04</strong></div><div class="fact"><small>日付精度</small><strong>月/日</strong></div><div class="fact"><small>データソース</small><strong>公開JSON</strong></div></div>
+      </section>
+      <section class="surface surface--dark changelog-surface" aria-labelledby="changelog-timeline-title">
+        <div class="surface__head"><strong id="changelog-timeline-title">マイルストーン</strong><a class="text-link" href="/data/changelog.json">JSONを開く</a></div>
+        <div class="changelog-timeline" id="changelog-timeline" aria-live="polite" aria-busy="true"><p class="changelog-state" id="changelog-state">レビュー済みマイルストーンを読み込み中…</p></div>
+      </section>
+      <aside class="coverage-note changelog-note"><strong>公開ルール</strong><span>レビュー済みのマイルストーンだけを掲載します。詳細な修復履歴、PR番号、未承認ドラフトは公開Changelogの対象外です。</span></aside>
+    </main>
+    <footer class="footer"><div>ViewLoom · 公開ライブ配信データを独立・非公式に観測しています。</div><nav><a href="/ja/changelog/">変更履歴</a><a href="/ja/about/">方法と制約</a><a href="/ja/support/">サポート</a><a href="/ja/contact/">お問い合わせ</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
+  </div>
+  <script type="module" src="/src/mock-site.ts"></script>
+  <script type="module" src="/src/changelog-page.ts"></script>
+  <script type="module" src="/src/analytics.ts"></script>
+</body>
+</html>
