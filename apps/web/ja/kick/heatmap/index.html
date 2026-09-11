@@ -22,41 +22,14 @@
 </head>
 <body data-provider="kick" data-page="kick-heatmap" data-heatmap-layout="wide">
   <div class="site-frame">
-    <header class="masthead">
-      <div class="masthead__inner">
-        <a class="brand" href="/ja/"><span class="brand-mark">VL</span><span>ViewLoom<small>Kick観測</small></span></a>
-        <nav class="global-nav"><a href="/ja/">ポータル</a><a href="/ja/twitch/">Twitchデータ</a><a href="/ja/kick/" aria-current="page">Kickデータ</a><a href="/about/">このサイトについて</a><a href="/support/">サポート</a></nav>
-        <div class="status-inline"><span class="dot"></span>Kickデータ 読み込み中 · 5分間隔</div>
-        <button class="mobile-menu mobile-only" data-mobile-menu aria-label="ナビゲーションを開く">メニュー</button>
-      </div>
-    </header>
+    <header class="masthead"><div class="masthead__inner"><a class="brand" href="/ja/"><span class="brand-mark">VL</span><span>ViewLoom<small>Kick観測</small></span></a><nav class="global-nav"><a href="/ja/">ポータル</a><a href="/ja/twitch/">Twitchデータ</a><a href="/ja/kick/" aria-current="page">Kickデータ</a><a href="/about/">このサイトについて</a><a href="/support/">サポート</a></nav><div class="status-inline"><span class="dot"></span>Kickデータ 読み込み中 · 5分間隔</div><button class="mobile-menu mobile-only" data-mobile-menu aria-label="ナビゲーションを開く">メニュー</button></div></header>
     <main class="page page--full page--heatmap">
       <div class="breadcrumb">ViewLoom / Kickデータ / Heatmap</div>
-      <nav class="feature-tabs"><a class="active" href="/ja/kick/heatmap/">Heatmap</a><a href="/ja/kick/day-flow/">Day Flow</a><a href="/ja/kick/battle-lines/">Battle Lines</a><a href="/kick/history/">History</a><a href="/kick/status/">データ状態</a></nav>
-      <section class="page-head page-head--heatmap">
-        <div><div class="kicker">KICK DATA · NOW</div><h1>Heatmap</h1><p class="lede">タイル面積は現在の観測視聴者数、色はモメンタムを表します。タイルを選択すると、フィールドを離れずに1配信の詳細を確認できます。観測日の集計基準はUTCです。</p></div>
-        <div class="head-facts"><div class="fact"><small>観測数</small><strong>—</strong></div><div class="fact"><small>表示</small><strong>ワイド</strong></div><div class="fact"><small>間隔</small><strong>5分</strong></div><div class="fact"><small>状態</small><strong>—</strong></div></div>
-      </section>
+      <nav class="feature-tabs"><a class="active" href="/ja/kick/heatmap/">Heatmap</a><a href="/ja/kick/day-flow/">Day Flow</a><a href="/ja/kick/battle-lines/">Battle Lines</a><a href="/ja/kick/history/">History</a><a href="/kick/status/">データ状態</a></nav>
+      <section class="page-head page-head--heatmap"><div><div class="kicker">KICK DATA · NOW</div><h1>Heatmap</h1><p class="lede">タイル面積は現在の観測視聴者数、色はモメンタムを表します。タイルを選択すると、フィールドを離れずに1配信の詳細を確認できます。観測日の集計基準はUTCです。</p></div><div class="head-facts"><div class="fact"><small>観測数</small><strong>—</strong></div><div class="fact"><small>表示</small><strong>ワイド</strong></div><div class="fact"><small>間隔</small><strong>5分</strong></div><div class="fact"><small>状態</small><strong>—</strong></div></div></section>
       <div class="data-strip"><div class="data-strip__title">Kick観測</div><div class="data-strip__cell"><small>更新</small>—</div><div class="data-strip__cell"><small>観測数</small>—配信</div><div class="data-strip__cell"><small>観測範囲</small>Top 100</div><div class="data-strip__cell"><small>ソース</small>API</div></div>
-      <section class="heatmap-control-dock surface" aria-label="Heatmap操作">
-        <div class="heatmap-control-dock__group">
-          <span class="heatmap-control-dock__label">表示</span>
-          <div class="control-group" data-heatmap-layout-controls role="group" aria-label="Heatmapレイアウト">
-            <button class="active" type="button" data-heatmap-layout="wide" aria-pressed="true">ワイド</button>
-            <button type="button" data-heatmap-layout="split" aria-pressed="false">分割</button>
-          </div>
-          <span class="heatmap-control-dock__copy">ワイドはフィールドを大きく表示します。分割はフィールドと詳細パネルを並べます。</span>
-        </div>
-        <div class="heatmap-control-dock__group heatmap-control-dock__map">
-          <span class="heatmap-control-dock__label">マップ</span>
-          <div id="heatmap-map-controls" class="heatmap-map-controls"><span class="heatmap-map-controls__hint">マップ操作を準備中…</span></div>
-        </div>
-      </section>
-      <div id="heatmap-layout-root" class="heatmap-layout" data-layout="wide">
-        <section class="heatmap-wrap chart-placeholder--heatmap" aria-label="Heatmap"><div class="heatmap-live-empty">Kick Heatmapを読み込み中…</div></section>
-        <aside id="heatmap-inspector" class="surface inspector heatmap-inspector" aria-label="選択配信の詳細"><div class="rail-stack"><section class="rail-card rail-card--detail"><div class="rail-card__label">選択中の配信</div><h2>詳細を準備中…</h2><p>最新スナップショットの読み込み後にタイルを選択してください。</p></section></div></aside>
-        <div class="support-grid support-grid--feature"></div>
-      </div>
+      <section class="heatmap-control-dock surface" aria-label="Heatmap操作"><div class="heatmap-control-dock__group"><span class="heatmap-control-dock__label">表示</span><div class="control-group" data-heatmap-layout-controls role="group" aria-label="Heatmapレイアウト"><button class="active" type="button" data-heatmap-layout="wide" aria-pressed="true">ワイド</button><button type="button" data-heatmap-layout="split" aria-pressed="false">分割</button></div><span class="heatmap-control-dock__copy">ワイドはフィールドを大きく表示します。分割はフィールドと詳細パネルを並べます。</span></div><div class="heatmap-control-dock__group heatmap-control-dock__map"><span class="heatmap-control-dock__label">マップ</span><div id="heatmap-map-controls" class="heatmap-map-controls"><span class="heatmap-map-controls__hint">マップ操作を準備中…</span></div></div></section>
+      <div id="heatmap-layout-root" class="heatmap-layout" data-layout="wide"><section class="heatmap-wrap chart-placeholder--heatmap" aria-label="Heatmap"><div class="heatmap-live-empty">Kick Heatmapを読み込み中…</div></section><aside id="heatmap-inspector" class="surface inspector heatmap-inspector" aria-label="選択配信の詳細"><div class="rail-stack"><section class="rail-card rail-card--detail"><div class="rail-card__label">選択中の配信</div><h2>詳細を準備中…</h2><p>最新スナップショットの読み込み後にタイルを選択してください。</p></section></div></aside><div class="support-grid support-grid--feature"></div></div>
     </main>
     <footer class="footer"><div>ViewLoom · 公開ライブ配信データを独立・非公式に観測しています。</div><nav><a href="/about/">方法と制約</a><a href="/support/">サポート</a><a href="https://github.com/badjoke-lab/viewloom">GitHub</a></nav></footer>
   </div>
