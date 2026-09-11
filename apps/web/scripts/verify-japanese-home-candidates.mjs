@@ -14,6 +14,10 @@ const candidates = [
   { route: '/ja/support/', source: 'ja/support/index.html', canonical: `${origin}/ja/support/`, provider: 'portal', apis: [] },
   { route: '/ja/contact/', source: 'ja/contact/index.html', canonical: `${origin}/ja/contact/`, provider: 'portal', apis: [] },
   { route: '/ja/changelog/', source: 'ja/changelog/index.html', canonical: `${origin}/ja/changelog/`, provider: 'portal', apis: [{ path: '/data/changelog.json', binding: 'static' }] },
+  { route: '/ja/terms/', source: 'ja/terms/index.html', canonical: `${origin}/ja/terms/`, provider: 'portal', apis: [] },
+  { route: '/ja/privacy/', source: 'ja/privacy/index.html', canonical: `${origin}/ja/privacy/`, provider: 'portal', apis: [] },
+  { route: '/ja/refund-policy/', source: 'ja/refund-policy/index.html', canonical: `${origin}/ja/refund-policy/`, provider: 'portal', apis: [] },
+  { route: '/ja/commercial-disclosure/', source: 'ja/commercial-disclosure/index.html', canonical: `${origin}/ja/commercial-disclosure/`, provider: 'portal', apis: [] },
   { route: '/ja/twitch/', source: 'ja/twitch/index.html', canonical: `${origin}/ja/twitch/`, provider: 'twitch', apis: [{ path: '/api/twitch-home', binding: 'DB_TWITCH_HOT' }] },
   { route: '/ja/twitch/heatmap/', source: 'ja/twitch/heatmap/index.html', canonical: `${origin}/ja/twitch/heatmap/`, provider: 'twitch', apis: [{ path: '/api/twitch-heatmap', binding: 'DB_TWITCH_HOT' }] },
   { route: '/ja/twitch/day-flow/', source: 'ja/twitch/day-flow/index.html', canonical: `${origin}/ja/twitch/day-flow/`, provider: 'twitch', apis: [{ path: '/api/day-flow', binding: 'DB_TWITCH_HOT' }] },
@@ -71,11 +75,10 @@ const sharedWatchlistRuntime = readWeb('src/live/watchlist-page.ts')
 const watchlistStorage = readWeb('src/live/watchlist/storage.ts')
 
 for (const path of [
-  '/', '/about/', '/support/', '/contact/', '/changelog/',
+  '/', '/about/', '/support/', '/contact/', '/changelog/', '/terms/', '/privacy/', '/refund-policy/', '/commercial-disclosure/',
   '/twitch/', '/twitch/heatmap/', '/twitch/day-flow/', '/twitch/battle-lines/', '/twitch/history/', '/twitch/map/', '/twitch/status/', '/twitch/channel/', '/twitch/watchlist/',
   '/kick/', '/kick/heatmap/', '/kick/day-flow/', '/kick/battle-lines/', '/kick/history/', '/kick/map/', '/kick/status/', '/kick/channel/', '/kick/watchlist/',
 ]) assert.match(routeHelper, new RegExp(`["']${escapeRegex(path)}["']`), `Japanese availability missing ${path}`)
-for (const path of ['/terms/', '/privacy/', '/refund-policy/', '/commercial-disclosure/']) assert.doesNotMatch(routeHelper, new RegExp(`["']${escapeRegex(path)}["']`), `J7b-only Japanese legal route exposed early: ${path}`)
 assert.match(routeHelper, /export function localizeAvailableHref\(/, 'availability-aware locale route helper missing')
 assert.match(providerShell, /localizeAvailableHref/, 'Provider Home shell must use availability-aware route localization')
 assert.doesNotMatch(providerShell, /const base\s*=\s*localizeHref/, 'Provider Home shell must not build Japanese feature URLs from a localized base')
@@ -93,7 +96,7 @@ for (const candidate of candidates) {
   assert.equal(sitemap.includes(`<loc>${candidate.canonical}</loc>`), false, `${candidate.route}: candidate must remain outside sitemap before J10`)
 }
 
-for (const path of ['ja/about/index.html', 'ja/support/index.html', 'ja/contact/index.html']) {
+for (const path of ['ja/about/index.html', 'ja/support/index.html', 'ja/contact/index.html', 'ja/terms/index.html', 'ja/privacy/index.html', 'ja/refund-policy/index.html', 'ja/commercial-disclosure/index.html']) {
   const html = readWeb(path)
   assert.match(html, /src=["']\/src\/static-page\.ts["']/, `${path}: shared static-page runtime missing`)
 }
@@ -206,7 +209,7 @@ assert.doesNotMatch(sharedWatchlistRuntime, /\/ja\/api|\/api\/ja/i)
 
 const routeDocs = ['docs/audits/public-surface-routes-portal.json', 'docs/audits/public-surface-routes-twitch.json', 'docs/audits/public-surface-routes-kick.json'].flatMap((path) => JSON.parse(readRepo(path)).routes)
 const inventoriedCandidates = routeDocs.filter((route) => route.route.startsWith('/ja/'))
-assert.deepEqual(inventoriedCandidates.map((route) => route.route).sort(), candidates.map((item) => item.route).sort(), 'route inventory must contain exactly the twenty-three current Japanese candidates')
+assert.deepEqual(inventoriedCandidates.map((route) => route.route).sort(), candidates.map((item) => item.route).sort(), 'route inventory must contain exactly the twenty-seven current Japanese candidates')
 for (const candidate of candidates) {
   const route = inventoriedCandidates.find((item) => item.route === candidate.route)
   assert.ok(route, `${candidate.route}: inventory route missing`)
@@ -217,11 +220,10 @@ for (const candidate of candidates) {
 }
 
 console.log('Japanese localization candidate contract verified.')
-console.log('- candidate routes: /ja/, About, Support, Contact, Changelog, and Twitch/Kick product surfaces through Local Watchlist')
+console.log('- candidate routes: /ja/, About, Support, Contact, Changelog, Terms, Privacy, Refund Policy, Commercial Disclosure, and Twitch/Kick product surfaces through Local Watchlist')
 console.log('- robots: noindex,follow; sitemap/hreflang/public language switcher: disabled')
-console.log('- J7a static pages reuse the shared static-page shell; Changelog reuses one /data/changelog.json request owner')
-console.log('- Terms, Privacy, Refund Policy, and Commercial Disclosure remain English-only until J7b')
-console.log('- J7a informational candidate coverage is implemented; public exposure remains gated by J10')
+console.log('- J7 static/legal pages reuse the shared static-page shell; Changelog reuses one /data/changelog.json request owner')
+console.log('- J7 candidate coverage is complete; J8 localized SEO is next and public exposure remains gated by J10')
 
 function attr(source, name) { return source.match(new RegExp(`\\b${name}=["']([^"']*)["']`, 'i'))?.[1] ?? '' }
 function meta(html, key, value) { const item = (html.match(/<meta\b[^>]*>/gi) ?? []).find((entry) => attr(entry, key).toLowerCase() === value.toLowerCase()) ?? ''; return attr(item, 'content') }

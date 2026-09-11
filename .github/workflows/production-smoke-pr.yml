@@ -43,6 +43,10 @@ jobs:
             dist/ja/support/index.html \
             dist/ja/contact/index.html \
             dist/ja/changelog/index.html \
+            dist/ja/terms/index.html \
+            dist/ja/privacy/index.html \
+            dist/ja/refund-policy/index.html \
+            dist/ja/commercial-disclosure/index.html \
             dist/ja/twitch/index.html \
             dist/ja/kick/index.html \
             dist/ja/twitch/heatmap/index.html \
@@ -71,6 +75,10 @@ jobs:
           grep -q '観測を継続するための支援です。' dist/ja/support/index.html
           grep -q 'ViewLoomで確認した内容をお知らせください。' dist/ja/contact/index.html
           grep -q 'レビュー済みのViewLoom主要マイルストーン' dist/ja/changelog/index.html
+          grep -q '利用規約' dist/ja/terms/index.html
+          grep -q 'プライバシー' dist/ja/privacy/index.html
+          grep -q '返金ポリシー' dist/ja/refund-policy/index.html
+          grep -q '特定商取引法に基づく表記' dist/ja/commercial-disclosure/index.html
           grep -q '観測日の集計基準はUTCです。' dist/ja/twitch/heatmap/index.html
           grep -q '観測日の集計基準はUTCです。' dist/ja/kick/heatmap/index.html
           grep -q 'UTCの実時間をたどり' dist/ja/twitch/day-flow/index.html
@@ -97,9 +105,9 @@ jobs:
           grep -q '/src/live/status-ja-presentation.ts' ja/kick/status/index.html
           grep -q '/src/features/twitch-stream-map/stream-map-ja-presentation.ts' ja/twitch/map/index.html
           grep -q '/src/features/twitch-stream-map/stream-map-ja-presentation.ts' ja/kick/map/index.html
-          grep -q '/src/static-page.ts' ja/about/index.html
-          grep -q '/src/static-page.ts' ja/support/index.html
-          grep -q '/src/static-page.ts' ja/contact/index.html
+          for file in ja/about/index.html ja/support/index.html ja/contact/index.html ja/terms/index.html ja/privacy/index.html ja/refund-policy/index.html ja/commercial-disclosure/index.html; do
+            grep -q '/src/static-page.ts' "$file"
+          done
           grep -q '/src/changelog-page.ts' ja/changelog/index.html
           grep -q 'href="/data/changelog.json"' ja/changelog/index.html
           ! grep -q '<loc>https://www.viewloom.net/ja/' dist/sitemap.xml
@@ -108,12 +116,16 @@ jobs:
           set -euo pipefail
           grep -q 'Wait for the matching production deployment' .github/workflows/production-smoke.yml
           grep -q 'Verify hidden Japanese candidates' .github/workflows/production-smoke.yml
-          grep -q "test \"\${#routes\[@\]}\" = '50'" .github/workflows/production-smoke.yml
+          grep -q "test \"\${#routes\[@\]}\" = '54'" .github/workflows/production-smoke.yml
           for route in \
             'ja-about|https://www.viewloom.net/ja/about/' \
             'ja-support|https://www.viewloom.net/ja/support/' \
             'ja-contact|https://www.viewloom.net/ja/contact/' \
             'ja-changelog|https://www.viewloom.net/ja/changelog/' \
+            'ja-terms|https://www.viewloom.net/ja/terms/' \
+            'ja-privacy|https://www.viewloom.net/ja/privacy/' \
+            'ja-refund-policy|https://www.viewloom.net/ja/refund-policy/' \
+            'ja-commercial-disclosure|https://www.viewloom.net/ja/commercial-disclosure/' \
             'ja-twitch-heatmap|https://www.viewloom.net/ja/twitch/heatmap/' \
             'ja-kick-heatmap|https://www.viewloom.net/ja/kick/heatmap/' \
             'ja-twitch-day-flow|https://www.viewloom.net/ja/twitch/day-flow/' \

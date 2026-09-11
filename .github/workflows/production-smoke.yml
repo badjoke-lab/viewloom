@@ -74,9 +74,13 @@ jobs:
             '/contact/'
             '/ja/contact/'
             '/terms/'
+            '/ja/terms/'
             '/privacy/'
+            '/ja/privacy/'
             '/refund-policy/'
+            '/ja/refund-policy/'
             '/commercial-disclosure/'
+            '/ja/commercial-disclosure/'
             '/twitch/'
             '/ja/twitch/'
             '/twitch/heatmap/'
@@ -114,7 +118,7 @@ jobs:
             '/kick/status/'
             '/ja/kick/status/'
           )
-          test "${#routes[@]}" = '50'
+          test "${#routes[@]}" = '54'
           for route in "${routes[@]}"; do
             name="$(echo "$route" | tr '/' '-' | sed 's/^-//;s/-$//')"
             [ -n "$name" ] || name='portal'
@@ -146,6 +150,10 @@ jobs:
             'ja-support|https://www.viewloom.net/ja/support/' \
             'ja-contact|https://www.viewloom.net/ja/contact/' \
             'ja-changelog|https://www.viewloom.net/ja/changelog/' \
+            'ja-terms|https://www.viewloom.net/ja/terms/' \
+            'ja-privacy|https://www.viewloom.net/ja/privacy/' \
+            'ja-refund-policy|https://www.viewloom.net/ja/refund-policy/' \
+            'ja-commercial-disclosure|https://www.viewloom.net/ja/commercial-disclosure/' \
             'ja-twitch|https://www.viewloom.net/ja/twitch/' \
             'ja-kick|https://www.viewloom.net/ja/kick/' \
             'ja-twitch-heatmap|https://www.viewloom.net/ja/twitch/heatmap/' \
@@ -177,6 +185,10 @@ jobs:
           grep -Fq '観測を継続するための支援です。' "$ARTIFACT_DIR/ja-support.html"
           grep -Fq 'ViewLoomで確認した内容をお知らせください。' "$ARTIFACT_DIR/ja-contact.html"
           grep -Fq 'レビュー済みのViewLoom主要マイルストーン' "$ARTIFACT_DIR/ja-changelog.html"
+          grep -Fq '利用規約' "$ARTIFACT_DIR/ja-terms.html"
+          grep -Fq 'プライバシー' "$ARTIFACT_DIR/ja-privacy.html"
+          grep -Fq '返金ポリシー' "$ARTIFACT_DIR/ja-refund-policy.html"
+          grep -Fq '特定商取引法に基づく表記' "$ARTIFACT_DIR/ja-commercial-disclosure.html"
           grep -Fq '観測日の集計基準はUTCです。' "$ARTIFACT_DIR/ja-twitch-heatmap.html"
           grep -Fq '観測日の集計基準はUTCです。' "$ARTIFACT_DIR/ja-kick-heatmap.html"
           grep -Fq 'UTCの実時間をたどり' "$ARTIFACT_DIR/ja-twitch-day-flow.html"
@@ -201,9 +213,9 @@ jobs:
           grep -Fq '/src/live/channel-profile.ts' "$ARTIFACT_DIR/ja-kick-channel.html"
           grep -Fq '/src/live/watchlist-page.ts' "$ARTIFACT_DIR/ja-twitch-watchlist.html"
           grep -Fq '/src/live/watchlist-page.ts' "$ARTIFACT_DIR/ja-kick-watchlist.html"
-          grep -Fq '/src/static-page.ts' "$ARTIFACT_DIR/ja-about.html"
-          grep -Fq '/src/static-page.ts' "$ARTIFACT_DIR/ja-support.html"
-          grep -Fq '/src/static-page.ts' "$ARTIFACT_DIR/ja-contact.html"
+          for file in ja-about ja-support ja-contact ja-terms ja-privacy ja-refund-policy ja-commercial-disclosure; do
+            grep -Fq '/src/static-page.ts' "$ARTIFACT_DIR/$file.html"
+          done
           grep -Fq '/src/changelog-page.ts' "$ARTIFACT_DIR/ja-changelog.html"
           curl --silent --show-error --fail --max-time 30 "$ORIGIN/sitemap.xml" -o "$ARTIFACT_DIR/sitemap.xml"
           ! grep -q '<loc>https://www.viewloom.net/ja/' "$ARTIFACT_DIR/sitemap.xml"
@@ -238,9 +250,9 @@ jobs:
             echo '## ViewLoom Production Smoke'
             echo "- Expected main SHA: \`$GITHUB_SHA\`"
             if [ -f "$ARTIFACT_DIR/deployment.json" ]; then echo "- Deployed SHA: \`$(jq -r '.commit_sha // "unavailable"' "$ARTIFACT_DIR/deployment.json")\`"; fi
-            echo '- Repository-owned HTML routes: 50 checked'
-            echo '- Hidden Japanese candidates: 23 checked as noindex/self-canonical/sitemap-excluded'
-            echo '- J7a Japanese About, Support, Contact, Changelog plus existing English/legal and English/Japanese product ownership: checked'
+            echo '- Repository-owned HTML routes: 54 checked'
+            echo '- Hidden Japanese candidates: 27 checked as noindex/self-canonical/sitemap-excluded'
+            echo '- J7 Japanese informational/legal candidates plus existing English/legal and English/Japanese product ownership: checked'
             echo '- Twitch and Kick status APIs: checked'
             echo '- Separate D1 bindings: checked'
             echo '- Collector freshness: checked'

@@ -205,22 +205,23 @@ J7b work:
 - Refund Policy;
 - Commercial Disclosure.
 
-J7a candidate state (2026-09-11):
+Candidate-complete state (2026-09-11):
 
-- PR #1331 adds hidden `/ja/about/`, `/ja/support/`, `/ja/contact/`, and `/ja/changelog/` candidates;
-- all four remain `noindex,follow`, self-canonical, excluded from sitemap/hreflang/public language switching before J10;
-- About, Support, and Contact reuse `static-page.ts` and the shared locale-aware shell;
-- the existing Stripe-hosted ViewLoom payment link and external Google Form remain unchanged;
+- J7a merged through PR #1331, adding hidden `/ja/about/`, `/ja/support/`, `/ja/contact/`, and `/ja/changelog/` candidates;
+- J7b is implemented in PR #1339, adding hidden `/ja/terms/`, `/ja/privacy/`, `/ja/refund-policy/`, and `/ja/commercial-disclosure/` candidates;
+- all eight J7 routes remain `noindex,follow`, self-canonical, excluded from sitemap/hreflang/public language switching before J10;
+- About, Support, Contact, Terms, Privacy, Refund Policy, and Commercial Disclosure reuse `static-page.ts` and the shared locale-aware shell;
+- the existing Stripe-hosted ViewLoom payment link, Google Form, GA4 identifier, and external legal/reference links remain unchanged where the English source already owns them;
 - Japanese Changelog reuses the existing `/data/changelog.json` source and `changelog-page.ts`; no localized data endpoint or duplicate feed is introduced;
 - Japanese reviewed milestone presentation is mapped by stable milestone id while English JSON title/summary remains the canonical public data payload;
-- J7a advances the candidate contract to 50 HTML routes plus explicit 404, 51 inventory entries, 27 noindex routes, 23 sitemap routes, 23 Japanese candidates, and 200 browser scenarios across four viewports;
-- Terms, Privacy, Refund Policy, and Commercial Disclosure intentionally remain English-only until J7b;
+- J7b advances the candidate contract to 54 HTML routes plus explicit 404, 55 inventory entries, 31 noindex routes, 23 sitemap routes, 27 Japanese candidates, and 216 browser scenarios across four viewports;
+- fixed informational/legal Japanese route parity is complete; J8 localized SEO is next;
 - collector, D1, cadence, retention, provider separation, geography/evidence, and Current/IRL semantics are unchanged;
 - J10 remains the only authorization point for public Japanese indexing, sitemap entries, reciprocal hreflang, and the public language switcher.
 
 Outcome:
 
-J7a removes ordinary informational fallbacks to English. J7b completes the fixed legal/policy surface before SEO release work begins.
+The fixed informational and legal/policy route set has Japanese parity. J8 can prepare the localized SEO release layer without exposing Japanese routes publicly.
 
 ### J8 — localized SEO layer
 

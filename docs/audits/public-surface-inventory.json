@@ -1,6 +1,6 @@
 {
   "schema": "viewloom-public-surface-inventory-v1",
-  "version": 17,
+  "version": 18,
   "updated_at": "2026-09-11",
   "source": {
     "branch": "main",
@@ -12,18 +12,18 @@
     "current_browser_audit": "apps/web/scripts/public-current-browser-audit.mjs",
     "production_smoke": ".github/workflows/production-smoke.yml"
   },
-  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. The current candidate build owns 50 HTML routes plus an explicit 404. Twenty-three Japanese candidates are noindex and excluded from sitemap/hreflang/public language switching until the coordinated Japanese release gate. J7a adds Japanese About, Support, Contact, and Changelog candidates while preserving the existing English pages, shared static-page shell, Stripe-hosted support flow, Google Form contact flow, and /data/changelog.json contract. Japanese Changelog localizes reviewed presentation copy by stable milestone id but does not introduce a localized API or duplicate data feed. Terms, Privacy, Refund Policy, and Commercial Disclosure remain English-only until J7b. Japanese product routes continue to reuse their existing provider-separated runtimes and APIs without changing collector, storage, cadence, retention, geography/evidence, or Current/IRL semantics. Historical Phase 12/R12A acceptance evidence remains separately preserved.",
+  "boundary": "Repository-owned public HTML routes, code owners, provider bindings, acceptance evidence, and explicit gaps. The current candidate build owns 54 HTML routes plus an explicit 404. Twenty-seven Japanese candidates are noindex and excluded from sitemap/hreflang/public language switching until the coordinated Japanese release gate. J7 is candidate-complete after Japanese About, Support, Contact, Changelog, Terms, Privacy, Refund Policy, and Commercial Disclosure candidates are present. All fixed informational/legal candidates reuse the existing shared static-page shell except Changelog, which reuses /data/changelog.json and the shared locale-aware Changelog runtime. The existing Stripe-hosted support flow, Google Form contact flow, policy effective dates, English public policy surfaces, and transaction-disclosure boundaries remain unchanged. Japanese product routes continue to reuse their existing provider-separated runtimes and APIs without changing collector, storage, cadence, retention, geography/evidence, or Current/IRL semantics. Historical Phase 12/R12A acceptance evidence remains separately preserved.",
   "counts": {
-    "vite_html_inputs": 50,
+    "vite_html_inputs": 54,
     "explicit_not_found_pages": 1,
-    "inventory_entries": 51,
+    "inventory_entries": 55,
     "indexable_routes": 23,
-    "noindex_routes": 27,
+    "noindex_routes": 31,
     "sitemap_routes": 23,
-    "public_readiness_configured_pages": 50,
-    "production_smoke_page_routes": 50,
+    "public_readiness_configured_pages": 54,
+    "production_smoke_page_routes": 54,
     "current_browser_required_viewports": 4,
-    "current_browser_scenarios": 200
+    "current_browser_scenarios": 216
   },
   "provider_invariants": {
     "separate_routes": true,
