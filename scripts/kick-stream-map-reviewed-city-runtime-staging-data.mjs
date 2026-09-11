@@ -1,6 +1,6 @@
 export const KICK_REVIEWED_CITY_RUNTIME_STAGING_DATA_VERSION = 'viewloom-kick-reviewed-city-runtime-staging-data-v0.2'
 
-// Generated from independently reviewed Kick City batches through 2026-09-11.
+// Generated from independently reviewed Kick City batches through batch 03a on 2026-09-11.
 // Review staging is intentionally kept outside apps/web/functions so newly
 // reviewed terminal outcomes cannot affect production Kick Map runtime until a
 // separate runtime-consumption change is reviewed.
