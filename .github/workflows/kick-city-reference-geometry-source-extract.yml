@@ -19,12 +19,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --location --silent --show-error \
-            'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_populated_places_simple.geojson' \
-            --output /tmp/ne_10m_populated_places_simple.geojson
+          for dataset in ne_10m_populated_places_simple ne_10m_populated_places; do
+            curl --fail --location --silent --show-error \
+              "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/${dataset}.geojson" \
+              --output "/tmp/${dataset}.geojson"
+          done
           node <<'NODE'
           const fs = require('fs')
-          const fc = JSON.parse(fs.readFileSync('/tmp/ne_10m_populated_places_simple.geojson', 'utf8'))
           const targets = [
             { countryCode: 'TR', names: ['Istanbul', 'İstanbul'] },
             { countryCode: 'PL', names: ['Wroclaw', 'Wrocław'] },
@@ -32,14 +33,25 @@ jobs:
             { countryCode: 'IN', names: ['Fazilka'], region: 'Punjab' },
             { countryCode: 'IN', names: ['Mumbai'] },
           ]
-          for (const target of targets) {
-            const matches = fc.features.filter((feature) => {
+          for (const dataset of ['ne_10m_populated_places_simple', 'ne_10m_populated_places']) {
+            const fc = JSON.parse(fs.readFileSync(`/tmp/${dataset}.geojson`, 'utf8'))
+            console.log(`DATASET ${dataset} features=${fc.features.length}`)
+            for (const target of targets) {
+              const matches = fc.features.filter((feature) => {
+                const p = feature.properties ?? {}
+                const names = [p.NAME, p.NAMEASCII, p.name, p.nameascii].filter(Boolean)
+                const code = p.ISO_A2 ?? p.iso_a2
+                const region = p.ADM1NAME ?? p.adm1name
+                return code === target.countryCode && target.names.some((name) => names.includes(name)) && (!target.region || region === target.region)
+              })
+              console.log(JSON.stringify({ dataset, target, matchCount: matches.length, matches: matches.map((feature) => ({ geometry: feature.geometry, properties: feature.properties })) }))
+            }
+            const fuzzyFazilka = fc.features.filter((feature) => {
               const p = feature.properties ?? {}
-              const names = [p.NAME, p.NAMEASCII, p.name, p.nameascii].filter(Boolean)
+              const names = [p.NAME, p.NAMEASCII, p.name, p.nameascii].filter(Boolean).join(' ').toLowerCase()
               const code = p.ISO_A2 ?? p.iso_a2
-              const region = p.ADM1NAME ?? p.adm1name
-              return code === target.countryCode && target.names.some((name) => names.includes(name)) && (!target.region || region === target.region)
+              return code === 'IN' && names.includes('faz')
             })
-            console.log(JSON.stringify({ target, matchCount: matches.length, matches: matches.map((feature) => ({ geometry: feature.geometry, properties: feature.properties })) }))
+            console.log(JSON.stringify({ dataset, fuzzyFazilka: fuzzyFazilka.map((feature) => ({ geometry: feature.geometry, properties: feature.properties })) }))
           }
           NODE
