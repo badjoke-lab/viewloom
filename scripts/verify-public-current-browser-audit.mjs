@@ -6,6 +6,7 @@ const evidence = JSON.parse(readFileSync(path, 'utf8'))
 const routeFiles = ['docs/audits/public-surface-routes-portal.json','docs/audits/public-surface-routes-twitch.json','docs/audits/public-surface-routes-kick.json']
 const expectedRoutes = routeFiles.flatMap((file) => JSON.parse(readFileSync(file, 'utf8')).routes).filter((route) => route.route !== '*')
 const japaneseCandidateRoutes = expectedRoutes.filter((route) => route.route.startsWith('/ja/'))
+const japaneseCandidateScenarios = evidence.scenarios.filter((item) => item.route.startsWith('/ja/'))
 const twitchFeatureRoutes = expectedRoutes.filter((route) => route.provider === 'twitch' && route.profile !== 'provider_home' && !route.route.startsWith('/ja/'))
 const kickFeatureRoutes = expectedRoutes.filter((route) => route.provider === 'kick' && route.profile !== 'provider_home')
 const kickNonMapFeatureRoutes = kickFeatureRoutes.filter((route) => route.route !== '/kick/map/')
@@ -32,6 +33,7 @@ assert.equal(evidence.counts.twitchFeatureTabStreamMapLinkScenarios, twitchFeatu
 assert.equal(evidence.counts.kickFeatureTabStreamMapLinkScenarios, 4)
 assert.equal(evidence.scenarios.length, 216)
 assert.equal(japaneseCandidateRoutes.length, 27)
+assert.equal(japaneseCandidateScenarios.length, 108)
 
 for (const route of expectedRoutes) {
   const scenarios = evidence.scenarios.filter((item) => item.route === route.route)
@@ -108,6 +110,7 @@ console.log('Current public browser audit verification passed.')
 console.log(`- routes: ${evidence.counts.routes}`)
 console.log(`- scenarios: ${evidence.counts.scenarios}`)
 console.log('- Japanese candidate routes: 27 x 4 viewports')
+console.log('- Japanese browser scenarios: 108/108')
 console.log('- provider crossing: 0')
 console.log('- provider-neutral API requests: 0')
 console.log('- overflow/focus/unlabeled/legal mobile target failures: 0')
