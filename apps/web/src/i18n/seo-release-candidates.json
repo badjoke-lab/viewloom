@@ -1,0 +1,379 @@
+{
+  "schema": "viewloom-japanese-seo-release-candidates-v1",
+  "version": 1,
+  "status": "staged_pre_j10",
+  "publicReleaseEnabled": false,
+  "releaseGate": "J10",
+  "origin": "https://www.viewloom.net",
+  "counts": {
+    "pairs": 27,
+    "releaseIndexable": 23,
+    "persistentNoindex": 4,
+    "japaneseSitemapAdditionsAfterJ10": 23
+  },
+  "xDefaultPolicy": "For the 23 indexable language clusters, x-default points to the English counterpart. Persistent noindex Channel/Watchlist routes do not receive public hreflang or x-default.",
+  "routes": [
+    {
+      "englishRoute": "/",
+      "japaneseRoute": "/ja/",
+      "englishCanonical": "https://www.viewloom.net/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/",
+        "ja": "https://www.viewloom.net/ja/",
+        "x-default": "https://www.viewloom.net/"
+      },
+      "structuredData": "WebSite"
+    },
+    {
+      "englishRoute": "/about/",
+      "japaneseRoute": "/ja/about/",
+      "englishCanonical": "https://www.viewloom.net/about/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/about/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/about/",
+        "ja": "https://www.viewloom.net/ja/about/",
+        "x-default": "https://www.viewloom.net/about/"
+      },
+      "structuredData": "AboutPage"
+    },
+    {
+      "englishRoute": "/support/",
+      "japaneseRoute": "/ja/support/",
+      "englishCanonical": "https://www.viewloom.net/support/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/support/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/support/",
+        "ja": "https://www.viewloom.net/ja/support/",
+        "x-default": "https://www.viewloom.net/support/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/contact/",
+      "japaneseRoute": "/ja/contact/",
+      "englishCanonical": "https://www.viewloom.net/contact/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/contact/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/contact/",
+        "ja": "https://www.viewloom.net/ja/contact/",
+        "x-default": "https://www.viewloom.net/contact/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/changelog/",
+      "japaneseRoute": "/ja/changelog/",
+      "englishCanonical": "https://www.viewloom.net/changelog/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/changelog/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/changelog/",
+        "ja": "https://www.viewloom.net/ja/changelog/",
+        "x-default": "https://www.viewloom.net/changelog/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/terms/",
+      "japaneseRoute": "/ja/terms/",
+      "englishCanonical": "https://www.viewloom.net/terms/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/terms/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/terms/",
+        "ja": "https://www.viewloom.net/ja/terms/",
+        "x-default": "https://www.viewloom.net/terms/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/privacy/",
+      "japaneseRoute": "/ja/privacy/",
+      "englishCanonical": "https://www.viewloom.net/privacy/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/privacy/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/privacy/",
+        "ja": "https://www.viewloom.net/ja/privacy/",
+        "x-default": "https://www.viewloom.net/privacy/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/refund-policy/",
+      "japaneseRoute": "/ja/refund-policy/",
+      "englishCanonical": "https://www.viewloom.net/refund-policy/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/refund-policy/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/refund-policy/",
+        "ja": "https://www.viewloom.net/ja/refund-policy/",
+        "x-default": "https://www.viewloom.net/refund-policy/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/commercial-disclosure/",
+      "japaneseRoute": "/ja/commercial-disclosure/",
+      "englishCanonical": "https://www.viewloom.net/commercial-disclosure/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/commercial-disclosure/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/commercial-disclosure/",
+        "ja": "https://www.viewloom.net/ja/commercial-disclosure/",
+        "x-default": "https://www.viewloom.net/commercial-disclosure/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/twitch/",
+      "japaneseRoute": "/ja/twitch/",
+      "englishCanonical": "https://www.viewloom.net/twitch/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/twitch/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/twitch/",
+        "ja": "https://www.viewloom.net/ja/twitch/",
+        "x-default": "https://www.viewloom.net/twitch/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/twitch/heatmap/",
+      "japaneseRoute": "/ja/twitch/heatmap/",
+      "englishCanonical": "https://www.viewloom.net/twitch/heatmap/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/twitch/heatmap/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/twitch/heatmap/",
+        "ja": "https://www.viewloom.net/ja/twitch/heatmap/",
+        "x-default": "https://www.viewloom.net/twitch/heatmap/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/twitch/day-flow/",
+      "japaneseRoute": "/ja/twitch/day-flow/",
+      "englishCanonical": "https://www.viewloom.net/twitch/day-flow/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/twitch/day-flow/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/twitch/day-flow/",
+        "ja": "https://www.viewloom.net/ja/twitch/day-flow/",
+        "x-default": "https://www.viewloom.net/twitch/day-flow/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/twitch/battle-lines/",
+      "japaneseRoute": "/ja/twitch/battle-lines/",
+      "englishCanonical": "https://www.viewloom.net/twitch/battle-lines/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/twitch/battle-lines/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/twitch/battle-lines/",
+        "ja": "https://www.viewloom.net/ja/twitch/battle-lines/",
+        "x-default": "https://www.viewloom.net/twitch/battle-lines/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/twitch/history/",
+      "japaneseRoute": "/ja/twitch/history/",
+      "englishCanonical": "https://www.viewloom.net/twitch/history/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/twitch/history/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/twitch/history/",
+        "ja": "https://www.viewloom.net/ja/twitch/history/",
+        "x-default": "https://www.viewloom.net/twitch/history/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/twitch/map/",
+      "japaneseRoute": "/ja/twitch/map/",
+      "englishCanonical": "https://www.viewloom.net/twitch/map/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/twitch/map/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/twitch/map/",
+        "ja": "https://www.viewloom.net/ja/twitch/map/",
+        "x-default": "https://www.viewloom.net/twitch/map/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/twitch/status/",
+      "japaneseRoute": "/ja/twitch/status/",
+      "englishCanonical": "https://www.viewloom.net/twitch/status/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/twitch/status/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/twitch/status/",
+        "ja": "https://www.viewloom.net/ja/twitch/status/",
+        "x-default": "https://www.viewloom.net/twitch/status/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/twitch/channel/",
+      "japaneseRoute": "/ja/twitch/channel/",
+      "englishCanonical": "https://www.viewloom.net/twitch/channel/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/twitch/channel/",
+      "indexableAfterJ10": false,
+      "sitemapAfterJ10": false,
+      "hreflangAfterJ10": null,
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/twitch/watchlist/",
+      "japaneseRoute": "/ja/twitch/watchlist/",
+      "englishCanonical": "https://www.viewloom.net/twitch/watchlist/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/twitch/watchlist/",
+      "indexableAfterJ10": false,
+      "sitemapAfterJ10": false,
+      "hreflangAfterJ10": null,
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/kick/",
+      "japaneseRoute": "/ja/kick/",
+      "englishCanonical": "https://www.viewloom.net/kick/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/kick/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/kick/",
+        "ja": "https://www.viewloom.net/ja/kick/",
+        "x-default": "https://www.viewloom.net/kick/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/kick/heatmap/",
+      "japaneseRoute": "/ja/kick/heatmap/",
+      "englishCanonical": "https://www.viewloom.net/kick/heatmap/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/kick/heatmap/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/kick/heatmap/",
+        "ja": "https://www.viewloom.net/ja/kick/heatmap/",
+        "x-default": "https://www.viewloom.net/kick/heatmap/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/kick/day-flow/",
+      "japaneseRoute": "/ja/kick/day-flow/",
+      "englishCanonical": "https://www.viewloom.net/kick/day-flow/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/kick/day-flow/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/kick/day-flow/",
+        "ja": "https://www.viewloom.net/ja/kick/day-flow/",
+        "x-default": "https://www.viewloom.net/kick/day-flow/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/kick/battle-lines/",
+      "japaneseRoute": "/ja/kick/battle-lines/",
+      "englishCanonical": "https://www.viewloom.net/kick/battle-lines/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/kick/battle-lines/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/kick/battle-lines/",
+        "ja": "https://www.viewloom.net/ja/kick/battle-lines/",
+        "x-default": "https://www.viewloom.net/kick/battle-lines/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/kick/history/",
+      "japaneseRoute": "/ja/kick/history/",
+      "englishCanonical": "https://www.viewloom.net/kick/history/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/kick/history/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/kick/history/",
+        "ja": "https://www.viewloom.net/ja/kick/history/",
+        "x-default": "https://www.viewloom.net/kick/history/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/kick/map/",
+      "japaneseRoute": "/ja/kick/map/",
+      "englishCanonical": "https://www.viewloom.net/kick/map/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/kick/map/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/kick/map/",
+        "ja": "https://www.viewloom.net/ja/kick/map/",
+        "x-default": "https://www.viewloom.net/kick/map/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/kick/status/",
+      "japaneseRoute": "/ja/kick/status/",
+      "englishCanonical": "https://www.viewloom.net/kick/status/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/kick/status/",
+      "indexableAfterJ10": true,
+      "sitemapAfterJ10": true,
+      "hreflangAfterJ10": {
+        "en": "https://www.viewloom.net/kick/status/",
+        "ja": "https://www.viewloom.net/ja/kick/status/",
+        "x-default": "https://www.viewloom.net/kick/status/"
+      },
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/kick/channel/",
+      "japaneseRoute": "/ja/kick/channel/",
+      "englishCanonical": "https://www.viewloom.net/kick/channel/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/kick/channel/",
+      "indexableAfterJ10": false,
+      "sitemapAfterJ10": false,
+      "hreflangAfterJ10": null,
+      "structuredData": null
+    },
+    {
+      "englishRoute": "/kick/watchlist/",
+      "japaneseRoute": "/ja/kick/watchlist/",
+      "englishCanonical": "https://www.viewloom.net/kick/watchlist/",
+      "japaneseCanonical": "https://www.viewloom.net/ja/kick/watchlist/",
+      "indexableAfterJ10": false,
+      "sitemapAfterJ10": false,
+      "hreflangAfterJ10": null,
+      "structuredData": null
+    }
+  ]
+}
