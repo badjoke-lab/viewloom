@@ -235,6 +235,18 @@ Work:
 - localized structured-data descriptions/URLs;
 - Japanese sitemap inventory prepared but not publicly indexable until J10.
 
+Candidate-ready state (2026-09-20):
+
+- all 27 English/Japanese route pairs are recorded in `apps/web/src/i18n/seo-release-candidates.json`;
+- the staged J10 release set is 23 indexable Japanese routes plus 4 persistent-noindex Channel/Watchlist routes;
+- the 23 indexable language clusters stage reciprocal `en` / `ja` hreflang plus `x-default` pointing to the English counterpart;
+- the 4 Channel/Watchlist pairs stage no public hreflang, no x-default, and no sitemap entry after J10;
+- current HTML still emits no public hreflang, all 27 Japanese candidates remain `noindex,follow`, and the current sitemap remains English-only at 23 routes;
+- localized title/description, OG URL/title/description, Twitter metadata, and applicable structured data are machine-verified by `scripts/verify-japanese-seo-candidates.mjs`;
+- Japanese Portal now carries localized `WebSite` structured data and Japanese About keeps localized `AboutPage` structured data;
+- collector, D1, cadence, retention, provider separation, geography/evidence, Current/IRL, and raw provider-data semantics are unchanged;
+- J9 release-candidate QA is next; J10 remains the only authorization point for public Japanese indexing, sitemap, hreflang, x-default, and visible language switching.
+
 Outcome:
 
 The route tree is ready for Japanese search indexing without duplicate-language ambiguity.
