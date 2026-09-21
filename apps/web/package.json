@@ -10,7 +10,7 @@
     "build": "vite build && node scripts/normalize-built-head.mjs",
     "verify:changelog": "node scripts/verify-changelog-qa.mjs",
     "verify:source": "node scripts/verify-production-source.mjs && node scripts/verify-primary-domain-cutover.mjs",
-    "verify:i18n-candidates": "node scripts/verify-japanese-home-candidates.mjs && node scripts/verify-japanese-seo-candidates.mjs",
+    "verify:i18n-candidates": "node scripts/verify-japanese-home-candidates.mjs && node scripts/verify-japanese-seo-candidates.mjs && node scripts/verify-japanese-release-candidate.mjs",
     "verify:battle-lines": "node scripts/verify-battle-lines-core.mjs",
     "verify:battle-lines-ui": "node scripts/verify-battle-lines-wide-ui.mjs",
     "verify:heatmap-boundaries": "node scripts/verify-heatmap-boundaries.mjs",
@@ -35,7 +35,8 @@
     "typecheck:app": "tsc -p tsconfig.json --noEmit",
     "typecheck:functions": "tsc -p tsconfig.functions.json --noEmit",
     "preview": "vite preview",
-    "verify:i18n-seo-candidates": "node scripts/verify-japanese-seo-candidates.mjs"
+    "verify:i18n-seo-candidates": "node scripts/verify-japanese-seo-candidates.mjs",
+    "verify:i18n-release-candidate": "node scripts/verify-japanese-home-candidates.mjs && node scripts/verify-japanese-seo-candidates.mjs && node scripts/verify-japanese-release-candidate.mjs"
   },
   "dependencies": {
     "maplibre-gl": "6.4.1"

@@ -1,0 +1,52 @@
+{
+  "schema": "viewloom-japanese-release-candidate-qa-v1",
+  "version": 1,
+  "status": "candidate_pre_j10",
+  "sourceJ8": {
+    "pr": 1340,
+    "mergeSha": "6b0258f7244521b1a44f8a6fb673b4e8bf16bfee"
+  },
+  "counts": {
+    "routePairs": 27,
+    "japaneseRoutes": 27,
+    "indexableAfterJ10": 23,
+    "persistentNoindex": 4,
+    "browserViewports": 4,
+    "browserScenarios": 216,
+    "japaneseBrowserScenarios": 108
+  },
+  "requiredGates": [
+    "route_pair_parity",
+    "english_to_japanese_literal_leakage",
+    "japanese_to_english_literal_leakage",
+    "locale_route_switch_contract",
+    "html_lang",
+    "canonical_noindex_hreflang_sitemap_staging",
+    "localized_metadata_and_structured_data",
+    "provider_data_truth_regression",
+    "typecheck_and_build",
+    "browser_overflow_focus_labels_mobile_targets",
+    "twitch_stream_map_regressions"
+  ],
+  "releaseBoundary": {
+    "publicReleaseEnabled": false,
+    "releaseGate": "J10",
+    "japaneseRobotsBeforeJ10": "noindex,follow",
+    "publicHreflangBeforeJ10": false,
+    "japaneseSitemapBeforeJ10": false,
+    "visibleLanguageSwitcherBeforeJ10": false
+  },
+  "semantics": {
+    "providersSeparated": true,
+    "combinedTotalsAllowed": false,
+    "combinedRankingsAllowed": false,
+    "utcAggregationUnchanged": true,
+    "rawProviderDataTranslated": false,
+    "geographyEvidenceUnchanged": true,
+    "currentIrlMeaningUnchanged": true,
+    "collectorChanged": false,
+    "d1SchemaOrWriteChanged": false,
+    "cadenceChanged": false,
+    "retentionChanged": false
+  }
+}

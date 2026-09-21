@@ -235,8 +235,9 @@ Work:
 - localized structured-data descriptions/URLs;
 - Japanese sitemap inventory prepared but not publicly indexable until J10.
 
-Candidate-ready state (2026-09-20):
+Merged state (2026-09-20):
 
+- J8 merged through PR #1340 at main `6b0258f7244521b1a44f8a6fb673b4e8bf16bfee`;
 - all 27 English/Japanese route pairs are recorded in `apps/web/src/i18n/seo-release-candidates.json`;
 - the staged J10 release set is 23 indexable Japanese routes plus 4 persistent-noindex Channel/Watchlist routes;
 - the 23 indexable language clusters stage reciprocal `en` / `ja` hreflang plus `x-default` pointing to the English counterpart;
@@ -266,6 +267,16 @@ Required:
 - canonical/hreflang/noindex validation;
 - sitemap candidate validation;
 - provider-separation/data-truth regression checks for affected pages.
+
+Release-candidate QA state (2026-09-20):
+
+- J9 is isolated on `work-japanese-localization-release-qa-20260920` from the merged J8 main;
+- `docs/audits/japanese-localization-release-candidate.json` fixes the QA contract at 27 route pairs, 23 future-indexable routes, 4 persistent-noindex utility routes, 4 browser viewports, 216 total browser scenarios, and 108 Japanese browser scenarios;
+- `scripts/verify-japanese-release-candidate.mjs` checks exact English/Japanese route equivalence, representative untranslated UI literal leakage, Japanese-script leakage into English presentation text, route-switch query/hash preservation, `html[lang]`, noindex/canonical, sitemap exclusion, and the closed J10 exposure boundary;
+- the existing J6/J7 candidate verifier remains the provider/data-truth regression gate, including separate Twitch/Kick APIs, raw-data protection, UTC semantics, geography evidence, and Current / IRL boundaries;
+- the J8 SEO verifier remains the metadata, structured-data, staged hreflang/x-default, and staged sitemap contract gate;
+- Public Browser Audit remains the runtime gate for all 54 routes across 4 viewports; its evidence verifier now explicitly requires all 108 Japanese scenarios in addition to zero overflow/focus/unlabeled/legal-mobile-target/provider-crossing failures;
+- J9 does not enable Japanese indexing, public hreflang/x-default, Japanese sitemap entries, or the visible language switcher. J10 remains the sole cutover authorization point.
 
 Outcome:
 
