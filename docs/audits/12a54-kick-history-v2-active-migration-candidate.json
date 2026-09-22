@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "viewloom-12a54-kick-history-v2-active-migration-candidate-v1",
+  "phase": "12A-54",
+  "issue": 1020,
+  "provider": "kick",
+  "status": "draft_candidate_only_merge_and_production_forbidden",
+  "sourceDecision": {
+    "phase": "12A-53",
+    "issue": 962,
+    "pr": 1019,
+    "mergeSha": "84de5ad01681bc1cd31a518011eea8fc0450a8a8"
+  },
+  "candidateContract": {
+    "engineSelector": "HISTORY_CATEGORY_GENERATION_ENGINE",
+    "masterEnable": "HISTORY_CATEGORY_GENERATION_ENABLED",
+    "sharedStartDay": "HISTORY_CATEGORY_START_DAY",
+    "selectorAbsent": "v1",
+    "selectorV1": "v1",
+    "selectorV2": "v2",
+    "selectorInvalid": "none",
+    "masterEnableNotExactTrue": "none",
+    "mutuallyExclusive": true,
+    "simultaneousV1V2ExecutionAllowed": false
+  },
+  "implementation": {
+    "activeEntry": "workers/collector-kick/src/entry.ts",
+    "engineResolver": "workers/collector-kick/src/history-category-generation-engine.ts",
+    "v1Adapter": "workers/dormant/history-category-aggregate-integration.ts",
+    "v2Adapter": "workers/dormant/history-category-v2-generator.ts",
+    "activeWranglerChanged": false,
+    "activeWranglerSelectorConfigured": false,
+    "newIndependentV2Enable": false,
+    "newIndependentV2StartDay": false,
+    "newCron": false,
+    "backfill": false,
+    "manualGeneration": false,
+    "rawRetentionChange": false,
+    "d1SchemaChange": false,
+    "apiUiChange": false,
+    "twitchChange": false,
+    "crossProviderChange": false
+  },
+  "exactCandidateFiles": [
+    ".github/workflows/analytics-12a54-kick-history-v2-active-migration-candidate.yml",
+    "docs/audits/12a54-kick-history-v2-active-migration-candidate.json",
+    "scripts/verify-12a54-kick-history-v2-active-migration-candidate.mjs",
+    "workers/collector-kick/src/entry.ts",
+    "workers/collector-kick/src/history-category-generation-engine.ts"
+  ],
+  "requiredRuntimeMatrix": [
+    { "master": "true", "selector": null, "expected": "v1" },
+    { "master": "true", "selector": "v1", "expected": "v1" },
+    { "master": "true", "selector": "v2", "expected": "v2" },
+    { "master": "true", "selector": "", "expected": "none" },
+    { "master": "true", "selector": "invalid", "expected": "none" },
+    { "master": "false", "selector": null, "expected": "none" },
+    { "master": "false", "selector": "v1", "expected": "none" },
+    { "master": "false", "selector": "v2", "expected": "none" },
+    { "master": null, "selector": null, "expected": "none" },
+    { "master": "TRUE", "selector": "v2", "expected": "none" }
+  ],
+  "productionBoundary": {
+    "candidateMustRemainDraft": true,
+    "candidateMergeAuthorized": false,
+    "candidateReadyTransitionAuthorized": false,
+    "collectorDeploymentAuthorized": false,
+    "productionV2EnablementAuthorized": false,
+    "productionV1DisablementAuthorized": false,
+    "productionD1ReadAuthorized": false,
+    "productionD1WriteAuthorized": false,
+    "productionCostProbeAuthorized": false,
+    "thresholdRelaxationAuthorized": false,
+    "activeProductionConfigMustRemainV1Only": true
+  },
+  "acceptedProductionConfigBaseline": {
+    "wrangler": "workers/collector-kick/wrangler.category-permanent.toml",
+    "historyGenerationEnabled": "true",
+    "historyStartDay": "2026-08-17",
+    "historyGenerationEngineConfigured": false,
+    "cron": "*/5 * * * *"
+  },
+  "nextGate": "After this Draft candidate is green and frozen, open a separate acceptance Decision. Do not mark Ready, merge, deploy, enable v2, disable v1, or run production mutation from 12A-54."
+}
