@@ -210,7 +210,41 @@ jobs:
         run: |
           set -euo pipefail
 
-          curl --silent --show-error --fail --max-time 30 "$ORIGIN/api/kick-stream-map?geography=city&production-smoke=$GITHUB_RUN_ID" -o kick-stream-map-city.json
+          require_exact_catalog=false
+          expected_catalog=0
+          max_attempts=1
+
+          if [ "${GITHUB_EVENT_NAME}" != 'pull_request' ] && [ "${GITHUB_REF_NAME}" = 'main' ]; then
+            require_exact_catalog=true
+            expected_catalog="$(node --input-type=module <<'NODE'
+          import { KICK_REVIEWED_CITY_RUNTIME_DATA } from './apps/web/functions/api/kick-stream-map-reviewed-city-runtime-data.mjs'
+          process.stdout.write(String(KICK_REVIEWED_CITY_RUNTIME_DATA.length))
+          NODE
+            )"
+            max_attempts=60
+          fi
+
+          for attempt in $(seq 1 "$max_attempts"); do
+            curl --silent --show-error --fail --max-time 30               "$ORIGIN/api/kick-stream-map?geography=city&production-smoke=$GITHUB_RUN_ID&attempt=$attempt"               -o kick-stream-map-city.json
+
+            observed_catalog="$(jq -r '.coverage.reviewedEvidenceCatalogSize // 0' kick-stream-map-city.json)"
+
+            if [ "$require_exact_catalog" = true ]; then
+              echo "Kick City catalog synchronization attempt $attempt/$max_attempts: expected=$expected_catalog observed=$observed_catalog"
+              if [ "$observed_catalog" = "$expected_catalog" ]; then
+                break
+              fi
+            else
+              break
+            fi
+
+            if [ "$attempt" -eq "$max_attempts" ]; then
+              echo "Exact Kick City reviewed catalog $expected_catalog was not observed; last observed $observed_catalog." >&2
+              exit 1
+            fi
+            sleep 10
+          done
+
           jq '{version, implementationState, platform, provider, sourceMode, updatedAt, geographyMode, state, publicActivationAuthorized, publicCityActivationAuthorized, coverage, identity, activation, semantics, cityAggregates}' kick-stream-map-city.json
 
           jq -e '
@@ -230,7 +264,6 @@ jobs:
             .identity.slugIsStableIdentity == false and
             .coverage.observedStreams > 0 and
             .coverage.stableIdentityStreams == .coverage.observedStreams and
-            .coverage.reviewedEvidenceCatalogSize >= (if env.GITHUB_EVENT_NAME == "pull_request" then 62 else 107 end) and
             .coverage.referenceGeometryAggregates >= 0 and
             .coverage.listOnlyAggregates >= 0 and
             (.coverage.referenceGeometryAggregates + .coverage.listOnlyAggregates) == .coverage.mappedCityAggregateCount and
@@ -261,7 +294,13 @@ jobs:
             )] | length) == 0
           ' kick-stream-map-city.json >/dev/null
 
-          echo "Kick Stream Map City production proof: state=$(jq -r '.state' kick-stream-map-city.json) authorized=$(jq -r '.publicCityActivationAuthorized' kick-stream-map-city.json) observed=$(jq -r '.coverage.observedStreams' kick-stream-map-city.json) reviewedCatalog=$(jq -r '.coverage.reviewedEvidenceCatalogSize' kick-stream-map-city.json) mapped=$(jq -r '.coverage.mappedStreams' kick-stream-map-city.json) cityAggregates=$(jq -r '.coverage.mappedCityAggregateCount' kick-stream-map-city.json) referenceGeometry=$(jq -r '.coverage.referenceGeometryAggregates' kick-stream-map-city.json)"
+          if [ "$require_exact_catalog" = true ]; then
+            jq -e --argjson expected "$expected_catalog" '.coverage.reviewedEvidenceCatalogSize == $expected' kick-stream-map-city.json >/dev/null
+          else
+            jq -e '.coverage.reviewedEvidenceCatalogSize >= 62' kick-stream-map-city.json >/dev/null
+          fi
+
+          echo "Kick Stream Map City production proof: state=$(jq -r '.state' kick-stream-map-city.json) authorized=$(jq -r '.publicCityActivationAuthorized' kick-stream-map-city.json) observed=$(jq -r '.coverage.observedStreams' kick-stream-map-city.json) reviewedCatalog=$(jq -r '.coverage.reviewedEvidenceCatalogSize' kick-stream-map-city.json) expectedCatalog=$expected_catalog exactCatalog=$require_exact_catalog mapped=$(jq -r '.coverage.mappedStreams' kick-stream-map-city.json) cityAggregates=$(jq -r '.coverage.mappedCityAggregateCount' kick-stream-map-city.json) referenceGeometry=$(jq -r '.coverage.referenceGeometryAggregates' kick-stream-map-city.json)"
 
       - name: Upload production smoke evidence
         if: always()
